@@ -6,7 +6,20 @@
         xmlns:local="clr-namespace:ExplorerFM"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <Button Height="25" Width="100" Content="Initialize" Name="InitializeButton" Click="InitializeButton_Click"/>
+        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ConfederationsComboBox" />
+        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="CountriesComboBox" />
+        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ClubsComboBox" />
+        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="AttributesComboBox" />
+        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+            <ListBox Name="PlayersListBox">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Label Content="{Binding Path=Lastname}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+    </StackPanel>
 </Window>
