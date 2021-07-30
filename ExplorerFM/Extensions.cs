@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using ExplorerFM.Datas;
+using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
 {
@@ -90,6 +91,20 @@ namespace ExplorerFM
                 .Where(x => x.HasValue)
                 .Select(x => x.Value)
                 .ToList();
+        }
+
+        public static string ToSymbol(this Comparator comparator)
+        {
+            switch (comparator)
+            {
+                case Comparator.Equal: return "=";
+                case Comparator.Greater: return ">";
+                case Comparator.GreaterEqual: return ">=";
+                case Comparator.Lower: return "<";
+                case Comparator.LowerEqual: return "<=";
+                case Comparator.NotEqual: return "!=";
+                default: throw new NotSupportedException();
+            }
         }
     }
 }

@@ -4,22 +4,28 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ExplorerFM"
-        mc:Ignorable="d"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="450" Width="800">
-    <StackPanel Orientation="Vertical">
-        <Button Height="25" Width="100" Content="Initialize" Name="InitializeButton" Click="InitializeButton_Click"/>
-        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ConfederationsComboBox" />
-        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="CountriesComboBox" />
-        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ClubsComboBox" />
-        <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="AttributesComboBox" />
-        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
-            <ListBox Name="PlayersListBox">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Label Content="{Binding Path=Lastname}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </ScrollViewer>
-    </StackPanel>
+    <DockPanel>
+        <StackPanel Name="MainContentPanel" Orientation="Vertical" DockPanel.Dock="Top">
+            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ConfederationsComboBox" />
+            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="CountriesComboBox" />
+            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ClubsComboBox" />
+            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="AttributesComboBox" />
+            <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                <ListBox MouseDoubleClick="PlayersListBox_MouseDoubleClick" Name="PlayersListBox">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Path=Lastname}" />
+                                <Label Content="{Binding Path=Firstname}" />
+                                <Label Content="{Binding Path=Commonname}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+        </StackPanel>
+        <ProgressBar Visibility="Collapsed" DockPanel.Dock="Top" Name="LoadingProgressBar" IsIndeterminate="True" Width="200" Height="30" />
+    </DockPanel>
 </Window>

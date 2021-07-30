@@ -2,6 +2,7 @@
 using System.Data;
 using System.Linq;
 using ExplorerFM.Datas;
+using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
 {
@@ -38,18 +39,9 @@ namespace ExplorerFM
             BuildClubsList();
         }
 
-        public List<Player> GetPlayersByCriteria(
-            int? countryId = null,
-            int? clubId = null,
-            bool withoutClub = false)
+        public List<Player> GetPlayersByCriteria(CriteriaSet criteria)
         {
-            var sql = "SELECT * FROM player WHERE 1";
-            if (countryId.HasValue)
-                sql += $" AND (NationID1 = {countryId.Value} OR NationID2 = {countryId.Value})";
-            if (clubId.HasValue)
-                sql += $" AND ClubContractID = {clubId.Value}";
-            else if (withoutClub)
-                sql += " AND ClubContractID IS NULL";
+            var sql = $"SELECT * FROM player WHERE {criteria}";
 
             return _mySqlService.GetDatas(
                 sql,

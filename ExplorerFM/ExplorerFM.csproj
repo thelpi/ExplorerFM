@@ -57,6 +57,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="PlayerWindow.xaml.cs">
+      <DependentUpon>PlayerWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RuleEngine\CriteriaSet.cs" />
+    <Compile Include="RuleEngine\Criterion.cs" />
+    <Compile Include="RuleEngine\Comparator.cs" />
+    <Compile Include="RuleEngine\CriterionBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -83,6 +90,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="PlayerWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MySqlService.cs" />

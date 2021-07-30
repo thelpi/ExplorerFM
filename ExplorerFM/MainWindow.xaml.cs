@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
 using ExplorerFM.Properties;
 
 namespace ExplorerFM
@@ -13,17 +15,47 @@ namespace ExplorerFM
         public MainWindow()
         {
             InitializeComponent();
+
             _dataProvider = new DataProvider(Settings.Default.ConnectionString);
+
+            HideWorkAndDisplay<object>(
+                () =>
+                {
+                    _dataProvider.Initialize();
+                    return null;
+                },
+                nullDummy =>
+                {
+                    AttributesComboBox.ItemsSource = _dataProvider.Attributes;
+                    ClubsComboBox.ItemsSource = _dataProvider.Clubs;
+                    ConfederationsComboBox.ItemsSource = _dataProvider.Confederations;
+                    CountriesComboBox.ItemsSource = _dataProvider.Countries;
+                });
         }
 
-        private void InitializeButton_Click(object sender, RoutedEventArgs e)
+        private void PlayersListBox_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _dataProvider.Initialize();
-            AttributesComboBox.ItemsSource = _dataProvider.Attributes;
-            ClubsComboBox.ItemsSource = _dataProvider.Clubs;
-            ConfederationsComboBox.ItemsSource = _dataProvider.Confederations;
-            CountriesComboBox.ItemsSource = _dataProvider.Countries;
-            PlayersListBox.ItemsSource = _dataProvider.GetPlayersByCriteria(withoutClub: true);
+            var pItem = PlayersListBox.SelectedItem;
+            if (pItem != null)
+            {
+                new PlayerWindow(pItem as Datas.Player).ShowDialog();
+            }
+        }
+
+        private void HideWorkAndDisplay<T>(Func<T> backgroundFunc, Action<T> foregroundFunc)
+        {
+            MainContentPanel.Visibility = Visibility.Collapsed;
+            LoadingProgressBar.Visibility = Visibility.Visible;
+            Task.Run(() =>
+            {
+                var result = backgroundFunc();
+                Dispatcher.Invoke(() =>
+                {
+                    foregroundFunc(result);
+                    MainContentPanel.Visibility = Visibility.Visible;
+                    LoadingProgressBar.Visibility = Visibility.Collapsed;
+                });
+            });
         }
     }
 }
