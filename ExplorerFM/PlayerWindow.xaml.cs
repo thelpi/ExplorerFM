@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -36,12 +37,23 @@ namespace ExplorerFM
             {
                 for (int j = 0; j < Sides.Length; j++)
                 {
+                    if ((Positions[i] == Position.GoalKeeper || Positions[i] == Position.Sweeper) && Sides[j] != Side.Center)
+                        continue;
+
                     var noteRate = _player.GetPositionSideRate(Positions[i], Sides[j]);
-                    var ellipse = new Ellipse
+                    var rateColor = GetColorFromRate(noteRate);
+
+                    var ellipse = new Rectangle
                     {
-                        Height = 25,
-                        Width = 25,
-                        Fill = new SolidColorBrush(Color.FromArgb(byte.MaxValue, byte.MaxValue, GetColorByte(noteRate), GetColorByte(noteRate))),
+                        Height = 45,
+                        Width = 75,
+                        Fill = new RadialGradientBrush(
+                            new GradientStopCollection(
+                                new List<GradientStop>
+                                {
+                                    new GradientStop(rateColor, 0.33),
+                                    new GradientStop(Colors.Green, 1)
+                                })),
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         ToolTip = $"{Positions[i].ToCode()} {Sides[j].ToCode()} ({noteRate})"
@@ -53,9 +65,19 @@ namespace ExplorerFM
             }
         }
 
-        private byte GetColorByte(int redPercent)
+        private Color GetColorFromRate(int rate)
         {
-            return (byte)(byte.MaxValue - (redPercent * (byte.MaxValue / (decimal)20)));
+            var switchStop = 20 / (decimal)3;
+
+            var blue = rate > switchStop
+                ? 0
+                : 255 - ((rate / switchStop) * 255);
+
+            var green = rate <= switchStop
+                ? 255
+                : 255 - (((rate - switchStop) / (switchStop * 2)) * 255);
+
+            return Color.FromArgb(byte.MaxValue, byte.MaxValue, (byte)green, (byte)blue);
         }
     }
 }

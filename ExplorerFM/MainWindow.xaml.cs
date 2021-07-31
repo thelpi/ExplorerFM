@@ -68,7 +68,9 @@ namespace ExplorerFM
 
         private CriteriaSet ExtractCriteriaSet()
         {
-            return new CriteriaSet(false, Criterion.New("WorldReputation", 180, Comparator.GreaterEqual));
+            return new CriteriaSet(false,
+                Criterion.New("Lastname", "Reid", Comparator.Contain),
+                Criterion.New("Firstname", "Steven", Comparator.Contain));
             //return CriteriaSet.Empty;
         }
     }

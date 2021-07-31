@@ -7,6 +7,8 @@
         Lower,
         Greater,
         LowerEqual,
-        GreaterEqual
+        GreaterEqual,
+        Contain,
+        NotContain
     }
 }

@@ -103,8 +103,16 @@ namespace ExplorerFM
                 case Comparator.Lower: return "<";
                 case Comparator.LowerEqual: return "<=";
                 case Comparator.NotEqual: return "!=";
+                case Comparator.Contain: return "LIKE";
+                case Comparator.NotContain: return "NOT LIKE";
                 default: throw new NotSupportedException();
             }
+        }
+
+        public static bool IsStringSymbol(this Comparator comparator)
+        {
+            return comparator == Comparator.Contain
+                || comparator == Comparator.NotContain;
         }
     }
 }
