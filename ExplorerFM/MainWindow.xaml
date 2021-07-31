@@ -6,26 +6,32 @@
         xmlns:local="clr-namespace:ExplorerFM"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="450" Width="800">
-    <DockPanel>
-        <StackPanel Name="MainContentPanel" Orientation="Vertical" DockPanel.Dock="Top">
-            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ConfederationsComboBox" />
-            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="CountriesComboBox" />
-            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="ClubsComboBox" />
-            <ComboBox Width="200" Height="30" DisplayMemberPath="Name" Name="AttributesComboBox" />
-            <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
-                <ListBox MouseDoubleClick="PlayersListBox_MouseDoubleClick" Name="PlayersListBox">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Path=Lastname}" />
-                                <Label Content="{Binding Path=Firstname}" />
-                                <Label Content="{Binding Path=Commonname}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+    <ScrollViewer Height="{Binding ActualHeight}">
+        <StackPanel Orientation="Vertical" Margin="10">
+            <ProgressBar Visibility="Collapsed" Name="LoadingProgressBar" IsIndeterminate="True" Width="200" Height="30" />
+            <Grid Name="MainContentPanel">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition Height="35" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" />
+                <Button Grid.Row="1" Grid.Column="0" Height="25" Width="100" Content="Add criterion" HorizontalAlignment="Left" Name="AddCriterion" Click="AddCriterion_Click" />
+                <Button Grid.Row="2" Grid.Column="0" Height="25" Width="100" Content="Search" HorizontalAlignment="Left" Name="SearchPlayersButton" Click="SearchPlayersButton_Click" />
+                <ListView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" MouseDoubleClick="PlayersView_MouseDoubleClick" Name="PlayersView">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="True">
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Fullname}" />
+                            <GridViewColumn Header="Date of birth" DisplayMemberBinding="{Binding Path=ActualDateOfBirth}" />
+                            <GridViewColumn Header="Country" DisplayMemberBinding="{Binding Path=Nationality.ShortName}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
         </StackPanel>
-        <ProgressBar Visibility="Collapsed" DockPanel.Dock="Top" Name="LoadingProgressBar" IsIndeterminate="True" Width="200" Height="30" />
-    </DockPanel>
+    </ScrollViewer>
 </Window>

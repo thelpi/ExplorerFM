@@ -28,5 +28,14 @@ namespace ExplorerFM.Datas
         public int? HomeReputation { get; set; }
         public int? CurrentReputation { get; set; }
         public int? WorldReputation { get; set; }
+
+        public string Fullname => string.IsNullOrWhiteSpace(Commonname)
+            ? string.Concat(Lastname, ", ", Firstname)
+            : Commonname;
+        public string ActualDateOfBirth => DateOfBirth.HasValue
+            ? DateOfBirth.Value.ToString("yyyy-MM-dd")
+            : (YearOfBirth.HasValue
+                ? YearOfBirth.Value.ToString()
+                : MissingDataString);
     }
 }

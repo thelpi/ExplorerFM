@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using ExplorerFM.Properties;
+using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
 {
@@ -24,18 +25,12 @@ namespace ExplorerFM
                     _dataProvider.Initialize();
                     return null;
                 },
-                nullDummy =>
-                {
-                    AttributesComboBox.ItemsSource = _dataProvider.Attributes;
-                    ClubsComboBox.ItemsSource = _dataProvider.Clubs;
-                    ConfederationsComboBox.ItemsSource = _dataProvider.Confederations;
-                    CountriesComboBox.ItemsSource = _dataProvider.Countries;
-                });
+                nullDummy => { });
         }
 
-        private void PlayersListBox_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void PlayersView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            var pItem = PlayersListBox.SelectedItem;
+            var pItem = PlayersView.SelectedItem;
             if (pItem != null)
             {
                 new PlayerWindow(pItem as Datas.Player).ShowDialog();
@@ -56,6 +51,25 @@ namespace ExplorerFM
                     LoadingProgressBar.Visibility = Visibility.Collapsed;
                 });
             });
+        }
+
+        private void SearchPlayersButton_Click(object sender, RoutedEventArgs e)
+        {
+            var criteria = ExtractCriteriaSet();
+            HideWorkAndDisplay(
+                () => _dataProvider.GetPlayersByCriteria(criteria),
+                players => PlayersView.ItemsSource = players);
+        }
+
+        private void AddCriterion_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private CriteriaSet ExtractCriteriaSet()
+        {
+            return new CriteriaSet(false, Criterion.New("WorldReputation", 180, Comparator.GreaterEqual));
+            //return CriteriaSet.Empty;
         }
     }
 }
