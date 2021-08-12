@@ -213,6 +213,14 @@ namespace ExplorerFM
                 (newValueInnerElement as ComboBox).SelectedIndex = (currentValueInnerElement as ComboBox).SelectedIndex;
             else if (elementType == typeof(DatePicker))
                 (newValueInnerElement as DatePicker).SelectedDate = (currentValueInnerElement as DatePicker).SelectedDate;
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.LongUpDown))
+                (newValueInnerElement as Xceed.Wpf.Toolkit.LongUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.LongUpDown).Value;
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.DecimalUpDown))
+                (newValueInnerElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value;
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.DoubleUpDown))
+                (newValueInnerElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value;
+            else
+                throw new NotSupportedException();
 
             var newValueNullPanel = newValuePanel.Children[1] as DockPanel;
             var currentValueNullPanel = currentValuePanel.Children[1] as DockPanel;
@@ -327,11 +335,13 @@ namespace ExplorerFM
                 else if (propType.IsIntegerType())
                     childElement = new Xceed.Wpf.Toolkit.LongUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
                 else if (propType == typeof(decimal))
-                    childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
-                else if (propType == typeof(double) || propType == typeof(Single))
-                    childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
-                else
+                    childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
+                else if (propType == typeof(double) || propType == typeof(float))
+                    childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
+                else if (propType == typeof(string))
                     childElement = new TextBox();
+                else
+                    throw new NotSupportedException();
 
                 childElement.Width = DefaultSize * 6;
                 valuePanel.Children.Add(childElement);
