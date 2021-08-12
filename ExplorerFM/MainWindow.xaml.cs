@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 
@@ -184,26 +185,71 @@ namespace ExplorerFM
 
         private void AddCriteriaSet_Click(object sender, RoutedEventArgs e)
         {
-            var panel = new StackPanel
+            const double DefaultHeight = 25;
+
+            var criteriaSetBorder = new Border
             {
-                Orientation = Orientation.Horizontal
+                Margin = new Thickness(5),
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(1)
             };
 
-            var delButton = new Button { Content = "X", Width = 25, Height = 25 };
-            delButton.Click += (_1, _2) => CriteriaPanel.Children.Remove(panel);
+            var criteriaSetPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(5)
+            };
 
-            var groupBox = new GroupBox { Header = "Criteria" };
-            var groupBoxPanel = new StackPanel { Orientation = Orientation.Vertical };
-            groupBox.Content = groupBoxPanel;
+            var removeCriteriaSetButton = new Button
+            {
+                Content = "X",
+                Width = 25,
+                Height = DefaultHeight,
+                ToolTip = "Remove the criteria set"
+            };
 
-            var addButton = new Button { Content = "Add criterion", Tag = groupBoxPanel };
+            removeCriteriaSetButton.Click += (_1, _2) =>
+            {
+                var indexOfRemovedPanel = CriteriaPanel.Children.IndexOf(criteriaSetBorder);
+                CriteriaPanel.Children.Remove(criteriaSetBorder);
+                if (indexOfRemovedPanel > 0)
+                {
+                    CriteriaPanel.Children.RemoveAt(indexOfRemovedPanel - 1);
+                }
+            };
+
+            var criteriaPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+
+            var addButton = new Button
+            {
+                Content = "Add criterion",
+                Tag = criteriaPanel,
+                Width = 100,
+                Height = DefaultHeight,
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+
             addButton.Click += AddCriterion_Click;
 
-            panel.Children.Add(delButton);
-            panel.Children.Add(addButton);
-            panel.Children.Add(groupBox);
+            criteriaSetPanel.Children.Add(removeCriteriaSetButton);
+            criteriaSetPanel.Children.Add(addButton);
+            criteriaSetPanel.Children.Add(criteriaPanel);
 
-            CriteriaPanel.Children.Add(panel);
+            criteriaSetBorder.Child = criteriaSetPanel;
+
+            if (CriteriaPanel.Children.Count > 0)
+            {
+                CriteriaPanel.Children.Add(new Label
+                {
+                    Content = "OR"
+                });
+            }
+
+            CriteriaPanel.Children.Add(criteriaSetBorder);
         }
     }
 }
