@@ -166,9 +166,16 @@ namespace ExplorerFM
             return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
         }
 
-        public static T ToXaml<T>(this string xamlContent) where T : class
+        public static System.Windows.DataTemplate ToDataTemplate(this string xamlContent)
         {
-            return XamlReader.Load(XmlReader.Create(new StringReader(xamlContent))) as T;
+            return XamlReader.Load(
+                XmlReader.Create(
+                    new StringReader(
+                        string.Concat(
+                            "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">",
+                            xamlContent,
+                            "</DataTemplate>"))))
+                as System.Windows.DataTemplate;
         }
     }
 }
