@@ -67,6 +67,8 @@ namespace ExplorerFM
 
         private void AddCriterion_Click(object sender, RoutedEventArgs e)
         {
+            var sourcePanel = (sender as Button).Tag as Panel;
+
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
 
             var properties = typeof(Datas.Player).GetAttributeProperties()
@@ -96,6 +98,69 @@ namespace ExplorerFM
                 ItemsSource = Enumerable.Empty<string>()
             };
 
+            panel.Children.Add(propertyCombo);
+            panel.Children.Add(comparatorCombo);
+
+            void SelectionChangedEvent(object _1, SelectionChangedEventArgs _2)
+            {
+                if (panel.Tag != null)
+                {
+                    panel.Children.Remove(panel.Tag as UIElement);
+                }
+
+                if (propertyCombo.SelectedIndex < 0)
+                {
+                    comparatorCombo.ItemsSource = Enumerable.Empty<string>();
+                }
+                else
+                {
+                    var propType = (propertyCombo.SelectedItem as PropertyInfo).PropertyType;
+                    comparatorCombo.ItemsSource = propType.GetComparators().Select(_ => _.ToSymbol());
+
+                    var valuePanel = new StackPanel { Orientation = Orientation.Horizontal };
+
+                    if (Nullable.GetUnderlyingType(propType) != null)
+                    {
+                        propType = propType.GenericTypeArguments[0];
+                        valuePanel.Children.Add(new CheckBox { Content = "No value?" });
+                    }
+
+                    if (propType == typeof(bool))
+                    {
+                        valuePanel.Children.Add(new CheckBox { Content = "Yes?" });
+                    }
+                    else if (propType.IsEnum)
+                    {
+                        valuePanel.Children.Add(new ComboBox { Width = 150, ItemsSource = Enum.GetValues(propType) });
+                    }
+                    else if (propType == typeof(DateTime))
+                    {
+                        valuePanel.Children.Add(new DatePicker());
+                    }
+                    else if (propType == typeof(Datas.Club))
+                    {
+                        valuePanel.Children.Add(new ComboBox { Width = 150, ItemsSource = _dataProvider.Clubs, DisplayMemberPath = nameof(Datas.Club.ShortName) });
+                    }
+                    else if (propType == typeof(Datas.Country))
+                    {
+                        valuePanel.Children.Add(new ComboBox { Width = 150, ItemsSource = _dataProvider.Countries, DisplayMemberPath = nameof(Datas.Country.ShortName) });
+                    }
+                    else if (propType == typeof(Datas.Confederation))
+                    {
+                        valuePanel.Children.Add(new ComboBox { Width = 150, ItemsSource = _dataProvider.Confederations, DisplayMemberPath = nameof(Datas.Confederation.Name) });
+                    }
+                    else
+                    {
+                        valuePanel.Children.Add(new TextBox { Width = 150 });
+                    }
+
+                    panel.Children.Insert(2, valuePanel);
+                    panel.Tag = valuePanel;
+                }
+            }
+
+            propertyCombo.SelectionChanged += SelectionChangedEvent;
+
             var delButton = new Button
             {
                 Content = "x",
@@ -103,26 +168,42 @@ namespace ExplorerFM
                 Height = 25
             };
 
-            propertyCombo.SelectionChanged += (_1, _2) =>
-            {
-                if (propertyCombo.SelectedIndex < 0)
-                    comparatorCombo.ItemsSource = Enumerable.Empty<string>();
-                else
-                    comparatorCombo.ItemsSource = (propertyCombo.SelectedItem as PropertyInfo).PropertyType.GetComparators().Select(_ => _.ToSymbol());
-            };
+            delButton.Click += (_1, _2) => sourcePanel.Children.Remove(panel);
 
-            delButton.Click += (_1, _2) => CriteriaPanel.Children.Remove(panel);
-
-            panel.Children.Add(propertyCombo);
-            panel.Children.Add(comparatorCombo);
             panel.Children.Add(delButton);
 
-            CriteriaPanel.Children.Add(panel);
+            sourcePanel.Children.Add(panel);
+
+            SelectionChangedEvent(null, null);
         }
 
         private CriteriaSet ExtractCriteriaSet()
         {
             return CriteriaSet.Empty;
+        }
+
+        private void AddCriteriaSet_Click(object sender, RoutedEventArgs e)
+        {
+            var panel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
+
+            var delButton = new Button { Content = "X", Width = 25, Height = 25 };
+            delButton.Click += (_1, _2) => CriteriaPanel.Children.Remove(panel);
+
+            var groupBox = new GroupBox { Header = "Criteria" };
+            var groupBoxPanel = new StackPanel { Orientation = Orientation.Vertical };
+            groupBox.Content = groupBoxPanel;
+
+            var addButton = new Button { Content = "Add criterion", Tag = groupBoxPanel };
+            addButton.Click += AddCriterion_Click;
+
+            panel.Children.Add(delButton);
+            panel.Children.Add(addButton);
+            panel.Children.Add(groupBox);
+
+            CriteriaPanel.Children.Add(panel);
         }
     }
 }

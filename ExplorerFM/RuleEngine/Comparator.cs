@@ -8,7 +8,7 @@
         Greater,
         LowerEqual,
         GreaterEqual,
-        Contain,
-        NotContain
+        Like,
+        NotLike
     }
 }

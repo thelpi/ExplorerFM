@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -107,20 +108,32 @@ namespace ExplorerFM
                 case Comparator.Lower: return "<";
                 case Comparator.LowerEqual: return "<=";
                 case Comparator.NotEqual: return "!=";
-                case Comparator.Contain: return "LIKE";
-                case Comparator.NotContain: return "NOT LIKE";
+                case Comparator.Like: return "LIKE";
+                case Comparator.NotLike: return "NOT LIKE";
                 default: throw new NotSupportedException();
             }
         }
 
         public static bool IsStringSymbol(this Comparator comparator)
         {
-            return comparator == Comparator.Contain
-                || comparator == Comparator.NotContain;
+            return comparator == Comparator.Like
+                || comparator == Comparator.NotLike;
         }
 
         public static List<Comparator> GetComparators(this Type t)
         {
+            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)))
+                || t == typeof(Club)
+                || t == typeof(Country)
+                || t == typeof(Confederation))
+            {
+                return new List<Comparator>
+                {
+                    Comparator.Equal,
+                    Comparator.NotEqual
+                };
+            }
+
             var comparators = new List<Comparator>
             {
                 Comparator.Equal,
@@ -133,8 +146,8 @@ namespace ExplorerFM
 
             if (t == typeof(string))
             {
-                comparators.Add(Comparator.Contain);
-                comparators.Add(Comparator.NotContain);
+                comparators.Add(Comparator.Like);
+                comparators.Add(Comparator.NotLike);
             }
             else if (t == typeof(bool) || (!typeof(IComparable).IsAssignableFrom(t)
                 && !(t.IsGenericType && typeof(IComparable).IsAssignableFrom(t.GenericTypeArguments[0]))))

@@ -20,7 +20,7 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Name="CriteriaPanel" />
-                <Button Grid.Row="1" Grid.Column="0" Height="25" Width="100" Content="Add criterion" HorizontalAlignment="Left" Name="AddCriterion" Click="AddCriterion_Click" />
+                <Button Grid.Row="1" Grid.Column="0" Height="25" Width="100" Content="Add criteria set" HorizontalAlignment="Left" Name="AddCriteriaSet" Click="AddCriteriaSet_Click" />
                 <Button Grid.Row="2" Grid.Column="0" Height="25" Width="100" Content="Search" HorizontalAlignment="Left" Name="SearchPlayersButton" Click="SearchPlayersButton_Click" />
                 <ListView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" MouseDoubleClick="PlayersView_MouseDoubleClick" Name="PlayersView">
                     <ListView.View>
