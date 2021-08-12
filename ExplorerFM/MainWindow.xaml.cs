@@ -41,7 +41,9 @@ namespace ExplorerFM
                 nullDummy => { });
         }
 
-        private void PlayersView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void PlayersView_MouseDoubleClick(
+            object sender,
+            System.Windows.Input.MouseButtonEventArgs e)
         {
             var pItem = PlayersView.SelectedItem;
             if (pItem != null)
@@ -50,7 +52,8 @@ namespace ExplorerFM
             }
         }
 
-        private void HideWorkAndDisplay<T>(Func<T> backgroundFunc, Action<T> foregroundFunc)
+        private void HideWorkAndDisplay<T>(
+            Func<T> backgroundFunc, Action<T> foregroundFunc)
         {
             MainContentPanel.Visibility = Visibility.Collapsed;
             LoadingProgressBar.Visibility = Visibility.Visible;
@@ -66,7 +69,9 @@ namespace ExplorerFM
             });
         }
 
-        private void SearchPlayersButton_Click(object sender, RoutedEventArgs e)
+        private void SearchPlayersButton_Click(
+            object sender,
+            RoutedEventArgs e)
         {
             HideWorkAndDisplay(
                 () => _dataProvider.GetPlayersByCriteria(ExtractCriteriaSet()),
@@ -78,7 +83,15 @@ namespace ExplorerFM
             return CriteriaSet.Empty;
         }
 
-        private void AddCriteriaSet_Click(object sender, RoutedEventArgs e)
+        private void AddCriteriaSetButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            AddCriteriaSet(true);
+        }
+
+        private void AddCriteriaSet(
+            bool addFirstCriterion)
         {
             var criteriaSetBorder = new Border
             {
@@ -126,8 +139,7 @@ namespace ExplorerFM
 
             copyCriteriaButton.Click += (_x, _y) =>
             {
-                AddCriteriaSet_Click(null, null);
-                //var currentCriteria = CriteriaSetPanel.Children[CriteriaSetPanel.Children.Count - 1];
+                CopyCriteriaSet(criteriaSetPanel);
             };
 
             criteriaSetPanel.Children.Add(removeCriteriaSetButton);
@@ -139,7 +151,67 @@ namespace ExplorerFM
 
             AddContentGroup(CriteriaSetPanel, criteriaSetBorder, true);
 
-            AddCriterion(criteriaPanel);
+            if (addFirstCriterion)
+            {
+                AddCriterion(criteriaPanel);
+            }
+        }
+
+        private void CopyCriteriaSet(
+            StackPanel criteriaSetPanel)
+        {
+            AddCriteriaSet(false);
+            var newCriteriaSetPanel = (CriteriaSetPanel.Children[CriteriaSetPanel.Children.Count - 1] as Border).Child as StackPanel;
+            var newCriteriaPanel = newCriteriaSetPanel.Children[criteriaSetPanel.Children.Count - 1] as StackPanel;
+            var currentCriteriaPanel = criteriaSetPanel.Children[criteriaSetPanel.Children.Count - 1] as StackPanel;
+            foreach (var currentCriterionObject in currentCriteriaPanel.Children)
+            {
+                if (currentCriterionObject is StackPanel)
+                {
+                    CopyCriterion(newCriteriaPanel, currentCriterionObject);
+                }
+            }
+        }
+
+        private void CopyCriterion(
+            StackPanel newCriteriaPanel,
+            object currentCriterionObject)
+        {
+            AddCriterion(newCriteriaPanel);
+            var newCriterion = newCriteriaPanel.Children[newCriteriaPanel.Children.Count - 1] as StackPanel;
+            var currentCriterion = currentCriterionObject as StackPanel;
+
+            var newAttributeComboBox = newCriterion.Children[0] as ComboBox;
+            var currentAttributeComboBox = currentCriterion.Children[0] as ComboBox;
+            newAttributeComboBox.SelectedIndex = currentAttributeComboBox.SelectedIndex;
+
+            var newSymbolCheckBox = newCriterion.Children[1] as ComboBox;
+            var currentSymbolCheckBox = currentCriterion.Children[1] as ComboBox;
+            newSymbolCheckBox.SelectedIndex = currentSymbolCheckBox.SelectedIndex;
+
+            var newValuePanel = newCriterion.Children[2] as StackPanel;
+            var currentValuePanel = currentCriterion.Children[2] as StackPanel;
+
+            var newValueInnerElement = newValuePanel.Children[0];
+            var currentValueInnerElement = currentValuePanel.Children[0];
+
+            var elementType = currentValueInnerElement.GetType();
+            if (elementType == typeof(TextBox))
+                (newValueInnerElement as TextBox).Text = (currentValueInnerElement as TextBox).Text;
+            else if (elementType == typeof(CheckBox))
+                (newValueInnerElement as CheckBox).IsChecked = (currentValueInnerElement as CheckBox).IsChecked;
+            else if (elementType == typeof(ComboBox))
+                (newValueInnerElement as ComboBox).SelectedIndex = (currentValueInnerElement as ComboBox).SelectedIndex;
+            else if (elementType == typeof(DatePicker))
+                (newValueInnerElement as DatePicker).SelectedDate = (currentValueInnerElement as DatePicker).SelectedDate;
+
+            var newValueNullPanel = newValuePanel.Children[1] as DockPanel;
+            var currentValueNullPanel = currentValuePanel.Children[1] as DockPanel;
+
+            if (currentValueNullPanel.Children.Count > 0)
+            {
+                (newValueNullPanel.Children[0] as CheckBox).IsChecked = (currentValueNullPanel.Children[0] as CheckBox).IsChecked;
+            }
         }
 
         private void AddCriterion(StackPanel criteriaPanel)
