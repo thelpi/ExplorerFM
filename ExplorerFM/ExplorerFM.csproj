@@ -65,6 +65,7 @@
     <Compile Include="RuleEngine\Criterion.cs" />
     <Compile Include="RuleEngine\Comparator.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
+    <Compile Include="TypeDisplayConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

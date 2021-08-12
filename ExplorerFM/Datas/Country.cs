@@ -12,5 +12,10 @@
         public Confederation Confederation { get; set; }
         [Field("is_EU")]
         public bool IsEU { get; set; }
+
+        public override string ToString()
+        {
+            return ShortName;
+        }
     }
 }

@@ -76,5 +76,10 @@ namespace ExplorerFM.Datas
         {
             return LikedStaffIds.GetSubList(staffs);
         }
+
+        public override string ToString()
+        {
+            return ShortName;
+        }
     }
 }

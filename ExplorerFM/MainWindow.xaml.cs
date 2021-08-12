@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace ExplorerFM
 
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
+        private readonly IDictionary<Type, Func<IEnumerable>> _collectionsProvider;
 
         public MainWindow()
         {
@@ -31,6 +33,13 @@ namespace ExplorerFM
                 .Concat(typeof(Datas.Country).GetAttributeProperties())
                 .Concat(typeof(Datas.Confederation).GetAttributeProperties())
                 .ToList();
+
+            _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
+            {
+                { typeof(Datas.Country), () => _dataProvider.Countries },
+                { typeof(Datas.Club), () => _dataProvider.Clubs },
+                { typeof(Datas.Confederation), () => _dataProvider.Confederations },
+            };
 
             HideWorkAndDisplay<object>(
                 () =>
@@ -223,7 +232,10 @@ namespace ExplorerFM
             };
 
             var attributeItemsSourceView = new ListCollectionView(_attributeProperties);
-            attributeItemsSourceView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
+            attributeItemsSourceView.GroupDescriptions.Add(
+                new PropertyGroupDescription(
+                    nameof(PropertyInfo.DeclaringType),
+                    new TypeDisplayConverter()));
 
             var attributeComboBox = new ComboBox
             {
@@ -233,7 +245,9 @@ namespace ExplorerFM
             };
             attributeComboBox.GroupStyle.Add(new GroupStyle
             {
-                HeaderTemplate = string.Concat("<TextBlock Text=\"{Binding ", nameof(PropertyInfo.Name), "}\"/>").ToDataTemplate()
+                // "Name" here references an internal property in the ListCollectionView mechanism
+                // It's not the name of the DeclaringType
+                HeaderTemplate = string.Concat("<TextBlock Text=\"{Binding Name}\"/>").ToDataTemplate()
             });
 
             var comparatorCombo = new ComboBox
@@ -297,35 +311,20 @@ namespace ExplorerFM
                     || propType == typeof(Datas.Country)
                     || propType == typeof(Datas.Confederation);
 
-                UIElement childElement;
+                FrameworkElement childElement;
+
                 if (propType == typeof(bool))
-                {
-                    childElement = new CheckBox { Width = 150, Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
-                }
+                    childElement = new CheckBox { Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
                 else if (propType.IsEnum)
-                {
-                    childElement = new ComboBox { Width = 150, ItemsSource = Enum.GetValues(propType) };
-                }
+                    childElement = new ComboBox { ItemsSource = Enum.GetValues(propType) };
                 else if (propType == typeof(DateTime))
-                {
-                    childElement = new DatePicker { Width = 150 };
-                }
-                else if (propType == typeof(Datas.Club))
-                {
-                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Clubs, DisplayMemberPath = nameof(Datas.Club.ShortName) };
-                }
-                else if (propType == typeof(Datas.Country))
-                {
-                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Countries, DisplayMemberPath = nameof(Datas.Country.ShortName) };
-                }
-                else if (propType == typeof(Datas.Confederation))
-                {
-                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Confederations, DisplayMemberPath = nameof(Datas.Confederation.Name) };
-                }
+                    childElement = new DatePicker();
+                else if (propType.Namespace == typeof(Datas.BaseData).Namespace)
+                    childElement = new ComboBox { ItemsSource = _collectionsProvider[propType]() };
                 else
-                {
-                    childElement = new TextBox { Width = 150 };
-                }
+                    childElement = new TextBox();
+
+                childElement.Width = DefaultSize * 6;
                 valuePanel.Children.Add(childElement);
 
                 var nullValuePanel = new DockPanel
@@ -343,8 +342,8 @@ namespace ExplorerFM
                         HorizontalAlignment = HorizontalAlignment.Left
                     };
                     nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
-                    nullCheck.Unchecked += (_3, _4) => childElement.IsEnabled = true;
-                    nullCheck.Checked += (_5, _6) => childElement.IsEnabled = false;
+                    nullCheck.Unchecked += (_1, _2) => childElement.IsEnabled = true;
+                    nullCheck.Checked += (_1, _2) => childElement.IsEnabled = false;
                     nullValuePanel.Children.Add(nullCheck);
                 }
 

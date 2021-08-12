@@ -14,5 +14,10 @@
         public string FedCode { get; set; }
         [Field("Strength")]
         public decimal Strength { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
