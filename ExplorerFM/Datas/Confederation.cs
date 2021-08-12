@@ -12,7 +12,7 @@
         public string FedName { get; set; }
         [Field("FedSigle")]
         public string FedCode { get; set; }
-        [Field("Strength")]
+        [Field("Strength", 0, 1)]
         public decimal Strength { get; set; }
 
         public override string ToString()

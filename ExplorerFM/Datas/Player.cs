@@ -7,11 +7,11 @@ namespace ExplorerFM.Datas
         public Dictionary<Side, int?> Sides { get; set; }
         public Dictionary<Position, int?> Positions { get; set; }
         public Dictionary<Attribute, int?> Attributes { get; set; }
-        [Field("LeftFoot")]
+        [Field("LeftFoot", 1, 20)]
         public int? LeftFoot { get; set; }
-        [Field("RightFoot")]
+        [Field("RightFoot", 1, 20)]
         public int? RightFoot { get; set; }
-        [Field("SquadNumber")]
+        [Field("SquadNumber", 0, 999)]
         public int? SquadNumber { get; set; }
 
         public int GetPositionSideRate(Position p, Side s)

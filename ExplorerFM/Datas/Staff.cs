@@ -13,15 +13,15 @@ namespace ExplorerFM.Datas
         public string Commonname { get; set; }
         [Field("DateOfBirth")]
         public DateTime? DateOfBirth { get; set; }
-        [Field("YearOfBirth")]
+        [Field("YearOfBirth", 1900, 2000)]
         public int? YearOfBirth { get; set; }
         [Field("NationID1")]
         public Country Nationality { get; set; }
         [Field("NationID2")]
         public Country SecondNationality { get; set; }
-        [Field("Caps")]
+        [Field("Caps", 0, 999)]
         public int Caps { get; set; }
-        [Field("IntGoals")]
+        [Field("IntGoals", 0, 999)]
         public int IntGoals { get; set; }
         [Field("ClubContractID")]
         public Club ClubContract { get; set; }
@@ -29,9 +29,9 @@ namespace ExplorerFM.Datas
         public DateTime? DateContractStart { get; set; }
         [Field("DateContractEnd")]
         public DateTime? DateContractEnd { get; set; }
-        [Field("Value")]
+        [Field("Value", 1)]
         public int? Value { get; set; }
-        [Field("Wage")]
+        [Field("Wage", 1)]
         public int? Wage { get; set; }
         [Field("FavClubID", true)]
         public List<int> FavClubIds { get; set; }
@@ -41,15 +41,15 @@ namespace ExplorerFM.Datas
         public List<int> DislikeClubIds { get; set; }
         [Field("DislikeStaffID", true)]
         public List<int> DislikeStaffIds { get; set; }
-        [Field("CurrentAbility")]
+        [Field("CurrentAbility", 1, 200)]
         public int? CurrentAbility { get; set; }
-        [Field("PotentialAbility")]
+        [Field("PotentialAbility", -2, 200)]
         public int? PotentialAbility { get; set; }
-        [Field("HomeReputation")]
+        [Field("HomeReputation", 1, 200)]
         public int? HomeReputation { get; set; }
-        [Field("CurrentReputation")]
+        [Field("CurrentReputation", 1, 200)]
         public int? CurrentReputation { get; set; }
-        [Field("WorldReputation")]
+        [Field("WorldReputation", 1, 200)]
         public int? WorldReputation { get; set; }
 
         public string Fullname => string.IsNullOrWhiteSpace(Commonname)

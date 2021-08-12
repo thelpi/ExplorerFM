@@ -262,7 +262,7 @@ namespace ExplorerFM
 
             attributeComboBox.SelectionChanged += (_1, _2) =>
             {
-                SetCriterionValue(criterionContentPanel, attributeComboBox, comparatorCombo);
+                AddCriterionValuator(criterionContentPanel, attributeComboBox, comparatorCombo);
             };
 
             var removeCriterionButton = GetRemovalButton(
@@ -275,10 +275,10 @@ namespace ExplorerFM
 
             AddContentGroup(criteriaPanel, criterionContentPanel, false);
 
-            SetCriterionValue(criterionContentPanel, attributeComboBox, comparatorCombo);
+            AddCriterionValuator(criterionContentPanel, attributeComboBox, comparatorCombo);
         }
 
-        private void SetCriterionValue(
+        private void AddCriterionValuator(
             StackPanel criterionContentPanel,
             ComboBox attributeComboBox,
             ComboBox comparatorCombo)
@@ -294,8 +294,11 @@ namespace ExplorerFM
             }
             else
             {
-                var propType = (attributeComboBox.SelectedItem as PropertyInfo).PropertyType;
+                var propInfo = attributeComboBox.SelectedItem as PropertyInfo;
+                var propType = propInfo.PropertyType;
                 comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
+
+                var propAttribute = propInfo.GetCustomAttribute<FieldAttribute>();
 
                 var valuePanel = new StackPanel
                 {
@@ -321,6 +324,12 @@ namespace ExplorerFM
                     childElement = new DatePicker();
                 else if (propType.Namespace == typeof(Datas.BaseData).Namespace)
                     childElement = new ComboBox { ItemsSource = _collectionsProvider[propType]() };
+                else if (propType.IsIntegerType())
+                    childElement = new Xceed.Wpf.Toolkit.LongUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
+                else if (propType == typeof(decimal))
+                    childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
+                else if (propType == typeof(double) || propType == typeof(Single))
+                    childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
                 else
                     childElement = new TextBox();
 

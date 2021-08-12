@@ -15,17 +15,17 @@ namespace ExplorerFM.Datas
         public bool PublicLimitedCompany { get; set; }
         [Field("NationID")]
         public Country Country { get; set; }
-        [Field("DivisionID")]
+        [Field("DivisionID", 0)]
         public int? DivisionId { get; set; }
-        [Field("DivisionPreviousID")]
+        [Field("DivisionPreviousID", 0)]
         public int? PreviousDivisionId { get; set; }
-        [Field("DivisionReserveID")]
+        [Field("DivisionReserveID", 0)]
         public int? ReserveDivisionId { get; set; }
-        [Field("LastPosition")]
+        [Field("LastPosition", 1, 100)]
         public int? LastPosition { get; set; }
-        [Field("StadiumID")]
+        [Field("StadiumID", 0)]
         public int? StadiumId { get; set; }
-        [Field("StadiumReserveID")]
+        [Field("StadiumReserveID", 0)]
         public int? ReserveStadiumId { get; set; }
         [Field("Statut")]
         public ClubStatut Statut { get; set; }
@@ -33,27 +33,27 @@ namespace ExplorerFM.Datas
         public int? Bank { get; set; }
         [Field("MatchDay")]
         public DayOfWeek? MatchDay { get; set; }
-        [Field("AverageAttendance")]
+        [Field("AverageAttendance", 1)]
         public int? AverageAttendance { get; set; }
-        [Field("MinimumAttendance")]
+        [Field("MinimumAttendance", 1)]
         public int? MinimumAttendance { get; set; }
-        [Field("MaximumAttendance")]
+        [Field("MaximumAttendance", 1)]
         public int? MaximumAttendance { get; set; }
-        [Field("Facilities")]
+        [Field("Facilities", 1, 20)]
         public int? Facilities { get; set; }
-        [Field("Reputation")]
+        [Field("Reputation", 1, 20)]
         public int? Reputation { get; set; }
-        [Field("HomeShirtForegroundID")]
+        [Field("HomeShirtForegroundID", 0)]
         public int? HomeShirtForegroundId { get; set; }
-        [Field("HomeShirtBackgroundID")]
+        [Field("HomeShirtBackgroundID", 0)]
         public int? HomeShirtBackgroundId { get; set; }
-        [Field("AwayShirtForegroundID")]
+        [Field("AwayShirtForegroundID", 0)]
         public int? AwayShirtForegroundId { get; set; }
-        [Field("AwayShirtBackgroundID")]
+        [Field("AwayShirtBackgroundID", 0)]
         public int? AwayShirtBackgroundId { get; set; }
-        [Field("ThirdShirtForegroundID")]
+        [Field("ThirdShirtForegroundID", 0)]
         public int? ThirdShirtForegroundId { get; set; }
-        [Field("ThirdShirtBackgroundID")]
+        [Field("ThirdShirtBackgroundID", 0)]
         public int? ThirdShirtBackgroundId { get; set; }
         [Field("LikedStaffID", true)]
         public List<int> LikedStaffIds { get; set; }

@@ -14,6 +14,14 @@ namespace ExplorerFM
 {
     public static class Extensions
     {
+        private static readonly HashSet<Type> IntegerTypes = new HashSet<Type>
+        {
+            typeof(byte), typeof(sbyte),
+            typeof(int), typeof(uint),
+            typeof(short), typeof(ushort),
+            typeof(long), typeof(ulong)
+        };
+        
         public static string ToCode(this Side side)
         {
             return side.ToString().Substring(0, 1);
@@ -175,6 +183,12 @@ namespace ExplorerFM
                             xamlContent,
                             "</DataTemplate>"))))
                 as System.Windows.DataTemplate;
+        }
+
+        public static bool IsIntegerType(this Type type)
+        {
+            return IntegerTypes.Contains(type)
+                || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
         }
     }
 }
