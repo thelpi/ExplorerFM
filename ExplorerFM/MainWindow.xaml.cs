@@ -203,6 +203,10 @@ namespace ExplorerFM
                         }
                         valuePanel.Children.Add(childElement);
 
+                        var nullValuePanel = new DockPanel
+                        {
+                            Width = DefaultSize * 3
+                        };
                         if (nullableType != null || isCustomType)
                         {
                             var nullCheck = new CheckBox
@@ -211,17 +215,15 @@ namespace ExplorerFM
                                 Margin = new Thickness(DefaultMargin, 0, 0, 0),
                                 VerticalContentAlignment = VerticalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center,
-                                Width = DefaultSize * 3
+                                HorizontalAlignment = HorizontalAlignment.Left
                             };
+                            nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
                             nullCheck.Unchecked += (_3, _4) => childElement.IsEnabled = true;
                             nullCheck.Checked += (_5, _6) => childElement.IsEnabled = false;
-                            valuePanel.Children.Add(nullCheck);
+                            nullValuePanel.Children.Add(nullCheck);
                         }
-                        else
-                        {
-                            // placeholder
-                            valuePanel.Children.Add(new Label { Width = DefaultSize * 3 });
-                        }
+
+                        valuePanel.Children.Add(nullValuePanel);
 
                         criterionContentPanel.Children.Insert(2, valuePanel);
                         criterionContentPanel.Tag = valuePanel;
@@ -242,6 +244,8 @@ namespace ExplorerFM
 
                 SelectionChangedEvent(null, null);
             };
+
+
 
             criteriaSetPanel.Children.Add(removeCriteriaSetButton);
             criteriaSetPanel.Children.Add(addCriterionButton);
