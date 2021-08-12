@@ -83,8 +83,8 @@ namespace ExplorerFM
             var criteriaSetBorder = new Border
             {
                 Margin = new Thickness(DefaultMargin),
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(1)
+                BorderBrush = Brushes.Gainsboro,
+                BorderThickness = new Thickness(0.5)
             };
 
             var criteriaSetPanel = new StackPanel
@@ -112,148 +112,175 @@ namespace ExplorerFM
 
             addCriterionButton.Click += (_x, _y) =>
             {
-                var criterionContentPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(DefaultMargin)
-                };
-
-                var attributeItemsSourceView = new ListCollectionView(_attributeProperties);
-                attributeItemsSourceView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
-
-                var attributeComboBox = new ComboBox
-                {
-                    Width = DefaultSize * 6,
-                    DisplayMemberPath = nameof(PropertyInfo.Name),
-                    ItemsSource = attributeItemsSourceView
-                };
-                attributeComboBox.GroupStyle.Add(new GroupStyle
-                {
-                    HeaderTemplate = string.Concat("<TextBlock Text=\"{Binding ", nameof(PropertyInfo.Name), "}\"/>").ToDataTemplate()
-                });
-
-                var comparatorCombo = new ComboBox
-                {
-                    Width = DefaultSize * 2,
-                    ItemsSource = Enumerable.Empty<string>(),
-                    Margin = new Thickness(DefaultMargin, 0, 0, 0)
-                };
-
-                criterionContentPanel.Children.Add(attributeComboBox);
-                criterionContentPanel.Children.Add(comparatorCombo);
-
-                void SelectionChangedEvent(object _1, SelectionChangedEventArgs _2)
-                {
-                    if (criterionContentPanel.Tag != null)
-                    {
-                        criterionContentPanel.Children.Remove(criterionContentPanel.Tag as UIElement);
-                    }
-
-                    if (attributeComboBox.SelectedIndex < 0)
-                    {
-                        comparatorCombo.ItemsSource = Enumerable.Empty<string>();
-                    }
-                    else
-                    {
-                        var propType = (attributeComboBox.SelectedItem as PropertyInfo).PropertyType;
-                        comparatorCombo.ItemsSource = propType.GetComparators().Select(_ => _.ToSymbol());
-
-                        var valuePanel = new StackPanel
-                        {
-                            Orientation = Orientation.Horizontal,
-                            Margin = new Thickness(DefaultMargin, 0, 0, 0)
-                        };
-
-                        var nullableType = Nullable.GetUnderlyingType(propType);
-                        if (nullableType != null)
-                            propType = nullableType;
-
-                        var isCustomType = propType == typeof(Datas.Club)
-                            || propType == typeof(Datas.Country)
-                            || propType == typeof(Datas.Confederation);
-
-                        UIElement childElement;
-                        if (propType == typeof(bool))
-                        {
-                            childElement = new CheckBox { Width = 150, Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
-                        }
-                        else if (propType.IsEnum)
-                        {
-                            childElement = new ComboBox { Width = 150, ItemsSource = Enum.GetValues(propType) };
-                        }
-                        else if (propType == typeof(DateTime))
-                        {
-                            childElement = new DatePicker { Width = 150 };
-                        }
-                        else if (propType == typeof(Datas.Club))
-                        {
-                            childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Clubs, DisplayMemberPath = nameof(Datas.Club.ShortName) };
-                        }
-                        else if (propType == typeof(Datas.Country))
-                        {
-                            childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Countries, DisplayMemberPath = nameof(Datas.Country.ShortName) };
-                        }
-                        else if (propType == typeof(Datas.Confederation))
-                        {
-                            childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Confederations, DisplayMemberPath = nameof(Datas.Confederation.Name) };
-                        }
-                        else
-                        {
-                            childElement = new TextBox { Width = 150 };
-                        }
-                        valuePanel.Children.Add(childElement);
-
-                        var nullValuePanel = new DockPanel
-                        {
-                            Width = DefaultSize * 3
-                        };
-                        if (nullableType != null || isCustomType)
-                        {
-                            var nullCheck = new CheckBox
-                            {
-                                Content = "No value",
-                                Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                                VerticalContentAlignment = VerticalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                HorizontalAlignment = HorizontalAlignment.Left
-                            };
-                            nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
-                            nullCheck.Unchecked += (_3, _4) => childElement.IsEnabled = true;
-                            nullCheck.Checked += (_5, _6) => childElement.IsEnabled = false;
-                            nullValuePanel.Children.Add(nullCheck);
-                        }
-
-                        valuePanel.Children.Add(nullValuePanel);
-
-                        criterionContentPanel.Children.Insert(2, valuePanel);
-                        criterionContentPanel.Tag = valuePanel;
-                    }
-                }
-
-                attributeComboBox.SelectionChanged += SelectionChangedEvent;
-
-                var removeCriterionButton = GetRemovalButton(
-                    criteriaPanel,
-                    criterionContentPanel,
-                    "Removes the criterion",
-                    new Thickness(DefaultMargin, 0, 0, 0));
-
-                criterionContentPanel.Children.Add(removeCriterionButton);
-
-                AddContentGroup(criteriaPanel, criterionContentPanel, false);
-
-                SelectionChangedEvent(null, null);
+                AddCriterion(criteriaPanel);
             };
 
+            var copyCriteriaButton = new Button
+            {
+                Content = "Copy",
+                Width = DefaultSize * 2,
+                Height = DefaultSize,
+                Margin = new Thickness(DefaultMargin, 0, 0, 0),
+                ToolTip = "Adds a criteria set"
+            };
 
+            copyCriteriaButton.Click += (_x, _y) =>
+            {
+                AddCriteriaSet_Click(null, null);
+                //var currentCriteria = CriteriaSetPanel.Children[CriteriaSetPanel.Children.Count - 1];
+            };
 
             criteriaSetPanel.Children.Add(removeCriteriaSetButton);
+            criteriaSetPanel.Children.Add(copyCriteriaButton);
             criteriaSetPanel.Children.Add(addCriterionButton);
             criteriaSetPanel.Children.Add(criteriaPanel);
 
             criteriaSetBorder.Child = criteriaSetPanel;
 
             AddContentGroup(CriteriaSetPanel, criteriaSetBorder, true);
+
+            AddCriterion(criteriaPanel);
+        }
+
+        private void AddCriterion(StackPanel criteriaPanel)
+        {
+            var criterionContentPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(DefaultMargin)
+            };
+
+            var attributeItemsSourceView = new ListCollectionView(_attributeProperties);
+            attributeItemsSourceView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
+
+            var attributeComboBox = new ComboBox
+            {
+                Width = DefaultSize * 6,
+                DisplayMemberPath = nameof(PropertyInfo.Name),
+                ItemsSource = attributeItemsSourceView
+            };
+            attributeComboBox.GroupStyle.Add(new GroupStyle
+            {
+                HeaderTemplate = string.Concat("<TextBlock Text=\"{Binding ", nameof(PropertyInfo.Name), "}\"/>").ToDataTemplate()
+            });
+
+            var comparatorCombo = new ComboBox
+            {
+                Width = DefaultSize * 2,
+                ItemsSource = Enumerable.Empty<string>(),
+                Margin = new Thickness(DefaultMargin, 0, 0, 0)
+            };
+
+            criterionContentPanel.Children.Add(attributeComboBox);
+            criterionContentPanel.Children.Add(comparatorCombo);
+
+            attributeComboBox.SelectionChanged += (_1, _2) =>
+            {
+                SetCriterionValue(criterionContentPanel, attributeComboBox, comparatorCombo);
+            };
+
+            var removeCriterionButton = GetRemovalButton(
+                criteriaPanel,
+                criterionContentPanel,
+                "Removes the criterion",
+                new Thickness(DefaultMargin, 0, 0, 0));
+
+            criterionContentPanel.Children.Add(removeCriterionButton);
+
+            AddContentGroup(criteriaPanel, criterionContentPanel, false);
+
+            SetCriterionValue(criterionContentPanel, attributeComboBox, comparatorCombo);
+        }
+
+        private void SetCriterionValue(
+            StackPanel criterionContentPanel,
+            ComboBox attributeComboBox,
+            ComboBox comparatorCombo)
+        {
+            if (criterionContentPanel.Tag != null)
+            {
+                criterionContentPanel.Children.Remove(criterionContentPanel.Tag as UIElement);
+            }
+
+            if (attributeComboBox.SelectedIndex < 0)
+            {
+                comparatorCombo.ItemsSource = Enumerable.Empty<string>();
+            }
+            else
+            {
+                var propType = (attributeComboBox.SelectedItem as PropertyInfo).PropertyType;
+                comparatorCombo.ItemsSource = propType.GetComparators().Select(_ => _.ToSymbol());
+
+                var valuePanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(DefaultMargin, 0, 0, 0)
+                };
+
+                var nullableType = Nullable.GetUnderlyingType(propType);
+                if (nullableType != null)
+                    propType = nullableType;
+
+                var isCustomType = propType == typeof(Datas.Club)
+                    || propType == typeof(Datas.Country)
+                    || propType == typeof(Datas.Confederation);
+
+                UIElement childElement;
+                if (propType == typeof(bool))
+                {
+                    childElement = new CheckBox { Width = 150, Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
+                }
+                else if (propType.IsEnum)
+                {
+                    childElement = new ComboBox { Width = 150, ItemsSource = Enum.GetValues(propType) };
+                }
+                else if (propType == typeof(DateTime))
+                {
+                    childElement = new DatePicker { Width = 150 };
+                }
+                else if (propType == typeof(Datas.Club))
+                {
+                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Clubs, DisplayMemberPath = nameof(Datas.Club.ShortName) };
+                }
+                else if (propType == typeof(Datas.Country))
+                {
+                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Countries, DisplayMemberPath = nameof(Datas.Country.ShortName) };
+                }
+                else if (propType == typeof(Datas.Confederation))
+                {
+                    childElement = new ComboBox { Width = 150, ItemsSource = _dataProvider.Confederations, DisplayMemberPath = nameof(Datas.Confederation.Name) };
+                }
+                else
+                {
+                    childElement = new TextBox { Width = 150 };
+                }
+                valuePanel.Children.Add(childElement);
+
+                var nullValuePanel = new DockPanel
+                {
+                    Width = DefaultSize * 3
+                };
+                if (nullableType != null || isCustomType)
+                {
+                    var nullCheck = new CheckBox
+                    {
+                        Content = "No value",
+                        Margin = new Thickness(DefaultMargin, 0, 0, 0),
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Left
+                    };
+                    nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
+                    nullCheck.Unchecked += (_3, _4) => childElement.IsEnabled = true;
+                    nullCheck.Checked += (_5, _6) => childElement.IsEnabled = false;
+                    nullValuePanel.Children.Add(nullCheck);
+                }
+
+                valuePanel.Children.Add(nullValuePanel);
+
+                criterionContentPanel.Children.Insert(2, valuePanel);
+                criterionContentPanel.Tag = valuePanel;
+            }
         }
 
         private static Button GetRemovalButton(
@@ -279,6 +306,11 @@ namespace ExplorerFM
                     containerPanel.Children.RemoveAt(removedIndex - 1);
                 else if (removedIndex < containerPanel.Children.Count - 1)
                     containerPanel.Children.RemoveAt(removedIndex);
+                if (containerPanel.Children.Count == 0 && containerPanel.Parent is StackPanel)
+                {
+                    var parentContainer = containerPanel.Parent as StackPanel;
+                    (parentContainer.Children[0] as Button).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                }
             };
 
             return removalButton;
