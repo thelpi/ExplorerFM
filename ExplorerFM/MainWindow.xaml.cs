@@ -295,7 +295,7 @@ namespace ExplorerFM
             else
             {
                 var propType = (attributeComboBox.SelectedItem as PropertyInfo).PropertyType;
-                comparatorCombo.ItemsSource = propType.GetComparators().Select(_ => _.ToSymbol());
+                comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
 
                 var valuePanel = new StackPanel
                 {
@@ -342,8 +342,16 @@ namespace ExplorerFM
                         HorizontalAlignment = HorizontalAlignment.Left
                     };
                     nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
-                    nullCheck.Unchecked += (_1, _2) => childElement.IsEnabled = true;
-                    nullCheck.Checked += (_1, _2) => childElement.IsEnabled = false;
+                    nullCheck.Unchecked += (_1, _2) =>
+                    {
+                        childElement.IsEnabled = true;
+                        comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
+                    };
+                    nullCheck.Checked += (_1, _2) =>
+                    {
+                        childElement.IsEnabled = false;
+                        comparatorCombo.ItemsSource = propType.GetComparators(true).Select(_ => _.ToSymbol());
+                    };
                     nullValuePanel.Children.Add(nullCheck);
                 }
 

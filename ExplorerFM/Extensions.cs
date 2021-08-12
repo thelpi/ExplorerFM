@@ -120,12 +120,11 @@ namespace ExplorerFM
                 || comparator == Comparator.NotLike;
         }
 
-        public static List<Comparator> GetComparators(this Type t)
+        public static List<Comparator> GetComparators(this Type t, bool checkNull)
         {
             if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)))
-                || t == typeof(Club)
-                || t == typeof(Country)
-                || t == typeof(Confederation))
+                || t.Namespace == typeof(BaseData).Namespace
+                || checkNull)
             {
                 return new List<Comparator>
                 {
