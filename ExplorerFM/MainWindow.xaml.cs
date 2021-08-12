@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Markup;
-using System.Xml;
 using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 
@@ -73,14 +69,14 @@ namespace ExplorerFM
         {
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
 
-            var properties = GetAttributeProperties<Datas.Player>()
-                .Concat(GetAttributeProperties<Datas.Club>())
-                .Concat(GetAttributeProperties<Datas.Country>())
-                .Concat(GetAttributeProperties<Datas.Confederation>())
+            var properties = typeof(Datas.Player).GetAttributeProperties()
+                .Concat(typeof(Datas.Club).GetAttributeProperties())
+                .Concat(typeof(Datas.Country).GetAttributeProperties())
+                .Concat(typeof(Datas.Confederation).GetAttributeProperties())
                 .ToList();
 
             var lcv = new ListCollectionView(properties);
-            lcv.GroupDescriptions.Add(new PropertyGroupDescription(nameof(System.Reflection.PropertyInfo.DeclaringType)));
+            lcv.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
 
             var propertyCombo = new ComboBox
             {
@@ -91,7 +87,7 @@ namespace ExplorerFM
             propertyCombo.GroupStyle.Add(
                 new GroupStyle
                 {
-                    HeaderTemplate = LoadXaml("<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"><TextBlock Text=\"{Binding Name}\"/></DataTemplate>") as DataTemplate
+                    HeaderTemplate = "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"><TextBlock Text=\"{Binding Name}\"/></DataTemplate>".ToXaml<DataTemplate>()
                 });
 
             var comparatorCombo = new ComboBox
@@ -112,7 +108,7 @@ namespace ExplorerFM
                 if (propertyCombo.SelectedIndex < 0)
                     comparatorCombo.ItemsSource = Enumerable.Empty<string>();
                 else
-                    comparatorCombo.ItemsSource = ComparatorByType((propertyCombo.SelectedItem as PropertyInfo).PropertyType).Select(_ => _.ToSymbol());
+                    comparatorCombo.ItemsSource = (propertyCombo.SelectedItem as PropertyInfo).PropertyType.GetComparators().Select(_ => _.ToSymbol());
             };
 
             delButton.Click += (_1, _2) => CriteriaPanel.Children.Remove(panel);
@@ -124,48 +120,9 @@ namespace ExplorerFM
             CriteriaPanel.Children.Add(panel);
         }
 
-        private static List<PropertyInfo> GetAttributeProperties<T>()
-        {
-            return typeof(T).GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
-        }
-
         private CriteriaSet ExtractCriteriaSet()
         {
             return CriteriaSet.Empty;
-        }
-
-        private object LoadXaml(string xamlContent)
-        {
-            return XamlReader.Load(XmlReader.Create(new StringReader(xamlContent)));
-        }
-
-        private IEnumerable<Comparator> ComparatorByType(Type t)
-        {
-            var comparators = new List<Comparator>
-            {
-                Comparator.Equal,
-                Comparator.NotEqual,
-                Comparator.Greater,
-                Comparator.GreaterEqual,
-                Comparator.Lower,
-                Comparator.LowerEqual
-            };
-
-            if (t == typeof(string))
-            {
-                comparators.Add(Comparator.Contain);
-                comparators.Add(Comparator.NotContain);
-            }
-            else if (t == typeof(bool) || (!typeof(IComparable).IsAssignableFrom(t)
-                && !(t.IsGenericType && typeof(IComparable).IsAssignableFrom(t.GenericTypeArguments[0]))))
-            {
-                comparators.Remove(Comparator.Greater);
-                comparators.Remove(Comparator.GreaterEqual);
-                comparators.Remove(Comparator.Lower);
-                comparators.Remove(Comparator.LowerEqual);
-            }
-
-            return comparators;
         }
     }
 }

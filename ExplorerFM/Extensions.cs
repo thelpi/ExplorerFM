@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Windows.Markup;
+using System.Xml;
 using ExplorerFM.Datas;
 using ExplorerFM.RuleEngine;
 
@@ -113,6 +117,45 @@ namespace ExplorerFM
         {
             return comparator == Comparator.Contain
                 || comparator == Comparator.NotContain;
+        }
+
+        public static List<Comparator> GetComparators(this Type t)
+        {
+            var comparators = new List<Comparator>
+            {
+                Comparator.Equal,
+                Comparator.NotEqual,
+                Comparator.Greater,
+                Comparator.GreaterEqual,
+                Comparator.Lower,
+                Comparator.LowerEqual
+            };
+
+            if (t == typeof(string))
+            {
+                comparators.Add(Comparator.Contain);
+                comparators.Add(Comparator.NotContain);
+            }
+            else if (t == typeof(bool) || (!typeof(IComparable).IsAssignableFrom(t)
+                && !(t.IsGenericType && typeof(IComparable).IsAssignableFrom(t.GenericTypeArguments[0]))))
+            {
+                comparators.Remove(Comparator.Greater);
+                comparators.Remove(Comparator.GreaterEqual);
+                comparators.Remove(Comparator.Lower);
+                comparators.Remove(Comparator.LowerEqual);
+            }
+
+            return comparators;
+        }
+
+        public static List<PropertyInfo> GetAttributeProperties(this Type t)
+        {
+            return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
+        }
+
+        public static T ToXaml<T>(this string xamlContent) where T : class
+        {
+            return XamlReader.Load(XmlReader.Create(new StringReader(xamlContent))) as T;
         }
     }
 }
