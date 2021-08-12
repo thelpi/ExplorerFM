@@ -72,20 +72,11 @@ namespace ExplorerFM
 
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
 
-            var properties = typeof(Datas.Player).GetAttributeProperties()
-                .Concat(typeof(Datas.Club).GetAttributeProperties())
-                .Concat(typeof(Datas.Country).GetAttributeProperties())
-                .Concat(typeof(Datas.Confederation).GetAttributeProperties())
-                .ToList();
-
-            var lcv = new ListCollectionView(properties);
-            lcv.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
-
             var propertyCombo = new ComboBox
             {
                 Width = 100,
                 DisplayMemberPath = "Name",
-                ItemsSource = lcv
+                ItemsSource = GetAttributeItemsSource()
             };
             propertyCombo.GroupStyle.Add(
                 new GroupStyle
@@ -178,6 +169,19 @@ namespace ExplorerFM
             SelectionChangedEvent(null, null);
         }
 
+        private static ListCollectionView GetAttributeItemsSource()
+        {
+            var properties = typeof(Datas.Player).GetAttributeProperties()
+                            .Concat(typeof(Datas.Club).GetAttributeProperties())
+                            .Concat(typeof(Datas.Country).GetAttributeProperties())
+                            .Concat(typeof(Datas.Confederation).GetAttributeProperties())
+                            .ToList();
+
+            var lcv = new ListCollectionView(properties);
+            lcv.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PropertyInfo.DeclaringType)));
+            return lcv;
+        }
+
         private CriteriaSet ExtractCriteriaSet()
         {
             return CriteriaSet.Empty;
@@ -185,11 +189,12 @@ namespace ExplorerFM
 
         private void AddCriteriaSet_Click(object sender, RoutedEventArgs e)
         {
-            const double DefaultHeight = 25;
+            const double DefaultSize = 25;
+            const double DefaultMargin = 5;
 
             var criteriaSetBorder = new Border
             {
-                Margin = new Thickness(5),
+                Margin = new Thickness(DefaultMargin),
                 BorderBrush = Brushes.Black,
                 BorderThickness = new Thickness(1)
             };
@@ -197,14 +202,14 @@ namespace ExplorerFM
             var criteriaSetPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(5)
+                Margin = new Thickness(DefaultMargin)
             };
 
             var removeCriteriaSetButton = new Button
             {
                 Content = "X",
-                Width = 25,
-                Height = DefaultHeight,
+                Width = DefaultSize,
+                Height = DefaultSize,
                 ToolTip = "Remove the criteria set"
             };
 
@@ -221,22 +226,22 @@ namespace ExplorerFM
             var criteriaPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                Margin = new Thickness(10, 0, 0, 0)
+                Margin = new Thickness(DefaultMargin * 2, 0, 0, 0)
             };
 
-            var addButton = new Button
+            var addCriteriaSetButton = new Button
             {
                 Content = "Add criterion",
                 Tag = criteriaPanel,
-                Width = 100,
-                Height = DefaultHeight,
-                Margin = new Thickness(5, 0, 0, 0)
+                Width = DefaultSize * 4,
+                Height = DefaultSize,
+                Margin = new Thickness(DefaultMargin, 0, 0, 0)
             };
 
-            addButton.Click += AddCriterion_Click;
+            addCriteriaSetButton.Click += AddCriterion_Click;
 
             criteriaSetPanel.Children.Add(removeCriteriaSetButton);
-            criteriaSetPanel.Children.Add(addButton);
+            criteriaSetPanel.Children.Add(addCriteriaSetButton);
             criteriaSetPanel.Children.Add(criteriaPanel);
 
             criteriaSetBorder.Child = criteriaSetPanel;
@@ -245,7 +250,7 @@ namespace ExplorerFM
             {
                 CriteriaPanel.Children.Add(new Label
                 {
-                    Content = "OR"
+                    Content = "Or"
                 });
             }
 
