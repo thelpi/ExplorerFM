@@ -126,12 +126,9 @@ namespace ExplorerFM
                                 else if (typeof(Datas.BaseData).IsAssignableFrom(realValue.GetType()))
                                     realValue = (realValue as Datas.BaseData).Id;
 
-                                // TODO:
-                                // list
-
                                 criterionSets.Add(nullCheck
-                                    ? Criterion.New(attrPropInfo.GetNestedPropertySql(), comparator)
-                                    : Criterion.New(attrPropInfo.GetNestedPropertySql(), realValue, comparator, incNull));
+                                    ? Criterion.New(attrPropInfo.GetNestedPropertySql(out bool isTripleIdentifier), comparator, isTripleIdentifier)
+                                    : Criterion.New(attrPropInfo.GetNestedPropertySql(out isTripleIdentifier), realValue, comparator, incNull, isTripleIdentifier));
                             }
                         }
                     }

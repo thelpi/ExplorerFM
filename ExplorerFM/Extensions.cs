@@ -169,18 +169,21 @@ namespace ExplorerFM
                 || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
         }
 
-        public static string GetNestedPropertySql(this PropertyInfo pi)
+        public static string GetNestedPropertySql(this PropertyInfo pi, out bool isTripleIdentifier)
         {
-            var propAttrField = pi.GetCustomAttribute<FieldAttribute>().Name;
+            var propAttrField = pi.GetCustomAttribute<FieldAttribute>();
+            var propAttrFieldName = propAttrField.Name;
+
+            isTripleIdentifier = propAttrField.IsTripleIdentifier;
 
             if (pi.DeclaringType == typeof(Club))
-                propAttrField = $"(SELECT club.{propAttrField} FROM club WHERE club.ID = ClubContractID)";
+                propAttrFieldName = $"(SELECT club.{propAttrFieldName} FROM club WHERE club.ID = ClubContractID)";
             else if (pi.DeclaringType == typeof(Country))
-                propAttrField = $"(SELECT country.{propAttrField} FROM country WHERE country.ID = NationID1)";
+                propAttrFieldName = $"(SELECT country.{propAttrFieldName} FROM country WHERE country.ID = NationID1)";
             else if (pi.DeclaringType == typeof(Confederation))
-                propAttrField = $"(SELECT confederation.{propAttrField} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
+                propAttrFieldName = $"(SELECT confederation.{propAttrFieldName} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
 
-            return propAttrField;
+            return propAttrFieldName;
         }
     }
 }
