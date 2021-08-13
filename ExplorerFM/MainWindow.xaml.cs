@@ -379,35 +379,31 @@ namespace ExplorerFM
                 childElement.Width = DefaultSize * 6;
                 valuePanel.Children.Add(childElement);
 
-                var nullValuePanel = new DockPanel
-                {
-                    Width = DefaultSize * 3
-                };
-                if (nullableType != null || isCustomType)
-                {
-                    var nullCheck = new CheckBox
-                    {
-                        Content = "No value",
-                        Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                        VerticalContentAlignment = VerticalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        HorizontalAlignment = HorizontalAlignment.Left
-                    };
-                    nullCheck.SetValue(DockPanel.DockProperty, Dock.Left);
-                    nullCheck.Unchecked += (_1, _2) =>
-                    {
-                        childElement.IsEnabled = true;
-                        comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
-                    };
-                    nullCheck.Checked += (_1, _2) =>
+                var emptyNullManagement = nullableType == null && !isCustomType;
+
+                var incNullPanel = GetNullManagementPanel(
+                    emptyNullManagement,
+                    "Inc. N/A",
+                    "N/A values are treated as matching the pattern");
+
+                var nullValuePanel = GetNullManagementPanel(
+                    emptyNullManagement,
+                    "Is N/A",
+                    "Checks only if the value is N/A or not",
+                    (_1, _2) =>
                     {
                         childElement.IsEnabled = false;
+                        incNullPanel.Children[0].IsEnabled = false;
                         comparatorCombo.ItemsSource = propType.GetComparators(true).Select(_ => _.ToSymbol());
-                    };
-                    nullValuePanel.Children.Add(nullCheck);
-                }
+                    }, (_1, _2) =>
+                    {
+                        childElement.IsEnabled = true;
+                        incNullPanel.Children[0].IsEnabled = true;
+                        comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
+                    });
 
                 valuePanel.Children.Add(nullValuePanel);
+                valuePanel.Children.Add(incNullPanel);
 
                 criterionContentPanel.Children.Insert(2, valuePanel);
                 criterionContentPanel.Tag = valuePanel;
@@ -461,6 +457,43 @@ namespace ExplorerFM
             }
 
             containerPanel.Children.Add(groupContent);
+        }
+
+        private static DockPanel GetNullManagementPanel(
+            bool emptyPanel,
+            string label,
+            string toolTip,
+            RoutedEventHandler checkedHandler = null,
+            RoutedEventHandler uncheckedHandler = null)
+        {
+            var panel = new DockPanel
+            {
+                Width = DefaultSize * 3
+            };
+
+            if (!emptyPanel)
+            {
+                var checkBox = new CheckBox
+                {
+                    Content = label,
+                    ToolTip = toolTip,
+                    Margin = new Thickness(DefaultMargin, 0, 0, 0),
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+
+                checkBox.SetValue(DockPanel.DockProperty, Dock.Left);
+
+                if (uncheckedHandler != null)
+                    checkBox.Unchecked += uncheckedHandler;
+                if (checkedHandler != null)
+                    checkBox.Checked += checkedHandler;
+
+                panel.Children.Add(checkBox);
+            }
+
+            return panel;
         }
     }
 }
