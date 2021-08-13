@@ -272,11 +272,12 @@ namespace ExplorerFM
 
         private void AddCriterion(StackPanel criteriaPanel)
         {
-            var criterionContentPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(DefaultMargin)
-            };
+            var template = FindResource("CriterionPanelTemplate") as ControlTemplate;
+            var criterionPanel = template.LoadContent() as StackPanel;
+
+            var attributeComboBox = criterionPanel.FindName("AttributeComboBox") as ComboBox;
+            var comparatorComboBox = criterionPanel.FindName("ComparatorComboBox") as ComboBox;
+            var removeCriterionButton = criterionPanel.FindName("RemoveCriterionButton") as Button;
 
             var attributeItemsSourceView = new ListCollectionView(_attributeProperties);
             attributeItemsSourceView.GroupDescriptions.Add(
@@ -284,57 +285,24 @@ namespace ExplorerFM
                     nameof(PropertyInfo.DeclaringType),
                     new Converters.TypeDisplayConverter()));
 
-            var headerTemplateFactory = new FrameworkElementFactory(typeof(TextBlock));
-            // "Name" here references an internal property in the ListCollectionView mechanism
-            headerTemplateFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
+            attributeComboBox.ItemsSource = attributeItemsSourceView;
+            
+            comparatorComboBox.ItemsSource = Enumerable.Empty<string>();
 
-            var attributeComboBox = new ComboBox
-            {
-                Width = DefaultSize * 6,
-                DisplayMemberPath = nameof(PropertyInfo.Name),
-                ItemsSource = attributeItemsSourceView
-            };
-            attributeComboBox.GroupStyle.Add(new GroupStyle
-            {
-                HeaderTemplate = new DataTemplate { VisualTree = headerTemplateFactory }
-            });
-
-            var itemTemplateFactory = new FrameworkElementFactory(typeof(TextBlock));
-            itemTemplateFactory.SetBinding(TextBlock.TextProperty, new Binding { Converter = new Converters.ComparatorDisplayConverter() });
-
-            var comparatorCombo = new ComboBox
-            {
-                Width = DefaultSize * 2,
-                ItemsSource = Enumerable.Empty<string>(),
-                Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                ItemTemplate = new DataTemplate { VisualTree = itemTemplateFactory }
-            };
             var dpd = DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ComboBox));
-            dpd?.AddValueChanged(comparatorCombo, (_1, _2) =>
+            dpd?.AddValueChanged(comparatorComboBox, (_1, _2) =>
             {
-                if (comparatorCombo.HasItems)
-                    comparatorCombo.SelectedIndex = 0;
+                if (comparatorComboBox.HasItems)
+                    comparatorComboBox.SelectedIndex = 0;
             });
 
-            criterionContentPanel.Children.Add(attributeComboBox);
-            criterionContentPanel.Children.Add(comparatorCombo);
+            attributeComboBox.SelectionChanged += (_1, _2) => AddCriterionValuator(criterionPanel, attributeComboBox, comparatorComboBox);
 
-            attributeComboBox.SelectionChanged += (_1, _2) =>
-            {
-                AddCriterionValuator(criterionContentPanel, attributeComboBox, comparatorCombo);
-            };
+            removeCriterionButton.Click += (_1, _2) => RemoveCriteriaBase(criteriaPanel, criterionPanel);
 
-            var removeCriterionButton = GetRemovalButton(
-                criteriaPanel,
-                criterionContentPanel,
-                "Removes the criterion",
-                new Thickness(DefaultMargin, 0, 0, 0));
+            AddContentGroup(criteriaPanel, criterionPanel, false);
 
-            criterionContentPanel.Children.Add(removeCriterionButton);
-
-            AddContentGroup(criteriaPanel, criterionContentPanel, false);
-
-            AddCriterionValuator(criterionContentPanel, attributeComboBox, comparatorCombo);
+            AddCriterionValuator(criterionPanel, attributeComboBox, comparatorComboBox);
         }
 
         private void AddCriterionValuator(
@@ -464,29 +432,6 @@ namespace ExplorerFM
             }
         }
 
-        private static Button GetRemovalButton(
-            Panel containerPanel,
-            UIElement relatedContent,
-            string toolTip,
-            Thickness margin = default(Thickness))
-        {
-            var removalButton = new Button
-            {
-                Content = "X",
-                Width = DefaultSize,
-                Height = DefaultSize,
-                ToolTip = toolTip,
-                Margin = margin
-            };
-
-            removalButton.Click += (_1, _2) =>
-            {
-                RemoveCriteriaBase(containerPanel, relatedContent);
-            };
-
-            return removalButton;
-        }
-
         private static void RemoveCriteriaBase(Panel containerPanel, UIElement relatedContent)
         {
             var removedIndex = containerPanel.Children.IndexOf(relatedContent);
@@ -502,17 +447,14 @@ namespace ExplorerFM
             }
         }
 
-        private static void AddContentGroup(
+        private void AddContentGroup(
             Panel containerPanel,
             UIElement groupContent,
             bool isOr)
         {
             if (containerPanel.Children.Count > 0)
             {
-                containerPanel.Children.Add(new Label
-                {
-                    Content = isOr ? "Or" : "And"
-                });
+                containerPanel.Children.Add((FindResource($"{(isOr ? "Or" : "And")}LabelTemplate") as ControlTemplate).LoadContent() as Label);
             }
 
             containerPanel.Children.Add(groupContent);

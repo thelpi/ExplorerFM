@@ -34,13 +34,19 @@
                 <ComboBox Width="50" Margin="5, 0, 0, 0" Name="ComparatorComboBox">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBox Text="{Binding Converter={StaticResource ComparatorDisplayConverter}}" />
+                            <TextBlock Text="{Binding Converter={StaticResource ComparatorDisplayConverter}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <StackPanel Orientation="Horizontal" Margin="5, 0, 0, 0" Name="CriterionValuePanel" />
                 <Button Margin="5, 0, 0, 0" Content="X" Width="25" Height="25" Name="RemoveCriterionButton" ToolTip="Removes the criterion" />
             </StackPanel>
+        </ControlTemplate>
+        <ControlTemplate x:Key="OrLabelTemplate">
+            <Label Content="Or" />
+        </ControlTemplate>
+        <ControlTemplate x:Key="AndLabelTemplate">
+            <Label Content="And" />
         </ControlTemplate>
     </Window.Resources>
     <ScrollViewer Height="{Binding ActualHeight}">
