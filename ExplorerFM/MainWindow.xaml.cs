@@ -419,26 +419,58 @@ namespace ExplorerFM
 
                 FrameworkElement childElement;
 
-                if (propType == typeof(bool))
-                    childElement = new CheckBox { Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
-                else if (propType.IsEnum)
-                    childElement = new ComboBox { ItemsSource = Enum.GetValues(propType) };
-                else if (propType == typeof(DateTime))
-                    childElement = new DatePicker();
-                else if (propType.Namespace == typeof(Datas.BaseData).Namespace)
-                    childElement = new ComboBox { ItemsSource = _collectionsProvider[propType]() };
-                else if (propType.IsIntegerType())
-                    childElement = new Xceed.Wpf.Toolkit.LongUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
-                else if (propType == typeof(decimal))
-                    childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
-                else if (propType == typeof(double) || propType == typeof(float))
-                    childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
-                else if (propType == typeof(string))
-                    childElement = new TextBox();
-                else
-                    throw new NotSupportedException();
+                if (!propAttribute.IsSql)
+                {
+                    var childPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal
+                    };
+                    childElement = childPanel;
 
-                childElement.Width = DefaultSize * 6;
+                    var underType = propType.GenericTypeArguments.First();
+                    var childSelectElement = new ComboBox
+                    {
+                        Width = DefaultSize * 4,
+                        ItemsSource = underType.IsEnum ? Enum.GetValues(underType) : (IEnumerable)_dataProvider.Attributes
+                    };
+
+                    if (!underType.IsEnum)
+                        childSelectElement.DisplayMemberPath = nameof(Datas.Attribute.Name);
+
+                    var childValueElement = new Xceed.Wpf.Toolkit.LongUpDown
+                    {
+                        Margin = new Thickness(DefaultMargin, 0, 0, 0),
+                        Width = DefaultSize * 2,
+                        Minimum = propAttribute.Min,
+                        Maximum = propAttribute.Max
+                    };
+                    childPanel.Children.Add(childSelectElement);
+                    childPanel.Children.Add(childValueElement);
+                }
+                else
+                {
+                    if (propType == typeof(bool))
+                        childElement = new CheckBox { Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
+                    else if (propType.IsEnum)
+                        childElement = new ComboBox { ItemsSource = Enum.GetValues(propType) };
+                    else if (propType == typeof(DateTime))
+                        childElement = new DatePicker();
+                    else if (propType.Namespace == typeof(Datas.BaseData).Namespace)
+                        childElement = new ComboBox { ItemsSource = _collectionsProvider[propType]() };
+                    else if (propType.IsIntegerType())
+                        childElement = new Xceed.Wpf.Toolkit.LongUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
+                    else if (propType == typeof(decimal))
+                        childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
+                    else if (propType == typeof(double) || propType == typeof(float))
+                        childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
+                    else if (propType == typeof(string))
+                        childElement = new TextBox();
+                    else
+                        throw new NotSupportedException();
+
+                    childElement.Width = DefaultSize * 6;
+                }
+
                 valuePanel.Children.Add(childElement);
 
                 var emptyNullManagement = nullableType == null && !isCustomType && propType != typeof(string);

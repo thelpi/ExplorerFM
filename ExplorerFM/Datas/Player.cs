@@ -4,9 +4,13 @@ namespace ExplorerFM.Datas
 {
     public class Player : Staff
     {
+        [Field("Sides", 1, 20, false)]
         public Dictionary<Side, int?> Sides { get; set; }
+        [Field("Positions", 1, 20, false)]
         public Dictionary<Position, int?> Positions { get; set; }
+        [Field("Attributes", 1, 20, false)]
         public Dictionary<Attribute, int?> Attributes { get; set; }
+
         [Field("LeftFoot", 1, 20)]
         public int? LeftFoot { get; set; }
         [Field("RightFoot", 1, 20)]
