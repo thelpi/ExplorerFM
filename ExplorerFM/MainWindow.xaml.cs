@@ -144,7 +144,18 @@ namespace ExplorerFM
         private static object GetUiElementValue(UIElement valuatedElement, UIElement copyTo = null)
         {
             var elementType = valuatedElement.GetType();
-            if (elementType == typeof(TextBox))
+            if (elementType == typeof(StackPanel))
+            {
+                var v1 = ((valuatedElement as StackPanel).Children[0] as ComboBox).SelectedItem;
+                var v2 = ((valuatedElement as StackPanel).Children[1] as Xceed.Wpf.Toolkit.LongUpDown).Value;
+                if (copyTo != null)
+                {
+                    ((copyTo as StackPanel).Children[0] as ComboBox).SelectedIndex = ((valuatedElement as StackPanel).Children[0] as ComboBox).SelectedIndex;
+                    ((copyTo as StackPanel).Children[1] as Xceed.Wpf.Toolkit.LongUpDown).Value = v2;
+                }
+                return new[] { v1, v2 };
+            }
+            else if (elementType == typeof(TextBox))
             {
                 var v = (valuatedElement as TextBox).Text;
                 if (copyTo != null) (copyTo as TextBox).Text = v;
