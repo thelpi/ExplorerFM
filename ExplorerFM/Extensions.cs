@@ -120,7 +120,7 @@ namespace ExplorerFM
 
         public static List<Comparator> GetComparators(this Type t, bool checkNull)
         {
-            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)))
+            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)) && !t.GetInterfaces().Contains(typeof(IDictionary)))
                 || t.Namespace == typeof(BaseData).Namespace
                 || checkNull)
             {

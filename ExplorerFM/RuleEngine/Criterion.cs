@@ -38,7 +38,25 @@ namespace ExplorerFM.RuleEngine
             else if (comparator.IsStringSymbol())
                 throw new ArgumentException("This comparator is intended for string value only.", nameof(comparator));
 
-            FieldName = GetNestedFieldName(targetedType, fieldAttribute);
+
+            if (fieldAttribute.IsSql)
+            {
+                FieldName = NestedQueries.ContainsKey(targetedType)
+                    ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
+                    : fieldAttribute.Name;
+            }
+            else
+            {
+                var valueComponents = fieldValue as object[];
+                var valueItem = valueComponents[0];
+                var valueItemTargetedType = valueItem.GetType();
+                var valueItemValue = valueItemTargetedType.IsClass
+                    ? (valueItem as Datas.Attribute).Id
+                    : (int)valueItem;
+                fieldValue = valueComponents[1];
+                FieldName = string.Format(NestedQueries[valueItemTargetedType], valueItemValue);
+            }
+
             FieldValue = fieldValue;
             Comparator = comparator;
             IncludeNullValue = includeNullValue;
@@ -55,22 +73,10 @@ namespace ExplorerFM.RuleEngine
                 comparator.IsStringSymbol() ? "%" : "");
         }
 
-        private static string GetNestedFieldName(Type fieldType, FieldAttribute fieldAttribute)
-        {
-            if (fieldType == typeof(Datas.Club))
-                return $"(SELECT club.{fieldAttribute.Name} FROM club WHERE club.ID = ClubContractID)";
-            else if (fieldType == typeof(Datas.Country))
-                return $"(SELECT country.{fieldAttribute.Name} FROM country WHERE country.ID = NationID1)";
-            else if (fieldType == typeof(Datas.Confederation))
-                return $"(SELECT confederation.{fieldAttribute.Name} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
-            else
-                return fieldAttribute.Name;
-        }
-
         public override string ToString()
         {
             return FieldIsTripleIdentifier
-                ? string.Concat("((", string.Join(") OR (", Enumerable.Range(1, 3).Select(i => GetPropertySql(string.Concat(FieldName, i)))), "))")
+                ? string.Concat("((", string.Join($") {SqlOr} (", Enumerable.Range(1, 3).Select(i => GetPropertySql(string.Concat(FieldName, i)))), "))")
                 : GetPropertySql(FieldName);
         }
 
