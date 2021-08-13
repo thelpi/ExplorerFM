@@ -1,87 +1,98 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace ExplorerFM.RuleEngine
 {
     public class Criterion : CriterionBase
     {
-        public string Property { get; }
+        public string FieldName { get; }
         public Comparator Comparator { get; }
-        public object Value { get; }
-        public bool NullValueAreTrue { get; }
-        public bool IsTripleIdentifier { get; }
+        public object FieldValue { get; }
+        public bool IncludeNullValue { get; }
+        public bool FieldIsTripleIdentifier { get; }
 
-        public static Criterion New(string property, Comparator comparator, bool isTripleIdentifier)
+        public Criterion(
+            FieldAttribute fieldAttribute,
+            Type targetedType,
+            Comparator comparator,
+            object fieldValue,
+            bool isNullComparison,
+            bool includeNullValue)
         {
-            if (comparator != Comparator.Equal && comparator != Comparator.NotEqual)
-                throw new System.ArgumentException("This comparator is not intended without value.", nameof(comparator));
-            return new Criterion(property, null, comparator, false, isTripleIdentifier);
-        }
+            if (fieldValue == null)
+                isNullComparison = true;
+            else if (typeof(Datas.BaseData).IsAssignableFrom(fieldValue.GetType()))
+                fieldValue = (fieldValue as Datas.BaseData).Id;
 
-        public static Criterion New(string property, object value, Comparator comparator, bool nullValueAreTrue, bool isTripleIdentifier)
-        {
-            if (value.GetType() == typeof(string))
-                return new Criterion(property, CheckStringValue(value.ToString(), comparator), comparator, nullValueAreTrue, isTripleIdentifier);
-            if (value.GetType().IsClass)
-                throw new System.ArgumentException("Value is intended as a struct.", nameof(value));
+            if (isNullComparison)
+            {
+                if (comparator != Comparator.Equal && comparator != Comparator.NotEqual)
+                    throw new ArgumentException("This comparator is not intended without value.", nameof(comparator));
+                fieldValue = null;
+                includeNullValue = false;
+            }
+            else if (fieldValue.GetType() == typeof(string))
+            {
+                ProcessValueAsString(comparator, ref fieldValue);
+            }
+            else if (comparator.IsStringSymbol())
+                throw new ArgumentException("This comparator is intended for string value only.", nameof(comparator));
 
-            return new Criterion(property, value, CheckComparator(comparator), nullValueAreTrue, isTripleIdentifier);
-        }
-
-        private Criterion(string property, object value, Comparator comparator, bool nullValueAreTrue, bool isTripleIdentifier)
-        {
-            Property = property;
-            Value = value;
+            FieldName = GetNestedFieldName(targetedType, fieldAttribute);
+            FieldValue = fieldValue;
             Comparator = comparator;
-            NullValueAreTrue = nullValueAreTrue;
-            IsTripleIdentifier = isTripleIdentifier;
+            IncludeNullValue = includeNullValue;
+            FieldIsTripleIdentifier = fieldAttribute.IsTripleIdentifier;
+        }
+
+        private static void ProcessValueAsString(Comparator comparator, ref object fieldValue)
+        {
+            var stringValue = fieldValue.ToString().Replace("'", "\\'");
+            if (comparator.IsStringSymbol()) stringValue = stringValue.Replace("%", "\\%");
+            fieldValue = string.Concat(
+                comparator.IsStringSymbol() ? "%" : "",
+                stringValue,
+                comparator.IsStringSymbol() ? "%" : "");
+        }
+
+        private static string GetNestedFieldName(Type fieldType, FieldAttribute fieldAttribute)
+        {
+            if (fieldType == typeof(Datas.Club))
+                return $"(SELECT club.{fieldAttribute.Name} FROM club WHERE club.ID = ClubContractID)";
+            else if (fieldType == typeof(Datas.Country))
+                return $"(SELECT country.{fieldAttribute.Name} FROM country WHERE country.ID = NationID1)";
+            else if (fieldType == typeof(Datas.Confederation))
+                return $"(SELECT confederation.{fieldAttribute.Name} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
+            else
+                return fieldAttribute.Name;
         }
 
         public override string ToString()
         {
-            return IsTripleIdentifier
-                ? string.Concat("((", string.Join(") OR (", Enumerable.Range(1, 3).Select(i => GetPropertySql(string.Concat(Property, i)))), "))")
-                : GetPropertySql(Property);
+            return FieldIsTripleIdentifier
+                ? string.Concat("((", string.Join(") OR (", Enumerable.Range(1, 3).Select(i => GetPropertySql(string.Concat(FieldName, i)))), "))")
+                : GetPropertySql(FieldName);
         }
 
         private string GetPropertySql(string realPropertyName)
         {
-            if (Value == null)
+            if (FieldValue == null)
             {
                 return $"{realPropertyName} {(Comparator == Comparator.Equal ? SqlIsString : SqlIsNotString)} {SqlNullString}";
             }
-            var usedValue = Value;
+            var usedValue = FieldValue;
 
-            if (Value.GetType() == typeof(System.DateTime))
-                usedValue = string.Concat("'", ((System.DateTime)usedValue).ToString("yyyy-MM-dd hh:mm:ss"), "'");
-            else if (Value.GetType() == typeof(string))
+            if (FieldValue.GetType() == typeof(DateTime))
+                usedValue = string.Concat("'", ((DateTime)usedValue).ToString("yyyy-MM-dd hh:mm:ss"), "'");
+            else if (FieldValue.GetType() == typeof(string))
                 usedValue = string.Concat("'", usedValue, "'");
-            else if (Value.GetType() == typeof(bool))
-                usedValue = System.Convert.ToBoolean(usedValue) ? "1" : "0";
+            else if (FieldValue.GetType() == typeof(bool))
+                usedValue = Convert.ToBoolean(usedValue) ? "1" : "0";
             var baseSql = $"{realPropertyName} {Comparator.ToSymbol()} {usedValue}";
 
-            return NullValueAreTrue
+            return IncludeNullValue
                 ? $"({realPropertyName} IS NULL OR {baseSql})"
                 : baseSql;
-        }
-
-        private static Comparator CheckComparator(Comparator comparator)
-        {
-            if (comparator.IsStringSymbol())
-                throw new System.ArgumentException("This comparator is intended to string value.", nameof(comparator));
-            return comparator;
-        }
-
-        private static string CheckStringValue(string value, Comparator comparator)
-        {
-            if (value == null)
-                throw new System.ArgumentNullException(nameof(value));
-            var isStringSymbol = comparator.IsStringSymbol();
-            value = value.Replace("'", "\\'");
-            if (isStringSymbol) value = value.Replace("%", "\\%");
-            return string.Concat(
-                isStringSymbol ? "%" : "",
-                value,
-                isStringSymbol ? "%" : "");
         }
     }
 }

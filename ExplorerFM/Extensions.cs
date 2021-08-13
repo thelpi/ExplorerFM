@@ -168,22 +168,5 @@ namespace ExplorerFM
             return IntegerTypes.Contains(type)
                 || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
         }
-
-        public static string GetNestedPropertySql(this PropertyInfo pi, out bool isTripleIdentifier)
-        {
-            var propAttrField = pi.GetCustomAttribute<FieldAttribute>();
-            var propAttrFieldName = propAttrField.Name;
-
-            isTripleIdentifier = propAttrField.IsTripleIdentifier;
-
-            if (pi.DeclaringType == typeof(Club))
-                propAttrFieldName = $"(SELECT club.{propAttrFieldName} FROM club WHERE club.ID = ClubContractID)";
-            else if (pi.DeclaringType == typeof(Country))
-                propAttrFieldName = $"(SELECT country.{propAttrFieldName} FROM country WHERE country.ID = NationID1)";
-            else if (pi.DeclaringType == typeof(Confederation))
-                propAttrFieldName = $"(SELECT confederation.{propAttrFieldName} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
-
-            return propAttrFieldName;
-        }
     }
 }

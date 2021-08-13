@@ -121,14 +121,7 @@ namespace ExplorerFM
                                 var incNull = incNullDp.Children.Count > 0
                                     && (incNullDp.Children[0] as CheckBox).IsChecked == true;
 
-                                if (realValue == null)
-                                    nullCheck = true;
-                                else if (typeof(Datas.BaseData).IsAssignableFrom(realValue.GetType()))
-                                    realValue = (realValue as Datas.BaseData).Id;
-
-                                criterionSets.Add(nullCheck
-                                    ? Criterion.New(attrPropInfo.GetNestedPropertySql(out bool isTripleIdentifier), comparator, isTripleIdentifier)
-                                    : Criterion.New(attrPropInfo.GetNestedPropertySql(out isTripleIdentifier), realValue, comparator, incNull, isTripleIdentifier));
+                                criterionSets.Add(new Criterion(attrPropInfo.GetCustomAttribute<FieldAttribute>(), attrPropInfo.DeclaringType, comparator, realValue, nullCheck, incNull));
                             }
                         }
                     }
