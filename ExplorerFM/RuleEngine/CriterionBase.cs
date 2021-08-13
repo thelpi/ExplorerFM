@@ -17,7 +17,7 @@ namespace ExplorerFM.RuleEngine
         private static readonly string ConfederationNestedSql = "SELECT confederation.{0} FROM confederation WHERE confederation.ID = (" + string.Format(CountryNestedSql, "ContinentID") + ")";
 
         private const string AttributeNestedSql = "SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_id = player.ID";
-        private const string SideNestedSql = "SELECT player_side.rate FROM player_side WHERE player_side.site_ID = {0} AND player_id = player.ID";
+        private const string SideNestedSql = "SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_id = player.ID";
         private const string PositionNestedSql = "SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_id = player.ID";
 
         protected static readonly IReadOnlyDictionary<Type, string> NestedQueries = new Dictionary<Type, string>
