@@ -72,6 +72,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\ComparatorDisplayConverter.cs" />
     <Compile Include="FieldAttribute.cs" />
     <Compile Include="PlayerWindow.xaml.cs">
       <DependentUpon>PlayerWindow.xaml</DependentUpon>
@@ -80,7 +81,7 @@
     <Compile Include="RuleEngine\Criterion.cs" />
     <Compile Include="RuleEngine\Comparator.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
-    <Compile Include="TypeDisplayConverter.cs" />
+    <Compile Include="Converters\TypeDisplayConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -140,5 +141,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

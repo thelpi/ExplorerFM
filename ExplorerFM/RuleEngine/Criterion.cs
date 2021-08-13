@@ -7,31 +7,21 @@
         public object Value { get; }
         public bool NullValueAreTrue { get; }
 
-        public static Criterion New(string property, bool equalNull)
+        public static Criterion New(string property, Comparator comparator)
         {
-            return new Criterion(property, null, equalNull ? Comparator.Equal : Comparator.NotEqual, false);
+            if (comparator != Comparator.Equal && comparator != Comparator.NotEqual)
+                throw new System.ArgumentException("This comparator is not intended without value.", nameof(comparator));
+            return new Criterion(property, null, comparator, false);
         }
 
-        public static Criterion New<T>(string property, T value, Comparator comparator)
-            where T : struct
+        public static Criterion New(string property, object value, Comparator comparator, bool nullValueAreTrue)
         {
-            return new Criterion(property, value as object, CheckComparator(comparator), false);
-        }
+            if (value.GetType() == typeof(string))
+                return new Criterion(property, CheckStringValue(value.ToString(), comparator), comparator, nullValueAreTrue);
+            if (value.GetType().IsClass)
+                throw new System.ArgumentException("Value is intended as a struct.", nameof(value));
 
-        public static Criterion New<T>(string property, T value, Comparator comparator, bool nullValueAreTrue)
-            where T : struct
-        {
-            return new Criterion(property, value as object, CheckComparator(comparator), nullValueAreTrue);
-        }
-
-        public static Criterion New(string property, string value, Comparator comparator)
-        {
-            return new Criterion(property, CheckStringValue(value, comparator), comparator, false);
-        }
-
-        public static Criterion New(string property, string value, Comparator comparator, bool nullValueAreTrue)
-        {
-            return new Criterion(property, CheckStringValue(value, comparator), comparator, nullValueAreTrue);
+            return new Criterion(property, value, CheckComparator(comparator), nullValueAreTrue);
         }
 
         private Criterion(string property, object value, Comparator comparator, bool nullValueAreTrue)
@@ -48,8 +38,19 @@
             {
                 return $"{Property} {(Comparator == Comparator.Equal ? SqlIsString : SqlIsNotString)} {SqlNullString}";
             }
-            var baseSql = $"{Property} {Comparator.ToSymbol()} {Value}";
-            return NullValueAreTrue ? $"({Property} IS NULL OR {baseSql})" : baseSql;
+            var usedValue = Value;
+            
+            if (Value.GetType() == typeof(System.DateTime))
+                usedValue = string.Concat("'", ((System.DateTime)usedValue).ToString("yyyy-MM-dd hh:mm:ss"), "'");
+            else if (Value.GetType() == typeof(string))
+                usedValue = string.Concat("'", usedValue, "'");
+            else if (Value.GetType() == typeof(bool))
+                usedValue = System.Convert.ToBoolean(usedValue) ? "1" : "0";
+            var baseSql = $"{Property} {Comparator.ToSymbol()} {usedValue}";
+
+            return NullValueAreTrue
+                ? $"({Property} IS NULL OR {baseSql})"
+                : baseSql;
         }
 
         private static Comparator CheckComparator(Comparator comparator)
@@ -63,12 +64,13 @@
         {
             if (value == null)
                 throw new System.ArgumentNullException(nameof(value));
+            var isStringSymbol = comparator.IsStringSymbol();
+            value = value.Replace("'", "\\'");
+            if (isStringSymbol) value = value.Replace("%", "\\%");
             return string.Concat(
-                "'",
-                comparator.IsStringSymbol() ? "%" : "",
-                value.Replace("'", "\'"),
-                comparator.IsStringSymbol() ? "%" : "",
-                "'");
+                isStringSymbol ? "%" : "",
+                value,
+                isStringSymbol ? "%" : "");
         }
     }
 }

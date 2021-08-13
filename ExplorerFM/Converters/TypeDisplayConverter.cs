@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ExplorerFM
+namespace ExplorerFM.Converters
 {
     class TypeDisplayConverter : IValueConverter
     {

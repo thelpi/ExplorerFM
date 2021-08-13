@@ -46,39 +46,29 @@ namespace ExplorerFM
             }
         }
 
-        public static T Get<T>(this IDataReader reader, string columnName, T defaultValue = default(T), params T[] ignored)
+        public static T Get<T>(this IDataReader reader, string columnName)
         {
             var sourceValue = reader[reader.GetOrdinal(columnName)];
 
             var forcedValue = sourceValue == DBNull.Value || sourceValue == null
-                ? defaultValue
+                ? default(T)
                 : sourceValue;
 
-            var value = (T)Convert.ChangeType(forcedValue, typeof(T));
-
-            return ignored?.Contains(value) == true
-                ? defaultValue
-                : value;
+            return (T)Convert.ChangeType(forcedValue, typeof(T));
         }
 
-        public static T? GetNull<T>(this IDataReader reader, string columnName, T? defaultValue = null, params T[] ignored)
+        public static T? GetNull<T>(this IDataReader reader, string columnName)
             where T : struct
         {
             var sourceValue = reader[reader.GetOrdinal(columnName)];
 
             var forcedValue = sourceValue == DBNull.Value || sourceValue == null
-                ? defaultValue
+                ? null
                 : sourceValue;
 
-            T? value = null;
-            if (forcedValue != null)
-            {
-                value = (T)Convert.ChangeType(forcedValue, typeof(T));
-            }
-
-            return value.HasValue && ignored?.Contains(value.Value) == true
-                ? defaultValue
-                : value;
+            return forcedValue != null
+                ? (T)Convert.ChangeType(forcedValue, typeof(T))
+                : (T?)null;
         }
 
         public static T? ToEnum<T>(this int? value) where T : struct
@@ -173,22 +163,24 @@ namespace ExplorerFM
             return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
         }
 
-        public static System.Windows.DataTemplate ToDataTemplate(this string xamlContent)
-        {
-            return XamlReader.Load(
-                XmlReader.Create(
-                    new StringReader(
-                        string.Concat(
-                            "<DataTemplate xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\">",
-                            xamlContent,
-                            "</DataTemplate>"))))
-                as System.Windows.DataTemplate;
-        }
-
         public static bool IsIntegerType(this Type type)
         {
             return IntegerTypes.Contains(type)
                 || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
+        }
+
+        public static string GetNestedPropertySql(this PropertyInfo pi)
+        {
+            var propAttrField = pi.GetCustomAttribute<FieldAttribute>().Name;
+
+            if (pi.DeclaringType == typeof(Club))
+                propAttrField = $"(SELECT club.{propAttrField} FROM club WHERE club.ID = ClubContractID)";
+            else if (pi.DeclaringType == typeof(Country))
+                propAttrField = $"(SELECT country.{propAttrField} FROM country WHERE country.ID = NationID1)";
+            else if (pi.DeclaringType == typeof(Confederation))
+                propAttrField = $"(SELECT confederation.{propAttrField} FROM confederation WHERE confederation.ID = (SELECT country.ContinentID FROM country WHERE country.ID = NationID1))";
+
+            return propAttrField;
         }
     }
 }

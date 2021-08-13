@@ -100,17 +100,39 @@ namespace ExplorerFM
 
                     var criteriaBasePanel = (criteriaSetChild as Border).Child as StackPanel;
                     var criteriaPanel = criteriaBasePanel.Children[criteriaBasePanel.Children.Count - 1] as StackPanel;
-                    foreach (var criterionPanel in criteriaPanel.Children)
+                    foreach (var criterionPanelObject in criteriaPanel.Children)
                     {
-                        if (criterionPanel is StackPanel)
+                        if (criterionPanelObject is StackPanel)
                         {
-                            /*var criterion = Criterion.New("", true);
-                            // type
-                            // symbol
-                            // stackpanel
-                            //      value
-                            //      null
-                            criterionSets.Add(criterion);*/
+                            var criterionPanel = criterionPanelObject as StackPanel;
+                            var attributeComboBox = criterionPanel.Children[0] as ComboBox;
+                            var symbolComboBox = criterionPanel.Children[1] as ComboBox;
+                            if (attributeComboBox.SelectedIndex >= 0 && symbolComboBox.SelectedIndex >= 0)
+                            {
+                                var valuePanel = criterionPanel.Children[2] as StackPanel;
+                                var nullCheckDp = valuePanel.Children[1] as DockPanel;
+                                var incNullDp = valuePanel.Children[2] as DockPanel;
+
+                                var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
+                                var comparator = (Comparator)symbolComboBox.SelectedItem;
+                                var realValue = GetUiElementValue(valuePanel.Children[0]);
+                                var nullCheck = nullCheckDp.Children.Count > 0
+                                    && (nullCheckDp.Children[0] as CheckBox).IsChecked == true;
+                                var incNull = incNullDp.Children.Count > 0
+                                    && (incNullDp.Children[0] as CheckBox).IsChecked == true;
+
+                                if (realValue == null)
+                                    nullCheck = true;
+                                else if (typeof(Datas.BaseData).IsAssignableFrom(realValue.GetType()))
+                                    realValue = (realValue as Datas.BaseData).Id;
+
+                                // TODO:
+                                // list
+
+                                criterionSets.Add(nullCheck
+                                    ? Criterion.New(attrPropInfo.GetNestedPropertySql(), comparator)
+                                    : Criterion.New(attrPropInfo.GetNestedPropertySql(), realValue, comparator, incNull));
+                            }
                         }
                     }
 
@@ -120,6 +142,54 @@ namespace ExplorerFM
             }
 
             return new CriteriaSet(true, criteriaSets.ToArray());
+        }
+
+        private static object GetUiElementValue(UIElement valuatedElement, UIElement copyTo = null)
+        {
+            var elementType = valuatedElement.GetType();
+            if (elementType == typeof(TextBox))
+            {
+                var v = (valuatedElement as TextBox).Text;
+                if (copyTo != null) (copyTo as TextBox).Text = v;
+                return v;
+            }
+            else if (elementType == typeof(CheckBox))
+            {
+                var v = (valuatedElement as CheckBox).IsChecked;
+                if (copyTo != null) (copyTo as CheckBox).IsChecked = v;
+                return v == true;
+            }
+            else if (elementType == typeof(ComboBox))
+            {
+                if (copyTo != null) (copyTo as ComboBox).SelectedIndex = (valuatedElement as ComboBox).SelectedIndex;
+                return (valuatedElement as ComboBox).SelectedItem;
+            }
+            else if (elementType == typeof(DatePicker))
+            {
+                var v = (valuatedElement as DatePicker).SelectedDate;
+                if (copyTo != null) (copyTo as DatePicker).SelectedDate = v;
+                return v;
+            }
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.LongUpDown))
+            {
+                var v = (valuatedElement as Xceed.Wpf.Toolkit.LongUpDown).Value;
+                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.LongUpDown).Value = v;
+                return v;
+            }
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.DecimalUpDown))
+            {
+                var v = (valuatedElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value;
+                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.DecimalUpDown).Value = v;
+                return v;
+            }
+            else if (elementType == typeof(Xceed.Wpf.Toolkit.DoubleUpDown))
+            {
+                var v = (valuatedElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value;
+                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.DoubleUpDown).Value = v;
+                return v;
+            }
+            else
+                throw new NotSupportedException();
         }
 
         private void AddCriteriaSetButton_Click(
@@ -231,26 +301,7 @@ namespace ExplorerFM
             var newValuePanel = newCriterion.Children[2] as StackPanel;
             var currentValuePanel = currentCriterion.Children[2] as StackPanel;
 
-            var newValueInnerElement = newValuePanel.Children[0];
-            var currentValueInnerElement = currentValuePanel.Children[0];
-
-            var elementType = currentValueInnerElement.GetType();
-            if (elementType == typeof(TextBox))
-                (newValueInnerElement as TextBox).Text = (currentValueInnerElement as TextBox).Text;
-            else if (elementType == typeof(CheckBox))
-                (newValueInnerElement as CheckBox).IsChecked = (currentValueInnerElement as CheckBox).IsChecked;
-            else if (elementType == typeof(ComboBox))
-                (newValueInnerElement as ComboBox).SelectedIndex = (currentValueInnerElement as ComboBox).SelectedIndex;
-            else if (elementType == typeof(DatePicker))
-                (newValueInnerElement as DatePicker).SelectedDate = (currentValueInnerElement as DatePicker).SelectedDate;
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.LongUpDown))
-                (newValueInnerElement as Xceed.Wpf.Toolkit.LongUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.LongUpDown).Value;
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.DecimalUpDown))
-                (newValueInnerElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value;
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.DoubleUpDown))
-                (newValueInnerElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value = (currentValueInnerElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value;
-            else
-                throw new NotSupportedException();
+            GetUiElementValue(currentValuePanel.Children[0], newValuePanel.Children[0]);
 
             var newValueNullPanel = newValuePanel.Children[1] as DockPanel;
             var currentValueNullPanel = currentValuePanel.Children[1] as DockPanel;
@@ -281,7 +332,11 @@ namespace ExplorerFM
             attributeItemsSourceView.GroupDescriptions.Add(
                 new PropertyGroupDescription(
                     nameof(PropertyInfo.DeclaringType),
-                    new TypeDisplayConverter()));
+                    new Converters.TypeDisplayConverter()));
+
+            var headerTemplateFactory = new FrameworkElementFactory(typeof(TextBlock));
+            // "Name" here references an internal property in the ListCollectionView mechanism
+            headerTemplateFactory.SetBinding(TextBlock.TextProperty, new Binding("Name"));
 
             var attributeComboBox = new ComboBox
             {
@@ -291,16 +346,18 @@ namespace ExplorerFM
             };
             attributeComboBox.GroupStyle.Add(new GroupStyle
             {
-                // "Name" here references an internal property in the ListCollectionView mechanism
-                // It's not the name of the DeclaringType
-                HeaderTemplate = string.Concat("<TextBlock Text=\"{Binding Name}\"/>").ToDataTemplate()
+                HeaderTemplate = new DataTemplate { VisualTree = headerTemplateFactory }
             });
+
+            var itemTemplateFactory = new FrameworkElementFactory(typeof(TextBlock));
+            itemTemplateFactory.SetBinding(TextBlock.TextProperty, new Binding { Converter = new Converters.ComparatorDisplayConverter() });
 
             var comparatorCombo = new ComboBox
             {
                 Width = DefaultSize * 2,
                 ItemsSource = Enumerable.Empty<string>(),
-                Margin = new Thickness(DefaultMargin, 0, 0, 0)
+                Margin = new Thickness(DefaultMargin, 0, 0, 0),
+                ItemTemplate = new DataTemplate { VisualTree = itemTemplateFactory }
             };
 
             criterionContentPanel.Children.Add(attributeComboBox);
@@ -336,13 +393,13 @@ namespace ExplorerFM
 
             if (attributeComboBox.SelectedIndex < 0)
             {
-                comparatorCombo.ItemsSource = Enumerable.Empty<string>();
+                comparatorCombo.ItemsSource = Enumerable.Empty<Comparator>();
             }
             else
             {
                 var propInfo = attributeComboBox.SelectedItem as PropertyInfo;
                 var propType = propInfo.PropertyType;
-                comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
+                comparatorCombo.ItemsSource = propType.GetComparators(false);
 
                 var propAttribute = propInfo.GetCustomAttribute<FieldAttribute>();
 
@@ -387,7 +444,7 @@ namespace ExplorerFM
                 childElement.Width = DefaultSize * 6;
                 valuePanel.Children.Add(childElement);
 
-                var emptyNullManagement = nullableType == null && !isCustomType;
+                var emptyNullManagement = nullableType == null && !isCustomType && propType != typeof(string);
 
                 var incNullPanel = GetNullManagementPanel(
                     emptyNullManagement,
@@ -402,12 +459,12 @@ namespace ExplorerFM
                     {
                         childElement.IsEnabled = false;
                         incNullPanel.Children[0].IsEnabled = false;
-                        comparatorCombo.ItemsSource = propType.GetComparators(true).Select(_ => _.ToSymbol());
+                        comparatorCombo.ItemsSource = propType.GetComparators(true);
                     }, (_1, _2) =>
                     {
                         childElement.IsEnabled = true;
                         incNullPanel.Children[0].IsEnabled = true;
-                        comparatorCombo.ItemsSource = propType.GetComparators(false).Select(_ => _.ToSymbol());
+                        comparatorCombo.ItemsSource = propType.GetComparators(false);
                     });
 
                 valuePanel.Children.Add(nullValuePanel);
