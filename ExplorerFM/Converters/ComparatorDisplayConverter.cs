@@ -9,6 +9,9 @@ namespace ExplorerFM.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value.GetType() != typeof(Comparator))
+                return null;
+
             var realValue = (Comparator)value;
 
             switch (realValue)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -360,6 +361,12 @@ namespace ExplorerFM
                 Margin = new Thickness(DefaultMargin, 0, 0, 0),
                 ItemTemplate = new DataTemplate { VisualTree = itemTemplateFactory }
             };
+            var dpd = DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ComboBox));
+            dpd?.AddValueChanged(comparatorCombo, (_1, _2) =>
+            {
+                if (comparatorCombo.HasItems)
+                    comparatorCombo.SelectedIndex = 0;
+            });
 
             criterionContentPanel.Children.Add(attributeComboBox);
             criterionContentPanel.Children.Add(comparatorCombo);
