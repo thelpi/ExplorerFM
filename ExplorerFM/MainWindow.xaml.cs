@@ -204,68 +204,18 @@ namespace ExplorerFM
         private void AddCriteriaSet(
             bool addFirstCriterion)
         {
-            var criteriaSetBorder = new Border
-            {
-                Margin = new Thickness(DefaultMargin),
-                BorderBrush = Brushes.Gainsboro,
-                BorderThickness = new Thickness(0.5)
-            };
+            var template = FindResource("CriteriaPanelTemplate") as ControlTemplate;
+            var criteriaSetBorder = template.LoadContent() as Border;
+            var criteriaPanel = criteriaSetBorder.FindName("CriteriaPanel") as StackPanel;
 
-            var criteriaSetPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(DefaultMargin)
-            };
-
-            var removeCriteriaSetButton = GetRemovalButton(CriteriaSetPanel, criteriaSetBorder, "Removes the criteria set");
-
-            var criteriaPanel = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Margin = new Thickness(DefaultMargin * 2, 0, 0, 0)
-            };
-
-            var addCriterionButton = new Button
-            {
-                Content = "Add",
-                Width = DefaultSize * 2,
-                Height = DefaultSize,
-                Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                ToolTip = "Adds a criterion"
-            };
-
-            addCriterionButton.Click += (_x, _y) =>
-            {
-                AddCriterion(criteriaPanel);
-            };
-
-            var copyCriteriaButton = new Button
-            {
-                Content = "Copy",
-                Width = DefaultSize * 2,
-                Height = DefaultSize,
-                Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                ToolTip = "Adds a criteria set"
-            };
-
-            copyCriteriaButton.Click += (_x, _y) =>
-            {
-                CopyCriteriaSet(criteriaSetPanel);
-            };
-
-            criteriaSetPanel.Children.Add(removeCriteriaSetButton);
-            criteriaSetPanel.Children.Add(copyCriteriaButton);
-            criteriaSetPanel.Children.Add(addCriterionButton);
-            criteriaSetPanel.Children.Add(criteriaPanel);
-
-            criteriaSetBorder.Child = criteriaSetPanel;
+            (criteriaSetBorder.FindName("RemoveCriteriaButton") as Button).Click += (_1, _2) => RemoveCriteriaBase(CriteriaSetPanel, criteriaSetBorder);
+            (criteriaSetBorder.FindName("AddCriterionButton") as Button).Click += (_x, _y) => AddCriterion(criteriaPanel);
+            (criteriaSetBorder.FindName("CopyCriteriaButton") as Button).Click += (_x, _y) => CopyCriteriaSet(criteriaPanel);
 
             AddContentGroup(CriteriaSetPanel, criteriaSetBorder, true);
 
             if (addFirstCriterion)
-            {
                 AddCriterion(criteriaPanel);
-            }
         }
 
         private void CopyCriteriaSet(
@@ -273,9 +223,8 @@ namespace ExplorerFM
         {
             AddCriteriaSet(false);
             var newCriteriaSetPanel = (CriteriaSetPanel.Children[CriteriaSetPanel.Children.Count - 1] as Border).Child as StackPanel;
-            var newCriteriaPanel = newCriteriaSetPanel.Children[criteriaSetPanel.Children.Count - 1] as StackPanel;
-            var currentCriteriaPanel = criteriaSetPanel.Children[criteriaSetPanel.Children.Count - 1] as StackPanel;
-            foreach (var currentCriterionObject in currentCriteriaPanel.Children)
+            var newCriteriaPanel = newCriteriaSetPanel.Children[newCriteriaSetPanel.Children.Count - 1] as StackPanel;
+            foreach (var currentCriterionObject in criteriaSetPanel.Children)
             {
                 if (currentCriterionObject is StackPanel)
                 {
@@ -533,20 +482,25 @@ namespace ExplorerFM
 
             removalButton.Click += (_1, _2) =>
             {
-                var removedIndex = containerPanel.Children.IndexOf(relatedContent);
-                containerPanel.Children.RemoveAt(removedIndex);
-                if (removedIndex > 0)
-                    containerPanel.Children.RemoveAt(removedIndex - 1);
-                else if (removedIndex < containerPanel.Children.Count - 1)
-                    containerPanel.Children.RemoveAt(removedIndex);
-                if (containerPanel.Children.Count == 0 && containerPanel.Parent is StackPanel)
-                {
-                    var parentContainer = containerPanel.Parent as StackPanel;
-                    (parentContainer.Children[0] as Button).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
-                }
+                RemoveCriteriaBase(containerPanel, relatedContent);
             };
 
             return removalButton;
+        }
+
+        private static void RemoveCriteriaBase(Panel containerPanel, UIElement relatedContent)
+        {
+            var removedIndex = containerPanel.Children.IndexOf(relatedContent);
+            containerPanel.Children.RemoveAt(removedIndex);
+            if (removedIndex > 0)
+                containerPanel.Children.RemoveAt(removedIndex - 1);
+            else if (removedIndex < containerPanel.Children.Count - 1)
+                containerPanel.Children.RemoveAt(removedIndex);
+            if (containerPanel.Children.Count == 0 && containerPanel.Parent is StackPanel)
+            {
+                var parentContainer = containerPanel.Parent as StackPanel;
+                (parentContainer.Children[0] as Button).RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            }
         }
 
         private static void AddContentGroup(
