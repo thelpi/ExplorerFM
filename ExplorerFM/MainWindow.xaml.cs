@@ -259,6 +259,14 @@ namespace ExplorerFM
             {
                 (newValueNullPanel.Children[0] as CheckBox).IsChecked = (currentValueNullPanel.Children[0] as CheckBox).IsChecked;
             }
+
+            var newIncNullPanel = newValuePanel.Children[2] as DockPanel;
+            var currentIncNullPanel = currentValuePanel.Children[2] as DockPanel;
+
+            if (currentIncNullPanel.Children.Count > 0)
+            {
+                (newIncNullPanel.Children[0] as CheckBox).IsChecked = (currentIncNullPanel.Children[0] as CheckBox).IsChecked;
+            }
         }
 
         private void AddCriterion(StackPanel criteriaPanel)
