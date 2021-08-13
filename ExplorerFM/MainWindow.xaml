@@ -39,6 +39,8 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <StackPanel Orientation="Horizontal" Margin="5, 0, 0, 0" Name="CriterionValuePanel" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" Width="75" Name="IsNullCheckBox" Margin="5, 0, 0, 0" Content="Is N/A" ToolTip="Checks only if the value is N/A or not" />
+                <CheckBox VerticalAlignment="Center" VerticalContentAlignment="Center" Width="75" Name="IncludeNullCheckBox" Margin="5, 0, 0, 0" Content="Inc. N/A" ToolTip="N/A values are treated as matching the pattern" />
                 <Button Margin="5, 0, 0, 0" Content="X" Width="25" Height="25" Name="RemoveCriterionButton" ToolTip="Removes the criterion" />
             </StackPanel>
         </ControlTemplate>

@@ -240,34 +240,21 @@ namespace ExplorerFM
             var newCriterion = newCriteriaPanel.Children[newCriteriaPanel.Children.Count - 1] as StackPanel;
             var currentCriterion = currentCriterionObject as StackPanel;
 
-            var newAttributeComboBox = newCriterion.Children[0] as ComboBox;
-            var currentAttributeComboBox = currentCriterion.Children[0] as ComboBox;
+            var newAttributeComboBox = newCriterion.FindName("AttributeComboBox") as ComboBox;
+            var currentAttributeComboBox = currentCriterion.FindName("AttributeComboBox") as ComboBox;
             newAttributeComboBox.SelectedIndex = currentAttributeComboBox.SelectedIndex;
 
-            var newSymbolCheckBox = newCriterion.Children[1] as ComboBox;
-            var currentSymbolCheckBox = currentCriterion.Children[1] as ComboBox;
+            var newSymbolCheckBox = newCriterion.FindName("ComparatorComboBox") as ComboBox;
+            var currentSymbolCheckBox = currentCriterion.FindName("ComparatorComboBox") as ComboBox;
             newSymbolCheckBox.SelectedIndex = currentSymbolCheckBox.SelectedIndex;
 
-            var newValuePanel = newCriterion.Children[2] as StackPanel;
-            var currentValuePanel = currentCriterion.Children[2] as StackPanel;
+            var newValuePanel = newCriterion.FindName("CriterionValuePanel") as StackPanel;
+            var currentValuePanel = currentCriterion.FindName("CriterionValuePanel") as StackPanel;
 
             GetUiElementValue(currentValuePanel.Children[0], newValuePanel.Children[0]);
 
-            var newValueNullPanel = newValuePanel.Children[1] as DockPanel;
-            var currentValueNullPanel = currentValuePanel.Children[1] as DockPanel;
-
-            if (currentValueNullPanel.Children.Count > 0)
-            {
-                (newValueNullPanel.Children[0] as CheckBox).IsChecked = (currentValueNullPanel.Children[0] as CheckBox).IsChecked;
-            }
-
-            var newIncNullPanel = newValuePanel.Children[2] as DockPanel;
-            var currentIncNullPanel = currentValuePanel.Children[2] as DockPanel;
-
-            if (currentIncNullPanel.Children.Count > 0)
-            {
-                (newIncNullPanel.Children[0] as CheckBox).IsChecked = (currentIncNullPanel.Children[0] as CheckBox).IsChecked;
-            }
+            (newCriterion.FindName("IsNullCheckBox") as CheckBox).IsChecked = (currentCriterion.FindName("IsNullCheckBox") as CheckBox).IsChecked;
+            (newCriterion.FindName("IncludeNullCheckBox") as CheckBox).IsChecked = (currentCriterion.FindName("IncludeNullCheckBox") as CheckBox).IsChecked;
         }
 
         private void AddCriterion(StackPanel criteriaPanel)
@@ -310,10 +297,13 @@ namespace ExplorerFM
             ComboBox attributeComboBox,
             ComboBox comparatorCombo)
         {
-            if (criterionContentPanel.Tag != null)
-            {
-                criterionContentPanel.Children.Remove(criterionContentPanel.Tag as UIElement);
-            }
+            var criterionValuePanel = criterionContentPanel.FindName("CriterionValuePanel") as StackPanel;
+            var incNullPanel = criterionContentPanel.FindName("IncludeNullCheckBox") as CheckBox;
+            var nullValuePanel = criterionContentPanel.FindName("IsNullCheckBox") as CheckBox;
+
+            criterionValuePanel.Children.Clear();
+            criterionContentPanel.Children[3].Visibility = Visibility.Hidden;
+            criterionContentPanel.Children[4].Visibility = Visibility.Hidden;
 
             if (attributeComboBox.SelectedIndex < 0)
             {
@@ -326,12 +316,6 @@ namespace ExplorerFM
                 comparatorCombo.ItemsSource = propType.GetComparators(false);
 
                 var propAttribute = propInfo.GetCustomAttribute<FieldAttribute>();
-
-                var valuePanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(DefaultMargin, 0, 0, 0)
-                };
 
                 var nullableType = Nullable.GetUnderlyingType(propType);
                 if (nullableType != null)
@@ -399,36 +383,24 @@ namespace ExplorerFM
                     childElement.Width = DefaultSize * 6;
                 }
 
-                valuePanel.Children.Add(childElement);
+                criterionValuePanel.Children.Add(childElement);
 
                 var emptyNullManagement = nullableType == null && !isCustomType && propType != typeof(string);
 
-                var incNullPanel = GetNullManagementPanel(
-                    emptyNullManagement,
-                    "Inc. N/A",
-                    "N/A values are treated as matching the pattern");
-
-                var nullValuePanel = GetNullManagementPanel(
-                    emptyNullManagement,
-                    "Is N/A",
-                    "Checks only if the value is N/A or not",
-                    (_1, _2) =>
-                    {
-                        childElement.IsEnabled = false;
-                        incNullPanel.Children[0].IsEnabled = false;
-                        comparatorCombo.ItemsSource = propType.GetComparators(true);
-                    }, (_1, _2) =>
-                    {
-                        childElement.IsEnabled = true;
-                        incNullPanel.Children[0].IsEnabled = true;
-                        comparatorCombo.ItemsSource = propType.GetComparators(false);
-                    });
-
-                valuePanel.Children.Add(nullValuePanel);
-                valuePanel.Children.Add(incNullPanel);
-
-                criterionContentPanel.Children.Insert(2, valuePanel);
-                criterionContentPanel.Tag = valuePanel;
+                incNullPanel.Visibility = emptyNullManagement ? Visibility.Hidden : Visibility.Visible;
+                nullValuePanel.Visibility = emptyNullManagement ? Visibility.Hidden : Visibility.Visible;
+                nullValuePanel.Checked += (_1, _2) =>
+                {
+                    childElement.IsEnabled = false;
+                    incNullPanel.IsEnabled = false;
+                    comparatorCombo.ItemsSource = propType.GetComparators(true);
+                };
+                nullValuePanel.Unchecked += (_1, _2) =>
+                {
+                    childElement.IsEnabled = true;
+                    incNullPanel.IsEnabled = true;
+                    comparatorCombo.ItemsSource = propType.GetComparators(false);
+                };
             }
         }
 
@@ -458,43 +430,6 @@ namespace ExplorerFM
             }
 
             containerPanel.Children.Add(groupContent);
-        }
-
-        private static DockPanel GetNullManagementPanel(
-            bool emptyPanel,
-            string label,
-            string toolTip,
-            RoutedEventHandler checkedHandler = null,
-            RoutedEventHandler uncheckedHandler = null)
-        {
-            var panel = new DockPanel
-            {
-                Width = DefaultSize * 3
-            };
-
-            if (!emptyPanel)
-            {
-                var checkBox = new CheckBox
-                {
-                    Content = label,
-                    ToolTip = toolTip,
-                    Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
-
-                checkBox.SetValue(DockPanel.DockProperty, Dock.Left);
-
-                if (uncheckedHandler != null)
-                    checkBox.Unchecked += uncheckedHandler;
-                if (checkedHandler != null)
-                    checkBox.Checked += checkedHandler;
-
-                panel.Children.Add(checkBox);
-            }
-
-            return panel;
         }
     }
 }
