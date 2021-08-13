@@ -82,14 +82,44 @@ namespace ExplorerFM
             object sender,
             RoutedEventArgs e)
         {
+            var criteriaSet = ExtractCriteriaSet();
             HideWorkAndDisplay(
-                () => _dataProvider.GetPlayersByCriteria(ExtractCriteriaSet()),
+                () => _dataProvider.GetPlayersByCriteria(criteriaSet),
                 players => PlayersView.ItemsSource = players);
         }
 
         private CriteriaSet ExtractCriteriaSet()
         {
-            return CriteriaSet.Empty;
+            var criteriaSets = new List<CriteriaSet>();
+
+            foreach (var criteriaSetChild in CriteriaSetPanel.Children)
+            {
+                if (criteriaSetChild is Border)
+                {
+                    var criterionSets = new List<Criterion>();
+
+                    var criteriaBasePanel = (criteriaSetChild as Border).Child as StackPanel;
+                    var criteriaPanel = criteriaBasePanel.Children[criteriaBasePanel.Children.Count - 1] as StackPanel;
+                    foreach (var criterionPanel in criteriaPanel.Children)
+                    {
+                        if (criterionPanel is StackPanel)
+                        {
+                            /*var criterion = Criterion.New("", true);
+                            // type
+                            // symbol
+                            // stackpanel
+                            //      value
+                            //      null
+                            criterionSets.Add(criterion);*/
+                        }
+                    }
+
+                    if (criterionSets.Count > 0)
+                        criteriaSets.Add(new CriteriaSet(false, criterionSets.ToArray()));
+                }
+            }
+
+            return new CriteriaSet(true, criteriaSets.ToArray());
         }
 
         private void AddCriteriaSetButton_Click(
@@ -317,6 +347,9 @@ namespace ExplorerFM
                 var nullableType = Nullable.GetUnderlyingType(propType);
                 if (nullableType != null)
                     propType = nullableType;
+
+                if (typeof(IList).IsAssignableFrom(propType) && propType.IsGenericType)
+                    propType = propType.GenericTypeArguments.First();
 
                 var isCustomType = propType == typeof(Datas.Club)
                     || propType == typeof(Datas.Country)

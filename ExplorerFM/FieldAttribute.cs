@@ -10,26 +10,25 @@ namespace ExplorerFM
         public long Max { get; }
 
         public FieldAttribute(string name)
-        {
-            Name = name;
-        }
+            : this(name, false, long.MinValue, long.MaxValue)
+        { }
 
         public FieldAttribute(string name, bool isTripleIdentifier)
+            : this(name, isTripleIdentifier, isTripleIdentifier ? 0 : default(long), long.MaxValue)
+        { }
+
+        public FieldAttribute(string name, long min)
+            : this(name, false, min, long.MaxValue)
+        { }
+
+        public FieldAttribute(string name, long min, long max)
+            : this(name, false, min, max)
+        { }
+
+        private FieldAttribute(string name, bool isTripleIdentifier, long min, long max)
         {
             Name = name;
             IsTripleIdentifier = isTripleIdentifier;
-            Min = isTripleIdentifier
-                ? 0
-                : default(long);
-        }
-
-        public FieldAttribute(string name, long min)
-        {
-            Min = min;
-        }
-
-        public FieldAttribute(string name, long min, long max)
-        {
             Min = min;
             Max = max;
         }
