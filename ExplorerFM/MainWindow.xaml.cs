@@ -426,7 +426,8 @@ namespace ExplorerFM
 
                 var isCustomType = propType == typeof(Datas.Club)
                     || propType == typeof(Datas.Country)
-                    || propType == typeof(Datas.Confederation);
+                    || propType == typeof(Datas.Confederation)
+                    || !propAttribute.IsSql;
 
                 FrameworkElement childElement;
 
