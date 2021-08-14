@@ -150,8 +150,8 @@ namespace ExplorerFM
                 attrPropInfo.DeclaringType,
                 (Comparator)comparatorComboBox.SelectedItem,
                 GetUiElementValue(criterionValuePanel.Children[0]),
-                includeNullCheckBox.IsChecked == true,
-                isNullCheckBox.IsChecked == true);
+                isNullCheckBox.IsChecked == true,
+                includeNullCheckBox.IsChecked == true);
         }
 
         private static object GetUiElementValue(UIElement valuatedElement, UIElement copyTo = null)
