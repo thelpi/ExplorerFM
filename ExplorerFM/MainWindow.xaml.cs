@@ -39,7 +39,7 @@ namespace ExplorerFM
         public const string DateValuePanelKey = "DateValuePanel";
         public const string SelectorValuePanelKey = "SelectorValuePanel";
         public const string BooleanValuePanelKey = "BooleanValuePanel";
-        public const string SelectorIntegerValuePanelName = "SelectorIntegerValuePanel";
+        public const string SelectorIntegerValuePanelKey = "SelectorIntegerValuePanel";
 
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
@@ -336,13 +336,11 @@ namespace ExplorerFM
                 {
                     var underType = propType.GenericTypeArguments.First();
 
-                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelName);
+                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
                     
                     SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
 
-                    var valueIntegerUpDown = valueElement.Find<IntegerUpDown>(NumericValueName);
-                    valueIntegerUpDown.Minimum = propAttribute.Min;
-                    valueIntegerUpDown.Maximum = propAttribute.Max;
+                    WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
                 }
                 else if (propType == typeof(bool))
                     valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
@@ -423,7 +421,12 @@ namespace ExplorerFM
         private CommonNumericUpDown<T> GetNumericUpDown<T>(string key, FieldAttribute attribute)
             where T : struct, IFormattable, IComparable<T>
         {
-            var element = GetByTemplateKey<CommonNumericUpDown<T>>(key);
+            return WithMinMaxFromAttribute(GetByTemplateKey<CommonNumericUpDown<T>>(key), attribute);
+        }
+
+        private static CommonNumericUpDown<T> WithMinMaxFromAttribute<T>(CommonNumericUpDown<T> element, FieldAttribute attribute)
+            where T : struct, IFormattable, IComparable<T>
+        {
             element.Minimum = (T)Convert.ChangeType(attribute.Min, typeof(T));
             element.Maximum = (T)Convert.ChangeType(attribute.Max, typeof(T));
             return element;
