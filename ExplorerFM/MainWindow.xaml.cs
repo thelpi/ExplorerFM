@@ -15,9 +15,6 @@ namespace ExplorerFM
 {
     public partial class MainWindow : Window
     {
-        const double DefaultSize = 25;
-        const double DefaultMargin = 5;
-
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
         private readonly IDictionary<Type, Func<IEnumerable>> _collectionsProvider;
@@ -89,46 +86,46 @@ namespace ExplorerFM
         {
             var criteriaSets = new List<CriteriaSet>();
 
-            foreach (var criteriaSetChild in CriteriaSetPanel.Children)
+            foreach (var criteriaSetChild in CriteriaSetPanel.Children.OfType<Border>())
             {
-                if (criteriaSetChild is Border)
+                var criterionSets = new List<Criterion>();
+
+                var criteriaPanel = criteriaSetChild.Find<StackPanel>("CriteriaPanel");
+                foreach (var criterionPanel in criteriaPanel.Children.OfType<StackPanel>())
                 {
-                    var criterionSets = new List<Criterion>();
-
-                    var criteriaBasePanel = (criteriaSetChild as Border).Child as StackPanel;
-                    var criteriaPanel = criteriaBasePanel.Children[criteriaBasePanel.Children.Count - 1] as StackPanel;
-                    foreach (var criterionPanelObject in criteriaPanel.Children)
-                    {
-                        if (criterionPanelObject is StackPanel)
-                        {
-                            var criterionPanel = criterionPanelObject as StackPanel;
-                            var attributeComboBox = criterionPanel.Children[0] as ComboBox;
-                            var symbolComboBox = criterionPanel.Children[1] as ComboBox;
-                            if (attributeComboBox.SelectedIndex >= 0 && symbolComboBox.SelectedIndex >= 0)
-                            {
-                                var valuePanel = criterionPanel.Children[2] as StackPanel;
-                                var nullCheckDp = valuePanel.Children[1] as DockPanel;
-                                var incNullDp = valuePanel.Children[2] as DockPanel;
-
-                                var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
-                                var comparator = (Comparator)symbolComboBox.SelectedItem;
-                                var realValue = GetUiElementValue(valuePanel.Children[0]);
-                                var nullCheck = nullCheckDp.Children.Count > 0
-                                    && (nullCheckDp.Children[0] as CheckBox).IsChecked == true;
-                                var incNull = incNullDp.Children.Count > 0
-                                    && (incNullDp.Children[0] as CheckBox).IsChecked == true;
-
-                                criterionSets.Add(new Criterion(attrPropInfo.GetCustomAttribute<FieldAttribute>(), attrPropInfo.DeclaringType, comparator, realValue, nullCheck, incNull));
-                            }
-                        }
-                    }
-
-                    if (criterionSets.Count > 0)
-                        criteriaSets.Add(new CriteriaSet(false, criterionSets.ToArray()));
+                    var criterion = ExtractCriterion(criterionPanel);
+                    if (criterion != null)
+                        criterionSets.Add(criterion);
                 }
+
+                if (criterionSets.Count > 0)
+                    criteriaSets.Add(new CriteriaSet(false, criterionSets.ToArray()));
             }
 
             return new CriteriaSet(true, criteriaSets.ToArray());
+        }
+
+        private Criterion ExtractCriterion(StackPanel criterionPanel)
+        {
+            var attributeComboBox = criterionPanel.Find<ComboBox>("AttributeComboBox");
+            var comparatorComboBox = criterionPanel.Find<ComboBox>("ComparatorComboBox");
+
+            if (attributeComboBox.SelectedIndex < 0 || comparatorComboBox.SelectedIndex < 0)
+                return null;
+
+            var isNullCheckBox = criterionPanel.Find<CheckBox>("IsNullCheckBox");
+            var includeNullCheckBox = criterionPanel.Find<CheckBox>("IncludeNullCheckBox");
+            var criterionValuePanel = criterionPanel.Find<StackPanel>("CriterionValuePanel");
+
+            var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
+
+            return new Criterion(
+                attrPropInfo.GetCustomAttribute<FieldAttribute>(),
+                attrPropInfo.DeclaringType,
+                (Comparator)comparatorComboBox.SelectedItem,
+                GetUiElementValue(criterionValuePanel.Children[0]),
+                includeNullCheckBox.IsChecked == true,
+                isNullCheckBox.IsChecked == true);
         }
 
         private static object GetUiElementValue(UIElement valuatedElement, UIElement copyTo = null)
@@ -319,7 +316,7 @@ namespace ExplorerFM
                     var underType = propType.GenericTypeArguments.First();
                     var childSelectElement = new ComboBox
                     {
-                        Width = DefaultSize * 4,
+                        Width = 100,
                         ItemsSource = underType.IsEnum ? Enum.GetValues(underType) : (IEnumerable)_dataProvider.Attributes
                     };
 
@@ -328,8 +325,8 @@ namespace ExplorerFM
 
                     var childValueElement = new Xceed.Wpf.Toolkit.LongUpDown
                     {
-                        Margin = new Thickness(DefaultMargin, 0, 0, 0),
-                        Width = DefaultSize * 2,
+                        Margin = new Thickness(5, 0, 0, 0),
+                        Width = 50,
                         Minimum = propAttribute.Min,
                         Maximum = propAttribute.Max
                     };
@@ -357,7 +354,7 @@ namespace ExplorerFM
                     else
                         throw new NotSupportedException();
 
-                    childElement.Width = DefaultSize * 6;
+                    childElement.Width = 150;
                 }
 
                 criterionValuePanel.Children.Add(childElement);
