@@ -159,14 +159,15 @@ namespace ExplorerFM
             var elementType = valuatedElement.GetType();
             if (elementType == typeof(StackPanel))
             {
-                var v1 = ((valuatedElement as StackPanel).Children[0] as ComboBox).SelectedItem;
-                var v2 = ((valuatedElement as StackPanel).Children[1] as Xceed.Wpf.Toolkit.LongUpDown).Value;
+                var valuatedCombo = (valuatedElement as StackPanel).Find<ComboBox>(ComboValueName);
+                var valuatedIntValue = (valuatedElement as StackPanel).Find<IntegerUpDown>(NumericValueName).Value;
                 if (copyTo != null)
                 {
-                    ((copyTo as StackPanel).Children[0] as ComboBox).SelectedIndex = ((valuatedElement as StackPanel).Children[0] as ComboBox).SelectedIndex;
-                    ((copyTo as StackPanel).Children[1] as Xceed.Wpf.Toolkit.LongUpDown).Value = v2;
+                    var copyPanel = copyTo as StackPanel;
+                    copyPanel.Find<ComboBox>(ComboValueName).SelectedIndex = valuatedCombo.SelectedIndex;
+                    copyPanel.Find<IntegerUpDown>(NumericValueName).Value = valuatedIntValue;
                 }
-                return new[] { v1, v2 };
+                return new[] { valuatedCombo.SelectedItem, valuatedIntValue };
             }
             else if (elementType == typeof(TextBox))
             {
@@ -182,8 +183,9 @@ namespace ExplorerFM
             }
             else if (elementType == typeof(ComboBox))
             {
-                if (copyTo != null) (copyTo as ComboBox).SelectedIndex = (valuatedElement as ComboBox).SelectedIndex;
-                return (valuatedElement as ComboBox).SelectedItem;
+                var comboBox = valuatedElement as ComboBox;
+                if (copyTo != null) (copyTo as ComboBox).SelectedIndex = comboBox.SelectedIndex;
+                return comboBox.SelectedItem;
             }
             else if (elementType == typeof(DatePicker))
             {
@@ -191,22 +193,16 @@ namespace ExplorerFM
                 if (copyTo != null) (copyTo as DatePicker).SelectedDate = v;
                 return v;
             }
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.LongUpDown))
+            else if (elementType == typeof(IntegerUpDown))
             {
-                var v = (valuatedElement as Xceed.Wpf.Toolkit.LongUpDown).Value;
-                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.LongUpDown).Value = v;
+                var v = (valuatedElement as IntegerUpDown).Value;
+                if (copyTo != null) (copyTo as IntegerUpDown).Value = v;
                 return v;
             }
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.DecimalUpDown))
+            else if (elementType == typeof(DecimalUpDown))
             {
-                var v = (valuatedElement as Xceed.Wpf.Toolkit.DecimalUpDown).Value;
-                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.DecimalUpDown).Value = v;
-                return v;
-            }
-            else if (elementType == typeof(Xceed.Wpf.Toolkit.DoubleUpDown))
-            {
-                var v = (valuatedElement as Xceed.Wpf.Toolkit.DoubleUpDown).Value;
-                if (copyTo != null) (copyTo as Xceed.Wpf.Toolkit.DoubleUpDown).Value = v;
+                var v = (valuatedElement as DecimalUpDown).Value;
+                if (copyTo != null) (copyTo as DecimalUpDown).Value = v;
                 return v;
             }
             else
@@ -254,8 +250,8 @@ namespace ExplorerFM
             newCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex =
                 currentCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex;
             GetUiElementValue(
-                newCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0],
-                currentCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0]);
+                currentCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0],
+                newCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0]);
             newCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked =
                 currentCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked;
             newCriterion.Find<CheckBox>(IncludeNullCheckBoxName).IsChecked =
