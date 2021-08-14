@@ -334,13 +334,18 @@ namespace ExplorerFM
 
                 if (!propAttribute.IsSql)
                 {
-                    var underType = propType.GenericTypeArguments.First();
+                    if (propAttribute.Name == nameof(Datas.Player.AttributesSum))
+                        valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
+                    else
+                    {
+                        var underType = propType.GenericTypeArguments.First();
 
-                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
-                    
-                    SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
+                        valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
-                    WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
+                        SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
+
+                        WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
+                    }
                 }
                 else if (propType == typeof(bool))
                     valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);

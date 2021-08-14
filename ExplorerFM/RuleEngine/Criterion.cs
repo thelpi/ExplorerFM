@@ -45,6 +45,8 @@ namespace ExplorerFM.RuleEngine
                     ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
                     : fieldAttribute.Name;
             }
+            else if (fieldAttribute.Name == nameof(Datas.Player.AttributesSum))
+                FieldName = string.Format(AttributesSumSql, includeNullValue ? 10 : 0);
             else
             {
                 var valueComponents = fieldValue as object[];

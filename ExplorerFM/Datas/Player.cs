@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ExplorerFM.Datas
 {
@@ -17,6 +18,9 @@ namespace ExplorerFM.Datas
         public int? RightFoot { get; set; }
         [Field("SquadNumber", 0, 999)]
         public int? SquadNumber { get; set; }
+
+        [Field("AttributesSum", 1, 1000, false)]
+        public int AttributesSum => Attributes.Sum(_ => _.Value ?? 0);
 
         public int GetPositionSideRate(Position p, Side s)
         {
