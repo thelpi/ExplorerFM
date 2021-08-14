@@ -124,8 +124,8 @@ namespace ExplorerFM
                     Confederation = _confederationDatas.Find(_ => _.Id == r.GetNull<int>("ContinentID")),
                     Id = r.Get<int>("ID"),
                     IsEU = r.Get<byte>("is_EU") != 0,
-                    Name = r.Get<string>("Name"),
-                    ShortName = r.Get<string>("NameShort")
+                    LongName = r.Get<string>("Name"),
+                    Name = r.Get<string>("NameShort")
                 });
         }
 
@@ -162,12 +162,12 @@ namespace ExplorerFM
                     MatchDay = r.GetNull<int>("MatchDay").ToEnum<System.DayOfWeek>(),
                     MaximumAttendance = r.GetNull<int>("MaximumAttendance"),
                     MinimumAttendance = r.GetNull<int>("MinimumAttendance"),
-                    Name = r.Get<string>("LongName"),
+                    LongName = r.Get<string>("LongName"),
                     PreviousDivisionId = r.GetNull<int>("DivisionPreviousID"),
                     Reputation = r.GetNull<int>("Reputation"),
                     ReserveDivisionId = r.GetNull<int>("DivisionReserveID"),
                     ReserveStadiumId = r.GetNull<int>("StadiumReserveID"),
-                    ShortName = r.Get<string>("ShortName"),
+                    Name = r.Get<string>("ShortName"),
                     StadiumId = r.GetNull<int>("StadiumID"),
                     StadiumOwner = r.Get<byte>("StadiumOwner") != 0,
                     Statut = (ClubStatut)r.Get<int>("Statut"),

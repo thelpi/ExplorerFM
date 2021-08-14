@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
+using Xceed.Wpf.Toolkit;
 
 namespace ExplorerFM
 {
@@ -25,11 +26,20 @@ namespace ExplorerFM
         public const string AddCriterionButtonName = "AddCriterionButton";
         public const string CopyCriteriaButtonName = "CopyCriteriaButton";
         public const string RemoveCriterionButtonName = "RemoveCriterionButton";
+        public const string ComboValueName = "ComboValue";
+        public const string NumericValueName = "NumericValue";
 
         public const string CriteriaPanelTemplateKey = "CriteriaPanelTemplate";
         public const string OrLabelTemplateKey = "OrLabelTemplate";
         public const string AndLabelTemplateKey = "AndLabelTemplate";
         public const string CriterionPanelTemplateKey = "CriterionPanelTemplate";
+        public const string IntegerValuePanelKey = "IntegerValuePanel";
+        public const string DecimalValuePanelKey = "DecimalValuePanel";
+        public const string StringValuePanelKey = "StringValuePanel";
+        public const string DateValuePanelKey = "DateValuePanel";
+        public const string SelectorValuePanelKey = "SelectorValuePanel";
+        public const string BooleanValuePanelKey = "BooleanValuePanel";
+        public const string SelectorIntegerValuePanelName = "SelectorIntegerValuePanel";
 
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
@@ -324,61 +334,36 @@ namespace ExplorerFM
                     || propType == typeof(Datas.Confederation)
                     || !propAttribute.IsSql;
 
-                FrameworkElement childElement;
+                FrameworkElement valueElement;
 
                 if (!propAttribute.IsSql)
                 {
-                    var childPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal
-                    };
-                    childElement = childPanel;
-
                     var underType = propType.GenericTypeArguments.First();
-                    var childSelectElement = new ComboBox
-                    {
-                        Width = 100,
-                        ItemsSource = underType.IsEnum ? Enum.GetValues(underType) : (IEnumerable)_dataProvider.Attributes
-                    };
 
-                    if (!underType.IsEnum)
-                        childSelectElement.DisplayMemberPath = nameof(Datas.Attribute.Name);
+                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelName);
+                    
+                    SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
 
-                    var childValueElement = new Xceed.Wpf.Toolkit.LongUpDown
-                    {
-                        Margin = new Thickness(5, 0, 0, 0),
-                        Width = 50,
-                        Minimum = propAttribute.Min,
-                        Maximum = propAttribute.Max
-                    };
-                    childPanel.Children.Add(childSelectElement);
-                    childPanel.Children.Add(childValueElement);
+                    var valueIntegerUpDown = valueElement.Find<IntegerUpDown>(NumericValueName);
+                    valueIntegerUpDown.Minimum = propAttribute.Min;
+                    valueIntegerUpDown.Maximum = propAttribute.Max;
                 }
+                else if (propType == typeof(bool))
+                    valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
+                else if (propType.IsEnum || propType.Namespace == typeof(Datas.BaseData).Namespace)
+                    valueElement = SetValueComboBoxProperties(GetByTemplateKey<ComboBox>(SelectorValuePanelKey), propType, () => _collectionsProvider[propType]());
+                else if (propType == typeof(DateTime))
+                    valueElement = GetByTemplateKey<FrameworkElement>(DateValuePanelKey);
+                else if (propType.IsIntegerType())
+                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
+                else if (propType == typeof(decimal))
+                    valueElement = GetNumericUpDown<decimal>(DecimalValuePanelKey, propAttribute);
+                else if (propType == typeof(string))
+                    valueElement = GetByTemplateKey<FrameworkElement>(StringValuePanelKey);
                 else
-                {
-                    if (propType == typeof(bool))
-                        childElement = new CheckBox { Content = "Yes", VerticalAlignment = VerticalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
-                    else if (propType.IsEnum)
-                        childElement = new ComboBox { ItemsSource = Enum.GetValues(propType) };
-                    else if (propType == typeof(DateTime))
-                        childElement = new DatePicker();
-                    else if (propType.Namespace == typeof(Datas.BaseData).Namespace)
-                        childElement = new ComboBox { ItemsSource = _collectionsProvider[propType]() };
-                    else if (propType.IsIntegerType())
-                        childElement = new Xceed.Wpf.Toolkit.LongUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max };
-                    else if (propType == typeof(decimal))
-                        childElement = new Xceed.Wpf.Toolkit.DecimalUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
-                    else if (propType == typeof(double) || propType == typeof(float))
-                        childElement = new Xceed.Wpf.Toolkit.DoubleUpDown { Minimum = propAttribute.Min, Maximum = propAttribute.Max, CultureInfo = System.Globalization.CultureInfo.InvariantCulture };
-                    else if (propType == typeof(string))
-                        childElement = new TextBox();
-                    else
-                        throw new NotSupportedException();
+                    throw new NotSupportedException();
 
-                    childElement.Width = 150;
-                }
-
-                criterionValuePanel.Children.Add(childElement);
+                criterionValuePanel.Children.Add(valueElement);
 
                 if (nullableType == null && !isCustomType && propType != typeof(string))
                 {
@@ -395,13 +380,13 @@ namespace ExplorerFM
                 isNullCheckBox.RemoveRoutedEventHandlers(System.Windows.Controls.Primitives.ToggleButton.CheckedEvent);
                 isNullCheckBox.Checked += (_1, _2) =>
                 {
-                    childElement.IsEnabled = false;
+                    valueElement.IsEnabled = false;
                     includeNullCheckBox.IsEnabled = false;
                     comparatorCombo.ItemsSource = propType.GetComparators(true);
                 };
                 isNullCheckBox.Unchecked += (_1, _2) =>
                 {
-                    childElement.IsEnabled = true;
+                    valueElement.IsEnabled = true;
                     includeNullCheckBox.IsEnabled = true;
                     comparatorCombo.ItemsSource = propType.GetComparators(false);
                 };
@@ -437,6 +422,27 @@ namespace ExplorerFM
         private T GetByTemplateKey<T>(string key) where T : UIElement
         {
             return (FindResource(key) as ControlTemplate).LoadContent() as T;
+        }
+
+        private CommonNumericUpDown<T> GetNumericUpDown<T>(string key, FieldAttribute attribute)
+            where T : struct, IFormattable, IComparable<T>
+        {
+            var element = GetByTemplateKey<CommonNumericUpDown<T>>(key);
+            element.Minimum = (T)Convert.ChangeType(attribute.Min, typeof(T));
+            element.Maximum = (T)Convert.ChangeType(attribute.Max, typeof(T));
+            return element;
+        }
+
+        private static ComboBox SetValueComboBoxProperties(ComboBox valueComboBox, Type propType, Func<IEnumerable> getItemsFunc)
+        {
+            if (propType.IsEnum)
+                valueComboBox.ItemsSource = Enum.GetValues(propType);
+            else
+            {
+                valueComboBox.ItemsSource = getItemsFunc();
+                valueComboBox.DisplayMemberPath = "Name";
+            }
+            return valueComboBox;
         }
     }
 }

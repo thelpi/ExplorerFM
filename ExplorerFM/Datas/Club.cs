@@ -6,9 +6,9 @@ namespace ExplorerFM.Datas
     public class Club : BaseData
     {
         [Field("LongName")]
-        public string Name { get; set; }
+        public string LongName { get; set; }
         [Field("ShortName")]
-        public string ShortName { get; set; }
+        public string Name { get; set; }
         [Field("StadiumOwner")]
         public bool StadiumOwner { get; set; }
         [Field("PLC")]
@@ -75,11 +75,6 @@ namespace ExplorerFM.Datas
         public List<Staff> GetLikedStaffs<T>(List<Staff> staffs)
         {
             return LikedStaffIds.GetSubList(staffs);
-        }
-
-        public override string ToString()
-        {
-            return ShortName;
         }
     }
 }
