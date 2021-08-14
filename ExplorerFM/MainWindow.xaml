@@ -98,7 +98,7 @@
                         <GridView AllowsColumnReorder="True">
                             <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Fullname}" />
                             <GridViewColumn Header="Date of birth" DisplayMemberBinding="{Binding Path=ActualDateOfBirth}" />
-                            <GridViewColumn Header="Country" DisplayMemberBinding="{Binding Path=Nationality.ShortName}" />
+                            <GridViewColumn Header="Country" DisplayMemberBinding="{Binding Path=Nationality.Name}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

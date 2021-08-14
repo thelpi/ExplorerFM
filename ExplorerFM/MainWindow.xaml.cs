@@ -102,17 +102,17 @@ namespace ExplorerFM
             object sender,
             RoutedEventArgs e)
         {
-            var criteriaSet = ExtractCriteriaSet();
+            var criteriaSet = ExtractCriteriaSet(CriteriaSetPanel);
             HideWorkAndDisplay(
                 () => _dataProvider.GetPlayersByCriteria(criteriaSet),
                 players => PlayersView.ItemsSource = players);
         }
 
-        private CriteriaSet ExtractCriteriaSet()
+        private static CriteriaSet ExtractCriteriaSet(StackPanel criteriaSetPanel)
         {
             var criteriaSets = new List<CriteriaSet>();
 
-            foreach (var criteriaSetChild in CriteriaSetPanel.Children.OfType<Border>())
+            foreach (var criteriaSetChild in criteriaSetPanel.Children.OfType<Border>())
             {
                 var criterionSets = new List<Criterion>();
 
@@ -131,7 +131,7 @@ namespace ExplorerFM
             return new CriteriaSet(true, criteriaSets.ToArray());
         }
 
-        private Criterion ExtractCriterion(StackPanel criterionPanel)
+        private static Criterion ExtractCriterion(StackPanel criterionPanel)
         {
             var attributeComboBox = criterionPanel.Find<ComboBox>(AttributeComboBoxName);
             var comparatorComboBox = criterionPanel.Find<ComboBox>(ComparatorComboBoxName);
@@ -154,16 +154,16 @@ namespace ExplorerFM
                 includeNullCheckBox.IsChecked == true);
         }
 
-        private static object GetUiElementValue(UIElement valuatedElement, UIElement copyTo = null)
+        private static object GetUiElementValue(UIElement valuatedElement, UIElement elementToValuate = null)
         {
             var elementType = valuatedElement.GetType();
             if (elementType == typeof(StackPanel))
             {
                 var valuatedCombo = (valuatedElement as StackPanel).Find<ComboBox>(ComboValueName);
                 var valuatedIntValue = (valuatedElement as StackPanel).Find<IntegerUpDown>(NumericValueName).Value;
-                if (copyTo != null)
+                if (elementToValuate != null)
                 {
-                    var copyPanel = copyTo as StackPanel;
+                    var copyPanel = elementToValuate as StackPanel;
                     copyPanel.Find<ComboBox>(ComboValueName).SelectedIndex = valuatedCombo.SelectedIndex;
                     copyPanel.Find<IntegerUpDown>(NumericValueName).Value = valuatedIntValue;
                 }
@@ -172,37 +172,37 @@ namespace ExplorerFM
             else if (elementType == typeof(TextBox))
             {
                 var v = (valuatedElement as TextBox).Text;
-                if (copyTo != null) (copyTo as TextBox).Text = v;
+                if (elementToValuate != null) (elementToValuate as TextBox).Text = v;
                 return v;
             }
             else if (elementType == typeof(CheckBox))
             {
                 var v = (valuatedElement as CheckBox).IsChecked;
-                if (copyTo != null) (copyTo as CheckBox).IsChecked = v;
+                if (elementToValuate != null) (elementToValuate as CheckBox).IsChecked = v;
                 return v == true;
             }
             else if (elementType == typeof(ComboBox))
             {
                 var comboBox = valuatedElement as ComboBox;
-                if (copyTo != null) (copyTo as ComboBox).SelectedIndex = comboBox.SelectedIndex;
+                if (elementToValuate != null) (elementToValuate as ComboBox).SelectedIndex = comboBox.SelectedIndex;
                 return comboBox.SelectedItem;
             }
             else if (elementType == typeof(DatePicker))
             {
                 var v = (valuatedElement as DatePicker).SelectedDate;
-                if (copyTo != null) (copyTo as DatePicker).SelectedDate = v;
+                if (elementToValuate != null) (elementToValuate as DatePicker).SelectedDate = v;
                 return v;
             }
             else if (elementType == typeof(IntegerUpDown))
             {
                 var v = (valuatedElement as IntegerUpDown).Value;
-                if (copyTo != null) (copyTo as IntegerUpDown).Value = v;
+                if (elementToValuate != null) (elementToValuate as IntegerUpDown).Value = v;
                 return v;
             }
             else if (elementType == typeof(DecimalUpDown))
             {
                 var v = (valuatedElement as DecimalUpDown).Value;
-                if (copyTo != null) (copyTo as DecimalUpDown).Value = v;
+                if (elementToValuate != null) (elementToValuate as DecimalUpDown).Value = v;
                 return v;
             }
             else
@@ -243,7 +243,7 @@ namespace ExplorerFM
             }
         }
 
-        private void CopyCriterion(StackPanel newCriterion, StackPanel currentCriterion)
+        private static void CopyCriterion(StackPanel newCriterion, StackPanel currentCriterion)
         {
             newCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex =
                 currentCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex;
