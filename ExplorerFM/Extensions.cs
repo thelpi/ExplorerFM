@@ -2,11 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Markup;
-using System.Xml;
+using System.Windows;
 using ExplorerFM.Datas;
 using ExplorerFM.RuleEngine;
 
@@ -167,6 +165,33 @@ namespace ExplorerFM
         {
             return IntegerTypes.Contains(type)
                 || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
+        }
+
+        // not my code
+        public static void RemoveRoutedEventHandlers(this UIElement element, RoutedEvent routedEvent)
+        {
+            var eventHandlersStore = typeof(UIElement)
+                .GetProperty("EventHandlersStore", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(element, null);
+
+            if (eventHandlersStore != null)
+            {
+                var routedEventHandlers = (RoutedEventHandlerInfo[])eventHandlersStore
+                    .GetType()
+                    .GetMethod("GetRoutedEventHandlers", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Invoke(eventHandlersStore, new object[] { routedEvent });
+
+                if (routedEventHandlers != null)
+                {
+                    foreach (var routedEventHandler in routedEventHandlers)
+                        element.RemoveHandler(routedEvent, routedEventHandler.Handler);
+                }
+            }
+        }
+
+        public static T Find<T>(this FrameworkElement element, string name) where T : UIElement
+        {
+            return element.FindName(name) as T;
         }
     }
 }
