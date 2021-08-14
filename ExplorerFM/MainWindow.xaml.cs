@@ -15,6 +15,22 @@ namespace ExplorerFM
 {
     public partial class MainWindow : Window
     {
+        public const string CriteriaPanelName = "CriteriaPanel";
+        public const string AttributeComboBoxName = "AttributeComboBox";
+        public const string ComparatorComboBoxName = "ComparatorComboBox";
+        public const string IsNullCheckBoxName = "IsNullCheckBox";
+        public const string IncludeNullCheckBoxName = "IncludeNullCheckBox";
+        public const string CriterionValuePanelName = "CriterionValuePanel";
+        public const string RemoveCriteriaButtonName = "RemoveCriteriaButton";
+        public const string AddCriterionButtonName = "AddCriterionButton";
+        public const string CopyCriteriaButtonName = "CopyCriteriaButton";
+        public const string RemoveCriterionButtonName = "RemoveCriterionButton";
+
+        public const string CriteriaPanelTemplateKey = "CriteriaPanelTemplate";
+        public const string OrLabelTemplateKey = "OrLabelTemplate";
+        public const string AndLabelTemplateKey = "AndLabelTemplate";
+        public const string CriterionPanelTemplateKey = "CriterionPanelTemplate";
+
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
         private readonly IDictionary<Type, Func<IEnumerable>> _collectionsProvider;
@@ -90,7 +106,7 @@ namespace ExplorerFM
             {
                 var criterionSets = new List<Criterion>();
 
-                var criteriaPanel = criteriaSetChild.Find<StackPanel>("CriteriaPanel");
+                var criteriaPanel = criteriaSetChild.Find<StackPanel>(CriteriaPanelName);
                 foreach (var criterionPanel in criteriaPanel.Children.OfType<StackPanel>())
                 {
                     var criterion = ExtractCriterion(criterionPanel);
@@ -107,15 +123,15 @@ namespace ExplorerFM
 
         private Criterion ExtractCriterion(StackPanel criterionPanel)
         {
-            var attributeComboBox = criterionPanel.Find<ComboBox>("AttributeComboBox");
-            var comparatorComboBox = criterionPanel.Find<ComboBox>("ComparatorComboBox");
+            var attributeComboBox = criterionPanel.Find<ComboBox>(AttributeComboBoxName);
+            var comparatorComboBox = criterionPanel.Find<ComboBox>(ComparatorComboBoxName);
 
             if (attributeComboBox.SelectedIndex < 0 || comparatorComboBox.SelectedIndex < 0)
                 return null;
 
-            var isNullCheckBox = criterionPanel.Find<CheckBox>("IsNullCheckBox");
-            var includeNullCheckBox = criterionPanel.Find<CheckBox>("IncludeNullCheckBox");
-            var criterionValuePanel = criterionPanel.Find<StackPanel>("CriterionValuePanel");
+            var isNullCheckBox = criterionPanel.Find<CheckBox>(IsNullCheckBoxName);
+            var includeNullCheckBox = criterionPanel.Find<CheckBox>(IncludeNullCheckBoxName);
+            var criterionValuePanel = criterionPanel.Find<StackPanel>(CriterionValuePanelName);
 
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
@@ -194,12 +210,15 @@ namespace ExplorerFM
 
         private void AddCriteriaSet(bool addFirstCriterion)
         {
-            var criteriaSetBorder = GetByTemplateKey<Border>("CriteriaPanelTemplate");
-            var criteriaPanel = criteriaSetBorder.Find<StackPanel>("CriteriaPanel");
+            var criteriaSetBorder = GetByTemplateKey<Border>(CriteriaPanelTemplateKey);
+            var criteriaPanel = criteriaSetBorder.Find<StackPanel>(CriteriaPanelName);
 
-            criteriaSetBorder.Find<Button>("RemoveCriteriaButton").Click += (_1, _2) => RemoveCriteriaBase(CriteriaSetPanel, criteriaSetBorder);
-            criteriaSetBorder.Find<Button>("AddCriterionButton").Click += (_1, _2) => AddCriterion(criteriaPanel);
-            criteriaSetBorder.Find<Button>("CopyCriteriaButton").Click += (_1, _2) => CopyCriteriaSet(criteriaPanel);
+            criteriaSetBorder.Find<Button>(RemoveCriteriaButtonName).Click +=
+                (_1, _2) => RemoveCriteriaBase(CriteriaSetPanel, criteriaSetBorder);
+            criteriaSetBorder.Find<Button>(AddCriterionButtonName).Click +=
+                (_1, _2) => AddCriterion(criteriaPanel);
+            criteriaSetBorder.Find<Button>(CopyCriteriaButtonName).Click +=
+                (_1, _2) => CopyCriteriaSet(criteriaPanel);
 
             AddContentGroup(CriteriaSetPanel, criteriaSetBorder, true);
 
@@ -210,7 +229,7 @@ namespace ExplorerFM
         private void CopyCriteriaSet(StackPanel criteriaSetPanel)
         {
             AddCriteriaSet(false);
-            var newCriteriaPanel = (CriteriaSetPanel.Children.OfType<Border>().Last()).Find<StackPanel>("CriteriaPanel");
+            var newCriteriaPanel = (CriteriaSetPanel.Children.OfType<Border>().Last()).Find<StackPanel>(CriteriaPanelName);
             foreach (var currentCriterion in criteriaSetPanel.Children.OfType<StackPanel>())
             {
                 AddCriterion(newCriteriaPanel);
@@ -220,26 +239,26 @@ namespace ExplorerFM
 
         private void CopyCriterion(StackPanel newCriterion, StackPanel currentCriterion)
         {
-            newCriterion.Find<ComboBox>("AttributeComboBox").SelectedIndex =
-                currentCriterion.Find<ComboBox>("AttributeComboBox").SelectedIndex;
-            newCriterion.Find<ComboBox>("ComparatorComboBox").SelectedIndex =
-                currentCriterion.Find<ComboBox>("ComparatorComboBox").SelectedIndex;
+            newCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex =
+                currentCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex;
+            newCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex =
+                currentCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex;
             GetUiElementValue(
-                newCriterion.Find<StackPanel>("CriterionValuePanel").Children[0],
-                currentCriterion.Find<StackPanel>("CriterionValuePanel").Children[0]);
-            newCriterion.Find<CheckBox>("IsNullCheckBox").IsChecked =
-                currentCriterion.Find<CheckBox>("IsNullCheckBox").IsChecked;
-            newCriterion.Find<CheckBox>("IncludeNullCheckBox").IsChecked =
-                currentCriterion.Find<CheckBox>("IncludeNullCheckBox").IsChecked;
+                newCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0],
+                currentCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0]);
+            newCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked =
+                currentCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked;
+            newCriterion.Find<CheckBox>(IncludeNullCheckBoxName).IsChecked =
+                currentCriterion.Find<CheckBox>(IncludeNullCheckBoxName).IsChecked;
         }
 
         private void AddCriterion(StackPanel criteriaPanel)
         {
-            var criterionPanel = GetByTemplateKey<StackPanel>("CriterionPanelTemplate");
+            var criterionPanel = GetByTemplateKey<StackPanel>(CriterionPanelTemplateKey);
 
-            var attributeComboBox = criterionPanel.Find<ComboBox>("AttributeComboBox");
-            var comparatorComboBox = criterionPanel.Find<ComboBox>("ComparatorComboBox");
-            var removeCriterionButton = criterionPanel.Find<Button>("RemoveCriterionButton");
+            var attributeComboBox = criterionPanel.Find<ComboBox>(AttributeComboBoxName);
+            var comparatorComboBox = criterionPanel.Find<ComboBox>(ComparatorComboBoxName);
+            var removeCriterionButton = criterionPanel.Find<Button>(RemoveCriterionButtonName);
 
             var attributeItemsSourceView = new ListCollectionView(_attributeProperties);
             attributeItemsSourceView.GroupDescriptions.Add(
@@ -258,9 +277,11 @@ namespace ExplorerFM
                     comparatorComboBox.SelectedIndex = 0;
             });
 
-            attributeComboBox.SelectionChanged += (_1, _2) => AddCriterionValuator(criterionPanel);
+            attributeComboBox.SelectionChanged +=
+                (_1, _2) => AddCriterionValuator(criterionPanel);
 
-            removeCriterionButton.Click += (_1, _2) => RemoveCriteriaBase(criteriaPanel, criterionPanel);
+            removeCriterionButton.Click +=
+                (_1, _2) => RemoveCriteriaBase(criteriaPanel, criterionPanel);
 
             AddContentGroup(criteriaPanel, criterionPanel, false);
 
@@ -269,11 +290,11 @@ namespace ExplorerFM
 
         private void AddCriterionValuator(StackPanel criterionContentPanel)
         {
-            var attributeComboBox = criterionContentPanel.Find<ComboBox>("AttributeComboBox");
-            var comparatorCombo = criterionContentPanel.Find<ComboBox>("ComparatorComboBox");
-            var criterionValuePanel = criterionContentPanel.Find<StackPanel>("CriterionValuePanel");
-            var includeNullCheckBox = criterionContentPanel.Find<CheckBox>("IncludeNullCheckBox");
-            var isNullCheckBox = criterionContentPanel.Find<CheckBox>("IsNullCheckBox");
+            var attributeComboBox = criterionContentPanel.Find<ComboBox>(AttributeComboBoxName);
+            var comparatorCombo = criterionContentPanel.Find<ComboBox>(ComparatorComboBoxName);
+            var criterionValuePanel = criterionContentPanel.Find<StackPanel>(CriterionValuePanelName);
+            var includeNullCheckBox = criterionContentPanel.Find<CheckBox>(IncludeNullCheckBoxName);
+            var isNullCheckBox = criterionContentPanel.Find<CheckBox>(IsNullCheckBoxName);
 
             criterionValuePanel.Children.Clear();
             includeNullCheckBox.Visibility = Visibility.Hidden;
@@ -398,7 +419,8 @@ namespace ExplorerFM
             if (containerPanel.Children.Count == 0 && containerPanel.Parent is StackPanel)
             {
                 var parentContainer = containerPanel.Parent as StackPanel;
-                parentContainer.Find<Button>("RemoveCriteriaButton").RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                parentContainer.Find<Button>(RemoveCriteriaButtonName)
+                    .RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             }
         }
 
@@ -406,8 +428,7 @@ namespace ExplorerFM
         {
             if (containerPanel.Children.Count > 0)
             {
-                var labelKey = $"{(isOr ? "Or" : "And")}LabelTemplate";
-                containerPanel.Children.Add(GetByTemplateKey<Label>(labelKey));
+                containerPanel.Children.Add(GetByTemplateKey<Label>(isOr ? OrLabelTemplateKey : AndLabelTemplateKey));
             }
 
             containerPanel.Children.Add(groupContent);
