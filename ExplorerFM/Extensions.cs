@@ -119,39 +119,35 @@ namespace ExplorerFM
 
         public static List<Comparator> GetComparators(this Type t, bool checkNull)
         {
-            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)) && !t.GetInterfaces().Contains(typeof(IDictionary)))
-                || t.Namespace == typeof(BaseData).Namespace
-                || checkNull)
-            {
-                return new List<Comparator>
-                {
-                    Comparator.Equal,
-                    Comparator.NotEqual
-                };
-            }
-
             var comparators = new List<Comparator>
             {
                 Comparator.Equal,
-                Comparator.NotEqual,
-                Comparator.Greater,
-                Comparator.GreaterEqual,
-                Comparator.Lower,
-                Comparator.LowerEqual
+                Comparator.NotEqual
             };
+
+            // List (triple ID identifier)
+            // Selector country/club/continent
+            // NULL y/n
+            // Bool
+            // not comparable type
+            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)) && !t.GetInterfaces().Contains(typeof(IDictionary)))
+                || t.Namespace == typeof(BaseData).Namespace
+                || checkNull
+                || t == typeof(bool)
+                || (!t.IsComparable() && !(t.IsGenericType && t.GenericTypeArguments.Last().IsComparable())))
+            {
+                return comparators;
+            }
+
+            comparators.Add(Comparator.Greater);
+            comparators.Add(Comparator.GreaterEqual);
+            comparators.Add(Comparator.Lower);
+            comparators.Add(Comparator.LowerEqual);
 
             if (t == typeof(string))
             {
                 comparators.Add(Comparator.Like);
                 comparators.Add(Comparator.NotLike);
-            }
-            else if (t == typeof(bool) || (!typeof(IComparable).IsAssignableFrom(t)
-                && !(t.IsGenericType && typeof(IComparable).IsAssignableFrom(t.GenericTypeArguments[0]))))
-            {
-                comparators.Remove(Comparator.Greater);
-                comparators.Remove(Comparator.GreaterEqual);
-                comparators.Remove(Comparator.Lower);
-                comparators.Remove(Comparator.LowerEqual);
             }
 
             return comparators;
@@ -200,6 +196,13 @@ namespace ExplorerFM
             return value == null
                 || (value is object[]
                     && (value as object[]).Contains(null));
+        }
+
+        public static bool IsComparable(this Type t)
+        {
+            return typeof(IComparable).IsAssignableFrom(t)
+                || (Nullable.GetUnderlyingType(t) != null
+                    && typeof(IComparable).IsAssignableFrom(Nullable.GetUnderlyingType(t)));
         }
     }
 }

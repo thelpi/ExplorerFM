@@ -48,7 +48,7 @@ namespace ExplorerFM.RuleEngine
                     ? (valueItem as Datas.Attribute).Id
                     : (int)valueItem;
                 fieldValue = valueComponents[1];
-                FieldName = string.Format(NestedQueries[valueItemTargetedType], valueItemValue);
+                FieldName = string.Concat("(", string.Format(fieldAttribute.Name, valueItemValue), ")");
             }
             else
             {
