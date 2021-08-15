@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\ComparatorDisplayConverter.cs" />
+    <Compile Include="FieldsAttributes\AggregateFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\FieldAttribute.cs" />
     <Compile Include="PlayerWindow.xaml.cs">
       <DependentUpon>PlayerWindow.xaml</DependentUpon>

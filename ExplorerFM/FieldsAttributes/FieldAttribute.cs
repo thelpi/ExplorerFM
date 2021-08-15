@@ -10,6 +10,8 @@ namespace ExplorerFM.FieldsAttributes
         public int Max { get; }
         public bool IsSql { get; }
 
+        public bool IsAggregate => GetType() == typeof(AggregateFieldAttribute);
+
         public FieldAttribute(string name)
             : this(name, false, int.MinValue, int.MaxValue, true)
         { }

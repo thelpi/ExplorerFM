@@ -20,8 +20,6 @@ namespace ExplorerFM.RuleEngine
         private const string SideNestedSql = "SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_id = player.ID";
         private const string PositionNestedSql = "SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_id = player.ID";
 
-        protected const string AttributesSumSql = "(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_id = player.ID)";
-
         protected static readonly IReadOnlyDictionary<Type, string> NestedQueries = new Dictionary<Type, string>
         {
             { typeof(Datas.Club), string.Concat("(", ClubNestedSql, ")") },

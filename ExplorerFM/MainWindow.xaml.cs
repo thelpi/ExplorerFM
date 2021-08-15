@@ -339,7 +339,7 @@ namespace ExplorerFM
 
                 if (!propAttribute.IsSql)
                 {
-                    if (propAttribute.Name == nameof(Datas.Player.AttributesSum))
+                    if (propAttribute.IsAggregate)
                         valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                     else
                     {
