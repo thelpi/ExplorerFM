@@ -145,11 +145,15 @@ namespace ExplorerFM
 
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
+            var value = GetUiElementValue(criterionValuePanel.Children[0]);
+            if (value == null || (value is object[] && (value as object[])[0] == null || (value as object[])[1] == null))
+                return null;
+
             return new Criterion(
                 attrPropInfo.GetCustomAttribute<FieldAttribute>(),
                 attrPropInfo.DeclaringType,
                 (Comparator)comparatorComboBox.SelectedItem,
-                GetUiElementValue(criterionValuePanel.Children[0]),
+                value,
                 isNullCheckBox.IsChecked == true,
                 includeNullCheckBox.IsChecked == true);
         }

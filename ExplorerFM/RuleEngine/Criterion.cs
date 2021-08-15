@@ -19,9 +19,7 @@ namespace ExplorerFM.RuleEngine
             bool isNullComparison,
             bool includeNullValue)
         {
-            if (fieldValue == null)
-                isNullComparison = true;
-            else if (typeof(Datas.BaseData).IsAssignableFrom(fieldValue.GetType()))
+            if (typeof(Datas.BaseData).IsAssignableFrom(fieldValue.GetType()))
                 fieldValue = (fieldValue as Datas.BaseData).Id;
 
             if (isNullComparison)
@@ -96,6 +94,8 @@ namespace ExplorerFM.RuleEngine
                 usedValue = string.Concat("'", usedValue, "'");
             else if (FieldValue.GetType() == typeof(bool))
                 usedValue = Convert.ToBoolean(usedValue) ? "1" : "0";
+            else if (FieldValue.GetType() == typeof(decimal))
+                usedValue = ((decimal)usedValue).ToString(System.Globalization.CultureInfo.InvariantCulture);
             var baseSql = $"{realPropertyName} {Comparator.ToSymbol()} {usedValue}";
 
             return IncludeNullValue
