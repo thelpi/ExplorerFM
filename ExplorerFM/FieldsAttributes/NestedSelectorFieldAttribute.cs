@@ -7,6 +7,7 @@ namespace ExplorerFM.FieldsAttributes
     {
         public Func<DataProvider, IEnumerable> GetValuesFunc { get; }
         public string DisplayPropertyName { get; }
+        public Type ValueType { get; }
 
         public bool HasDisplayPropertyName => !string.IsNullOrWhiteSpace(DisplayPropertyName);
 
@@ -16,13 +17,17 @@ namespace ExplorerFM.FieldsAttributes
             if (!enumType.IsEnum)
                 throw new ArgumentException("Expected: enum type.", nameof(enumType));
             GetValuesFunc = _ => Enum.GetValues(enumType);
+            ValueType = enumType;
         }
 
         public NestedSelectorFieldAttribute(string name, int min, int max, string dataProviderPropertyName, string displayPropertyName)
             : base(name, min, max)
         {
+            var propInfo = typeof(DataProvider).GetProperty(dataProviderPropertyName);
+
             DisplayPropertyName = displayPropertyName;
-            GetValuesFunc = _ => typeof(DataProvider).GetProperty(dataProviderPropertyName).GetValue(_) as IEnumerable;
+            GetValuesFunc = _ => propInfo.GetValue(_) as IEnumerable;
+            ValueType = propInfo.PropertyType.GenericTypeArguments[0];
         }
     }
 }

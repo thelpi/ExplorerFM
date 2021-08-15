@@ -41,14 +41,14 @@ namespace ExplorerFM.RuleEngine
                 FieldName = string.Concat("(", string.Format(fieldAttribute.Name, includeNullValue ? 10 : 0), ")");
             else if (fieldAttribute.IsNestedSelector)
             {
+                var nestedSelectorFieldAttribute = fieldAttribute.Cast<NestedSelectorFieldAttribute>();
+
                 var valueComponents = fieldValue as object[];
-                var valueItem = valueComponents[0];
-                var valueItemTargetedType = valueItem.GetType();
-                var valueItemValue = valueItemTargetedType.IsClass
-                    ? (valueItem as Datas.Attribute).Id
-                    : (int)valueItem;
+                var valueItemId = typeof(Datas.BaseData).IsAssignableFrom(nestedSelectorFieldAttribute.ValueType)
+                    ? (valueComponents[0] as Datas.BaseData).Id
+                    : (int)valueComponents[0];
                 fieldValue = valueComponents[1];
-                FieldName = string.Concat("(", string.Format(fieldAttribute.Name, valueItemValue), ")");
+                FieldName = string.Concat("(", string.Format(fieldAttribute.Name, valueItemId), ")");
             }
             else
             {
