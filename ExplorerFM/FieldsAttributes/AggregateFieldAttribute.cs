@@ -3,7 +3,7 @@
     public class AggregateFieldAttribute : FieldAttribute
     {
         public AggregateFieldAttribute(string name, int min, int max)
-            : base(name, min, max, false)
+            : base(name, min, max)
         { }
     }
 }
