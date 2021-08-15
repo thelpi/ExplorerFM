@@ -333,13 +333,13 @@ namespace ExplorerFM
                 var isCustomType = propType == typeof(Datas.Club)
                     || propType == typeof(Datas.Country)
                     || propType == typeof(Datas.Confederation)
-                    || !propAttribute.IsSql;
+                    || propAttribute.IsNestedSelector;
 
                 FrameworkElement valueElement;
 
                 if (propAttribute.IsAggregate)
                     valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
-                else if (!propAttribute.IsSql)
+                else if (propAttribute.IsNestedSelector)
                 {
                     var underType = propType.GenericTypeArguments.First();
 

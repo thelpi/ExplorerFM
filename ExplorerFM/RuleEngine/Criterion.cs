@@ -38,14 +38,8 @@ namespace ExplorerFM.RuleEngine
                 throw new ArgumentException("This comparator is intended for string value only.", nameof(comparator));
 
             if (fieldAttribute.IsAggregate)
-                FieldName = string.Format(fieldAttribute.Name, includeNullValue ? 10 : 0);
-            else if (fieldAttribute.IsSql)
-            {
-                FieldName = NestedQueries.ContainsKey(targetedType)
-                    ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
-                    : fieldAttribute.Name;
-            }
-            else
+                FieldName = string.Concat("(", string.Format(fieldAttribute.Name, includeNullValue ? 10 : 0), ")");
+            else if (fieldAttribute.IsNestedSelector)
             {
                 var valueComponents = fieldValue as object[];
                 var valueItem = valueComponents[0];
@@ -55,6 +49,12 @@ namespace ExplorerFM.RuleEngine
                     : (int)valueItem;
                 fieldValue = valueComponents[1];
                 FieldName = string.Format(NestedQueries[valueItemTargetedType], valueItemValue);
+            }
+            else
+            {
+                FieldName = NestedQueries.ContainsKey(targetedType)
+                    ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
+                    : fieldAttribute.Name;
             }
 
             FieldValue = fieldValue;

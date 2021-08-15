@@ -7,29 +7,24 @@ namespace ExplorerFM.FieldsAttributes
         public string Name { get; }
         public int Min { get; }
         public int Max { get; }
-        public bool IsSql { get; }
 
         public bool IsAggregate => GetType() == typeof(AggregateFieldAttribute);
         public bool IsTripleIdentifier => GetType() == typeof(TripleIdFieldAttribute);
+        public bool IsNestedSelector => GetType() == typeof(NestedSelectorFieldAttribute);
 
         public FieldAttribute(string name)
-            : this(name, int.MinValue, int.MaxValue, true)
+            : this(name, int.MinValue, int.MaxValue)
         { }
 
         public FieldAttribute(string name, int min)
-            : this(name, min, int.MaxValue, true)
+            : this(name, min, int.MaxValue)
         { }
 
         public FieldAttribute(string name, int min, int max)
-            : this(name, min, max, true)
-        { }
-
-        public FieldAttribute(string name, int min, int max, bool isSql)
         {
             Name = name;
             Min = min;
             Max = max;
-            IsSql = isSql;
         }
     }
 }

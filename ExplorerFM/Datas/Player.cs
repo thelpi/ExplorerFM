@@ -6,11 +6,11 @@ namespace ExplorerFM.Datas
 {
     public class Player : Staff
     {
-        [Field("Sides", 1, 20, false)]
+        [NestedSelectorField("Sides", 1, 20)]
         public Dictionary<Side, int?> Sides { get; set; }
-        [Field("Positions", 1, 20, false)]
+        [NestedSelectorField("Positions", 1, 20)]
         public Dictionary<Position, int?> Positions { get; set; }
-        [Field("Attributes", 1, 20, false)]
+        [NestedSelectorField("Attributes", 1, 20)]
         public Dictionary<Attribute, int?> Attributes { get; set; }
 
         [Field("LeftFoot", 1, 20)]
@@ -20,19 +20,19 @@ namespace ExplorerFM.Datas
         [Field("SquadNumber", 0, 999)]
         public int? SquadNumber { get; set; }
 
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID)", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID", 1, 1000)]
         public int AttributesTotal => GetAttributesTotal();
 
         // the identifier of attribute_type is hardcoded here
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 1))", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 1)", 1, 1000)]
         public int AttributesGoalkeeperTotal => GetAttributesTotal(AttributeType.Goalkeeper);
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 2))", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 2)", 1, 1000)]
         public int AttributesKickoffTotal => GetAttributesTotal(AttributeType.Kickoff);
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 3))", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 3)", 1, 1000)]
         public int AttributesPhysicalTotal => GetAttributesTotal(AttributeType.Physical);
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 4))", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 4)", 1, 1000)]
         public int AttributesPsychologicalTotal => GetAttributesTotal(AttributeType.Psychological);
-        [AggregateField("(SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 5))", 1, 1000)]
+        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 5)", 1, 1000)]
         public int AttributesTechnicalTotal => GetAttributesTotal(AttributeType.Technical);
 
         public int GetPositionSideRate(Position p, Side s)

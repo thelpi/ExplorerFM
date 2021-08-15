@@ -3,7 +3,7 @@
     public class TripleIdFieldAttribute : FieldAttribute
     {
         public TripleIdFieldAttribute(string name)
-            : base(name, 0, int.MaxValue, true)
+            : base(name, 0, int.MaxValue)
         { }
     }
 }
