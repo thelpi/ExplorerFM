@@ -13,14 +13,6 @@ namespace ExplorerFM
 {
     public static class Extensions
     {
-        private static readonly HashSet<Type> IntegerTypes = new HashSet<Type>
-        {
-            typeof(byte), typeof(sbyte),
-            typeof(int), typeof(uint),
-            typeof(short), typeof(ushort),
-            typeof(long), typeof(ulong)
-        };
-        
         public static string ToCode(this Side side)
         {
             return side.ToString().Substring(0, 1);
@@ -117,51 +109,9 @@ namespace ExplorerFM
                 || comparator == Comparator.NotLike;
         }
 
-        public static List<Comparator> GetComparators(this Type t, bool checkNull)
-        {
-            var comparators = new List<Comparator>
-            {
-                Comparator.Equal,
-                Comparator.NotEqual
-            };
-
-            // List (triple ID identifier)
-            // Selector country/club/continent
-            // NULL y/n
-            // Bool
-            // not comparable type
-            if ((t != typeof(string) && t.GetInterfaces().Contains(typeof(IEnumerable)) && !t.GetInterfaces().Contains(typeof(IDictionary)))
-                || t.Namespace == typeof(BaseData).Namespace
-                || checkNull
-                || t == typeof(bool)
-                || (!t.IsComparable() && !(t.IsGenericType && t.GenericTypeArguments.Last().IsComparable())))
-            {
-                return comparators;
-            }
-
-            comparators.Add(Comparator.Greater);
-            comparators.Add(Comparator.GreaterEqual);
-            comparators.Add(Comparator.Lower);
-            comparators.Add(Comparator.LowerEqual);
-
-            if (t == typeof(string))
-            {
-                comparators.Add(Comparator.Like);
-                comparators.Add(Comparator.NotLike);
-            }
-
-            return comparators;
-        }
-
         public static List<PropertyInfo> GetAttributeProperties(this Type t)
         {
             return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
-        }
-
-        public static bool IsIntegerType(this Type type)
-        {
-            return IntegerTypes.Contains(type)
-                || IntegerTypes.Contains(Nullable.GetUnderlyingType(type));
         }
 
         // not my code
@@ -198,11 +148,30 @@ namespace ExplorerFM
                     && (value as object[]).Contains(null));
         }
 
-        public static bool IsComparable(this Type t)
+        public static Type GetUnderlyingNotNullType(this Type propType)
         {
-            return typeof(IComparable).IsAssignableFrom(t)
-                || (Nullable.GetUnderlyingType(t) != null
-                    && typeof(IComparable).IsAssignableFrom(Nullable.GetUnderlyingType(t)));
+            var underlyingType = propType;
+            if (typeof(IDictionary).IsAssignableFrom(underlyingType) && underlyingType.IsGenericType)
+                underlyingType = underlyingType.GenericTypeArguments[1];
+            else if (typeof(IList).IsAssignableFrom(underlyingType) && underlyingType.IsGenericType)
+                underlyingType = underlyingType.GenericTypeArguments[0];
+
+            return Nullable.GetUnderlyingType(underlyingType) ?? underlyingType;
+        }
+
+        public static IEnumerable<T> Yield<T>(this T value, params T[] values)
+        {
+            return new[] { value }.Concat(values ?? Enumerable.Empty<T>());
+        }
+
+        public static IEnumerable<Comparator> GetComparators(this Type type, FieldAttribute fieldAttribute)
+        {
+            if (type == typeof(string))
+                return Enum.GetValues(typeof(Comparator)).Cast<Comparator>();
+            else if (type.IsClass || type == typeof(bool) || fieldAttribute.IsTripleIdentifier)
+                return new[] { Comparator.Equal, Comparator.NotEqual };
+            else
+                return Enum.GetValues(typeof(Comparator)).Cast<Comparator>().Where(_ => !_.IsStringSymbol());
         }
     }
 }

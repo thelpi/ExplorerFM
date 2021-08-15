@@ -145,7 +145,7 @@ namespace ExplorerFM
             var criterionValuePanel = criterionPanel.Find<StackPanel>(CriterionValuePanelName);
 
             var value = GetUiElementValue(criterionValuePanel.Children[0]);
-            if (value.IsNullOrContainsNull())
+            if (isNullCheckBox.IsChecked != true && value.IsNullOrContainsNull())
                 return null;
 
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
@@ -252,13 +252,13 @@ namespace ExplorerFM
         {
             newCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex =
                 currentCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex;
-            newCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex =
-                currentCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex;
             GetUiElementValue(
                 currentCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0],
                 newCriterion.Find<StackPanel>(CriterionValuePanelName).Children[0]);
             newCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked =
                 currentCriterion.Find<CheckBox>(IsNullCheckBoxName).IsChecked;
+            newCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex =
+                currentCriterion.Find<ComboBox>(ComparatorComboBoxName).SelectedIndex;
             newCriterion.Find<CheckBox>(IncludeNullCheckBoxName).IsChecked =
                 currentCriterion.Find<CheckBox>(IncludeNullCheckBoxName).IsChecked;
         }
@@ -308,8 +308,6 @@ namespace ExplorerFM
             var isNullCheckBox = criterionContentPanel.Find<CheckBox>(IsNullCheckBoxName);
 
             criterionValuePanel.Children.Clear();
-            includeNullCheckBox.Visibility = Visibility.Hidden;
-            isNullCheckBox.Visibility = Visibility.Hidden;
 
             if (attributeComboBox.SelectedIndex < 0)
             {
@@ -317,25 +315,19 @@ namespace ExplorerFM
             }
             else
             {
-                // TODO
                 var propInfo = attributeComboBox.SelectedItem as PropertyInfo;
-                var propType = propInfo.PropertyType;
-                comparatorCombo.ItemsSource = propType.GetComparators(false);
 
                 var propAttribute = propInfo.GetCustomAttribute<FieldAttribute>();
 
-                var nullableType = Nullable.GetUnderlyingType(propType);
-                if (nullableType != null)
-                    propType = nullableType;
+                var propType = propInfo.PropertyType.GetUnderlyingNotNullType();
 
-                if (typeof(IList).IsAssignableFrom(propType) && propType.IsGenericType)
-                    propType = propType.GenericTypeArguments.First();
+                var comparators = propType.GetComparators(propAttribute);
+
+                comparatorCombo.ItemsSource = comparators;
 
                 FrameworkElement valueElement;
 
-                if (propAttribute.IsAggregate)
-                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
-                else if (propAttribute.IsNestedSelector)
+                if (propAttribute.IsNestedSelector)
                 {
                     valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
@@ -344,13 +336,15 @@ namespace ExplorerFM
 
                     WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
                 }
-                else if (propType == typeof(bool))
-                    valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
+                else if (propAttribute.IsAggregate)
+                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propAttribute.IsSelector)
                     valueElement = SetComboBoxBindingFromAttribute(GetByTemplateKey<ComboBox>(SelectorValuePanelKey), propAttribute.Cast<SelectorFieldAttribute>());
+                else if (propType == typeof(bool))
+                    valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
                 else if (propType == typeof(DateTime))
                     valueElement = GetByTemplateKey<FrameworkElement>(DateValuePanelKey);
-                else if (propType.IsIntegerType())
+                else if (propType == typeof(int))
                     valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propType == typeof(decimal))
                     valueElement = GetNumericUpDown<decimal>(DecimalValuePanelKey, propAttribute);
@@ -361,31 +355,19 @@ namespace ExplorerFM
 
                 criterionValuePanel.Children.Add(valueElement);
 
-                // TODO
-                if (nullableType == null && !propAttribute.IsSelector && propType != typeof(string))
-                {
-                    includeNullCheckBox.Visibility = Visibility.Hidden;
-                    isNullCheckBox.Visibility = Visibility.Hidden;
-                }
-                else
-                {
-                    includeNullCheckBox.Visibility = Visibility.Visible;
-                    isNullCheckBox.Visibility = Visibility.Visible;
-                }
-
                 isNullCheckBox.RemoveRoutedEventHandlers(System.Windows.Controls.Primitives.ToggleButton.CheckedEvent);
                 isNullCheckBox.RemoveRoutedEventHandlers(System.Windows.Controls.Primitives.ToggleButton.CheckedEvent);
                 isNullCheckBox.Checked += (_1, _2) =>
                 {
                     valueElement.IsEnabled = false;
                     includeNullCheckBox.IsEnabled = false;
-                    comparatorCombo.ItemsSource = propType.GetComparators(true);
+                    comparatorCombo.ItemsSource = Comparator.Equal.Yield(Comparator.NotEqual);
                 };
                 isNullCheckBox.Unchecked += (_1, _2) =>
                 {
                     valueElement.IsEnabled = true;
                     includeNullCheckBox.IsEnabled = true;
-                    comparatorCombo.ItemsSource = propType.GetComparators(false);
+                    comparatorCombo.ItemsSource = comparators;
                 };
             }
         }

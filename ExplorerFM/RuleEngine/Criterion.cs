@@ -20,7 +20,7 @@ namespace ExplorerFM.RuleEngine
             bool isNullComparison,
             bool includeNullValue)
         {
-            if (typeof(Datas.BaseData).IsAssignableFrom(fieldValue.GetType()))
+            if (fieldValue != null && typeof(Datas.BaseData).IsAssignableFrom(fieldValue.GetType()))
                 fieldValue = (fieldValue as Datas.BaseData).Id;
 
             if (isNullComparison)
@@ -52,7 +52,6 @@ namespace ExplorerFM.RuleEngine
             }
             else
             {
-                // TODO
                 FieldName = NestedQueries.ContainsKey(targetedType)
                     ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
                     : fieldAttribute.Name;
