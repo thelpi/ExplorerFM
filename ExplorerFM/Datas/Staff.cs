@@ -16,15 +16,15 @@ namespace ExplorerFM.Datas
         public DateTime? DateOfBirth { get; set; }
         [Field("YearOfBirth", 1900, 2000)]
         public int? YearOfBirth { get; set; }
-        [Field("NationID1")]
+        [SelectorField("NationID1", nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country Nationality { get; set; }
-        [Field("NationID2")]
+        [SelectorField("NationID2", nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country SecondNationality { get; set; }
         [Field("Caps", 0, 999)]
         public int Caps { get; set; }
         [Field("IntGoals", 0, 999)]
         public int IntGoals { get; set; }
-        [Field("ClubContractID")]
+        [SelectorField("ClubContractID", nameof(DataProvider.Clubs), nameof(Club.Name))]
         public Club ClubContract { get; set; }
         [Field("DateContractStart")]
         public DateTime? DateContractStart { get; set; }

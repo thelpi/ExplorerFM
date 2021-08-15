@@ -14,7 +14,7 @@ namespace ExplorerFM.Datas
         public bool StadiumOwner { get; set; }
         [Field("PLC")]
         public bool PublicLimitedCompany { get; set; }
-        [Field("NationID")]
+        [SelectorField("NationID", nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
         public Country Country { get; set; }
         [Field("DivisionID", 0)]
         public int? DivisionId { get; set; }
@@ -28,11 +28,11 @@ namespace ExplorerFM.Datas
         public int? StadiumId { get; set; }
         [Field("StadiumReserveID", 0)]
         public int? ReserveStadiumId { get; set; }
-        [Field("Statut")]
+        [SelectorField("Statut", typeof(ClubStatut))]
         public ClubStatut Statut { get; set; }
         [Field("Bank")]
         public int? Bank { get; set; }
-        [Field("MatchDay")]
+        [SelectorField("MatchDay", typeof(DayOfWeek))]
         public DayOfWeek? MatchDay { get; set; }
         [Field("AverageAttendance", 1)]
         public int? AverageAttendance { get; set; }

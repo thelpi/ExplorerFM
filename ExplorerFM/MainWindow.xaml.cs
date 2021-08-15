@@ -144,11 +144,11 @@ namespace ExplorerFM
             var includeNullCheckBox = criterionPanel.Find<CheckBox>(IncludeNullCheckBoxName);
             var criterionValuePanel = criterionPanel.Find<StackPanel>(CriterionValuePanelName);
 
-            var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
-
             var value = GetUiElementValue(criterionValuePanel.Children[0]);
             if (value.IsNullOrContainsNull())
                 return null;
+
+            var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
             return new Criterion(
                 attrPropInfo.GetCustomAttribute<FieldAttribute>(),
@@ -317,6 +317,7 @@ namespace ExplorerFM
             }
             else
             {
+                // TODO
                 var propInfo = attributeComboBox.SelectedItem as PropertyInfo;
                 var propType = propInfo.PropertyType;
                 comparatorCombo.ItemsSource = propType.GetComparators(false);
@@ -330,32 +331,23 @@ namespace ExplorerFM
                 if (typeof(IList).IsAssignableFrom(propType) && propType.IsGenericType)
                     propType = propType.GenericTypeArguments.First();
 
-                var isCustomType = propType == typeof(Datas.Club)
-                    || propType == typeof(Datas.Country)
-                    || propType == typeof(Datas.Confederation)
-                    || propAttribute.IsNestedSelector;
-
                 FrameworkElement valueElement;
 
                 if (propAttribute.IsAggregate)
                     valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propAttribute.IsNestedSelector)
                 {
-                    var realAttribute = propAttribute.Cast<NestedSelectorFieldAttribute>();
-
                     valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
                     var valueComboBox = valueElement.Find<ComboBox>(ComboValueName);
-                    valueComboBox.ItemsSource = realAttribute.GetValuesFunc(_dataProvider);
-                    if (realAttribute.HasDisplayPropertyName)
-                        valueComboBox.DisplayMemberPath = realAttribute.DisplayPropertyName;
+                    SetComboBoxBindingFromAttribute(valueComboBox, propAttribute.Cast<SelectorFieldAttribute>());
 
                     WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
                 }
                 else if (propType == typeof(bool))
                     valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
-                else if (propType.IsEnum || propType.Namespace == typeof(Datas.BaseData).Namespace)
-                    valueElement = SetValueComboBoxProperties(GetByTemplateKey<ComboBox>(SelectorValuePanelKey), propType, () => _collectionsProvider[propType]());
+                else if (propAttribute.IsSelector)
+                    valueElement = SetComboBoxBindingFromAttribute(GetByTemplateKey<ComboBox>(SelectorValuePanelKey), propAttribute.Cast<SelectorFieldAttribute>());
                 else if (propType == typeof(DateTime))
                     valueElement = GetByTemplateKey<FrameworkElement>(DateValuePanelKey);
                 else if (propType.IsIntegerType())
@@ -369,7 +361,8 @@ namespace ExplorerFM
 
                 criterionValuePanel.Children.Add(valueElement);
 
-                if (nullableType == null && !isCustomType && propType != typeof(string))
+                // TODO
+                if (nullableType == null && !propAttribute.IsSelector && propType != typeof(string))
                 {
                     includeNullCheckBox.Visibility = Visibility.Hidden;
                     isNullCheckBox.Visibility = Visibility.Hidden;
@@ -442,15 +435,11 @@ namespace ExplorerFM
             return element;
         }
 
-        private static ComboBox SetValueComboBoxProperties(ComboBox valueComboBox, Type propType, Func<IEnumerable> getItemsFunc)
+        private ComboBox SetComboBoxBindingFromAttribute(ComboBox valueComboBox, SelectorFieldAttribute realAttribute)
         {
-            if (propType.IsEnum)
-                valueComboBox.ItemsSource = Enum.GetValues(propType);
-            else
-            {
-                valueComboBox.ItemsSource = getItemsFunc();
-                valueComboBox.DisplayMemberPath = "Name";
-            }
+            valueComboBox.ItemsSource = realAttribute.GetValuesFunc(_dataProvider);
+            if (realAttribute.HasDisplayPropertyName)
+                valueComboBox.DisplayMemberPath = realAttribute.DisplayPropertyName;
             return valueComboBox;
         }
     }

@@ -52,6 +52,7 @@ namespace ExplorerFM.RuleEngine
             }
             else
             {
+                // TODO
                 FieldName = NestedQueries.ContainsKey(targetedType)
                     ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
                     : fieldAttribute.Name;

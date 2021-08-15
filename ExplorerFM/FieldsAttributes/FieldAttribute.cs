@@ -11,6 +11,7 @@ namespace ExplorerFM.FieldsAttributes
         public bool IsAggregate => GetType() == typeof(AggregateFieldAttribute);
         public bool IsTripleIdentifier => GetType() == typeof(TripleIdFieldAttribute);
         public bool IsNestedSelector => GetType() == typeof(NestedSelectorFieldAttribute);
+        public bool IsSelector => typeof(SelectorFieldAttribute).IsAssignableFrom(GetType());
 
         public FieldAttribute(string name)
             : this(name, int.MinValue, int.MaxValue)

@@ -10,7 +10,7 @@ namespace ExplorerFM.Datas
         public string Name { get; set; }
         [Field("Name3")]
         public string Code { get; set; }
-        [Field("ContinentID")]
+        [SelectorField("ContinentID", nameof(DataProvider.Confederations), nameof(Datas.Confederation.Name))]
         public Confederation Confederation { get; set; }
         [Field("is_EU")]
         public bool IsEU { get; set; }

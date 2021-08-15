@@ -75,6 +75,7 @@
     <Compile Include="Converters\ComparatorDisplayConverter.cs" />
     <Compile Include="FieldsAttributes\AggregateFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\FieldAttribute.cs" />
+    <Compile Include="FieldsAttributes\SelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\NestedSelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\TripleIdFieldAttribute.cs" />
     <Compile Include="PlayerWindow.xaml.cs">
