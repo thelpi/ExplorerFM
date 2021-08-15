@@ -37,15 +37,14 @@ namespace ExplorerFM.RuleEngine
             else if (comparator.IsStringSymbol())
                 throw new ArgumentException("This comparator is intended for string value only.", nameof(comparator));
 
-
-            if (fieldAttribute.IsSql)
+            if (fieldAttribute.IsAggregate)
+                FieldName = string.Format(fieldAttribute.Name, includeNullValue ? 10 : 0);
+            else if (fieldAttribute.IsSql)
             {
                 FieldName = NestedQueries.ContainsKey(targetedType)
                     ? string.Format(NestedQueries[targetedType], fieldAttribute.Name)
                     : fieldAttribute.Name;
             }
-            else if (fieldAttribute.IsAggregate)
-                FieldName = string.Format(fieldAttribute.Name, includeNullValue ? 10 : 0);
             else
             {
                 var valueComponents = fieldValue as object[];

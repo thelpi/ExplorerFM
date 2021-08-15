@@ -337,20 +337,17 @@ namespace ExplorerFM
 
                 FrameworkElement valueElement;
 
-                if (!propAttribute.IsSql)
+                if (propAttribute.IsAggregate)
+                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
+                else if (!propAttribute.IsSql)
                 {
-                    if (propAttribute.IsAggregate)
-                        valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
-                    else
-                    {
-                        var underType = propType.GenericTypeArguments.First();
+                    var underType = propType.GenericTypeArguments.First();
 
-                        valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
+                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
-                        SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
+                    SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
 
-                        WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
-                    }
+                    WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
                 }
                 else if (propType == typeof(bool))
                     valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
