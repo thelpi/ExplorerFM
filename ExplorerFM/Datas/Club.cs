@@ -56,11 +56,11 @@ namespace ExplorerFM.Datas
         public int? ThirdShirtForegroundId { get; set; }
         [Field("ThirdShirtBackgroundID", 0)]
         public int? ThirdShirtBackgroundId { get; set; }
-        [Field("LikedStaffID", true)]
+        [TripleIdField("LikedStaffID")]
         public List<int> LikedStaffIds { get; set; }
-        [Field("DislikedStaffID", true)]
+        [TripleIdField("DislikedStaffID")]
         public List<int> DislikedStaffIds { get; set; }
-        [Field("RivalClubsID", true)]
+        [TripleIdField("RivalClubsID")]
         public List<int> RivalClubIds { get; set; }
 
         public List<Club> GetRivalClubs<T>(List<Club> clubs)

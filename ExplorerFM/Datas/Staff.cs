@@ -34,13 +34,13 @@ namespace ExplorerFM.Datas
         public int? Value { get; set; }
         [Field("Wage", 1)]
         public int? Wage { get; set; }
-        [Field("FavClubID", true)]
+        [TripleIdField("FavClubID")]
         public List<int> FavClubIds { get; set; }
-        [Field("FavStaffID", true)]
+        [TripleIdField("FavStaffID")]
         public List<int> FavStaffIds { get; set; }
-        [Field("DislikeClubID", true)]
+        [TripleIdField("DislikeClubID")]
         public List<int> DislikeClubIds { get; set; }
-        [Field("DislikeStaffID", true)]
+        [TripleIdField("DislikeStaffID")]
         public List<int> DislikeStaffIds { get; set; }
         [Field("CurrentAbility", 1, 200)]
         public int? CurrentAbility { get; set; }
