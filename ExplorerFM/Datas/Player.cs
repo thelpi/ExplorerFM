@@ -6,11 +6,11 @@ namespace ExplorerFM.Datas
 {
     public class Player : Staff
     {
-        [NestedSelectorField("SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_side.player_ID = player.ID", 1, 20)]
+        [NestedSelectorField("SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_side.player_ID = player.ID", 1, 20, typeof(Side))]
         public Dictionary<Side, int?> Sides { get; set; }
-        [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20)]
+        [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20, typeof(Position))]
         public Dictionary<Position, int?> Positions { get; set; }
-        [NestedSelectorField("SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_attribute.player_ID = player.ID", 1, 20)]
+        [NestedSelectorField("SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_attribute.player_ID = player.ID", 1, 20, nameof(DataProvider.Attributes), nameof(Attribute.Name))]
         public Dictionary<Attribute, int?> Attributes { get; set; }
 
         [Field("LeftFoot", 1, 20)]

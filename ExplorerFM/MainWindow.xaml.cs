@@ -341,11 +341,14 @@ namespace ExplorerFM
                     valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propAttribute.IsNestedSelector)
                 {
-                    var underType = propType.GenericTypeArguments.First();
+                    var realAttribute = propAttribute.Cast<NestedSelectorFieldAttribute>();
 
                     valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
-                    SetValueComboBoxProperties(valueElement.Find<ComboBox>(ComboValueName), underType, () => _dataProvider.Attributes);
+                    var valueComboBox = valueElement.Find<ComboBox>(ComboValueName);
+                    valueComboBox.ItemsSource = realAttribute.GetValuesFunc(_dataProvider);
+                    if (realAttribute.HasDisplayPropertyName)
+                        valueComboBox.DisplayMemberPath = realAttribute.DisplayPropertyName;
 
                     WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
                 }

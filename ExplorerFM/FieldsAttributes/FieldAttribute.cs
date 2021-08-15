@@ -26,5 +26,10 @@ namespace ExplorerFM.FieldsAttributes
             Min = min;
             Max = max;
         }
+
+        public T Cast<T>() where T : FieldAttribute
+        {
+            return this as T;
+        }
     }
 }
