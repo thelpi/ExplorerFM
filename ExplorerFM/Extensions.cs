@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using ExplorerFM.Datas;
+using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
@@ -192,6 +193,13 @@ namespace ExplorerFM
         public static T Find<T>(this FrameworkElement element, string name) where T : UIElement
         {
             return element.FindName(name) as T;
+        }
+
+        public static bool IsNullOrContainsNull(this object value)
+        {
+            return value == null
+                || (value is object[]
+                    && (value as object[]).Contains(null));
         }
     }
 }

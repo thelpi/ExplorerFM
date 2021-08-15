@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using ExplorerFM.FieldsAttributes;
 using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using Xceed.Wpf.Toolkit;
@@ -146,7 +147,7 @@ namespace ExplorerFM
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
             var value = GetUiElementValue(criterionValuePanel.Children[0]);
-            if (value == null || (value is object[] && (value as object[])[0] == null || (value as object[])[1] == null))
+            if (value.IsNullOrContainsNull())
                 return null;
 
             return new Criterion(

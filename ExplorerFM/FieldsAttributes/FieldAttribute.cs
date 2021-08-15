@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ExplorerFM
+namespace ExplorerFM.FieldsAttributes
 {
     public class FieldAttribute : Attribute
     {

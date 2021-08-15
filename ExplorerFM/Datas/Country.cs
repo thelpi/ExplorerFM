@@ -1,4 +1,6 @@
-﻿namespace ExplorerFM.Datas
+﻿using ExplorerFM.FieldsAttributes;
+
+namespace ExplorerFM.Datas
 {
     public class Country : BaseData
     {
