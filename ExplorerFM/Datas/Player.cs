@@ -6,6 +6,8 @@ namespace ExplorerFM.Datas
 {
     public class Player : Staff
     {
+        public const int PositioningTolerance = 15;
+
         [NestedSelectorField("SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_side.player_ID = player.ID", 1, 20, typeof(Side))]
         public Dictionary<Side, int?> Sides { get; set; }
         [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20, typeof(Position))]
