@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
+using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media;
 using ExplorerFM.Datas;
@@ -25,19 +25,11 @@ namespace ExplorerFM.Converters
         {
             var playerValue = value as Player;
 
-            var positioningItems = new List<PositioningItem>();
-
-            foreach (var position in Positions)
-            {
-                positioningItems.Add(new PositioningItem(position, new Dictionary<Side, int>
-                {
-                    { Side.Center, playerValue.GetPositionSideRate(position, Side.Center) },
-                    { Side.Right, playerValue.GetPositionSideRate(position, Side.Right) },
-                    { Side.Left, playerValue.GetPositionSideRate(position, Side.Left) }
-                }));
-            }
-
-            return positioningItems;
+            return Positions
+                .Select(p =>
+                    new PositioningItemGroup(p, Sides
+                        .ToDictionary(s => s, s => playerValue.GetPositionSideRate(p, s))))
+                .ToList();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -45,33 +37,28 @@ namespace ExplorerFM.Converters
             throw new NotImplementedException();
         }
 
+        public class PositioningItemGroup
+        {
+            public IReadOnlyCollection<PositioningItem> Items { get; }
+
+            public PositioningItemGroup(Position position, Dictionary<Side, int> rates)
+            {
+                Items = rates
+                    .Select(s => new PositioningItem(position, s.Key, s.Value))
+                    .ToList();
+            }
+        }
+
         public class PositioningItem
         {
-            public Color[] Colors { get; set; }
-            public string[] ToolTips { get; set; }
-            public Visibility[] Visibilities { get; set; }
+            public Color Color { get; }
+            public string ToolTip { get; }
 
-            public PositioningItem(Position position, Dictionary<Side, int> rates)
+            public PositioningItem(Position position, Side side, int rate)
             {
-                Colors = new Color[Sides.Length];
-                ToolTips = new string[Sides.Length];
-                Visibilities = new Visibility[Sides.Length];
-                int i = 0;
-                foreach (var side in Sides)
-                {
-                    if ((position == Position.GoalKeeper || position == Position.Sweeper) && side != Side.Center)
-                    {
-                        Visibilities[i] = Visibility.Hidden;
-                    }
-                    else
-                    {
-                        Visibilities[i] = Visibility.Visible;
-                        var noteRate = rates[side];
-                        Colors[i] = GetColorFromRate(noteRate);
-                        ToolTips[i] = $"{position.ToCode()} {side.ToCode()} ({noteRate})";
-                    }
-                    i++;
-                }
+                var invisible = (position == Position.GoalKeeper || position == Position.Sweeper) && side != Side.Center;
+                Color = invisible ? Colors.Green : GetColorFromRate(rate);
+                ToolTip = $"{position.ToCode()} {side.ToCode()} ({rate})";
             }
 
             private Color GetColorFromRate(int rate)
