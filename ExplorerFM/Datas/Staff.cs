@@ -56,10 +56,10 @@ namespace ExplorerFM.Datas
         public string Fullname => string.IsNullOrWhiteSpace(Commonname)
             ? string.Concat(Lastname, ", ", Firstname)
             : Commonname;
-        public string ActualDateOfBirth => DateOfBirth.HasValue
-            ? DateOfBirth.Value.ToString("yyyy-MM-dd")
+        public DateTime? ActualDateOfBirth => DateOfBirth.HasValue
+            ? DateOfBirth.Value
             : (YearOfBirth.HasValue
-                ? YearOfBirth.Value.ToString()
-                : MissingDataString);
+                ? new DateTime(YearOfBirth.Value, 7, 1)
+                : default(DateTime?));
     }
 }

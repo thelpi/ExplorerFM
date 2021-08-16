@@ -73,6 +73,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\ComparatorDisplayConverter.cs" />
+    <Compile Include="Converters\ClubDisplayConverter.cs" />
+    <Compile Include="Converters\CountryDisplayConverter.cs" />
+    <Compile Include="Converters\DateDisplayConverter.cs" />
+    <Compile Include="Converters\PlayerPositioningDisplayConverter.cs" />
     <Compile Include="FieldsAttributes\AggregateFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\FieldAttribute.cs" />
     <Compile Include="FieldsAttributes\SelectorFieldAttribute.cs" />

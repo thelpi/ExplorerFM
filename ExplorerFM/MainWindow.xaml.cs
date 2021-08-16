@@ -104,9 +104,15 @@ namespace ExplorerFM
             RoutedEventArgs e)
         {
             var criteriaSet = ExtractCriteriaSet(CriteriaSetPanel);
-            HideWorkAndDisplay(
-                () => _dataProvider.GetPlayersByCriteria(criteriaSet),
-                players => PlayersView.ItemsSource = players);
+            var response = criteriaSet.Criteria.Count == 0
+                ? System.Windows.MessageBox.Show("Extracts without criteria ?", "ExplorerFM", MessageBoxButton.YesNo)
+                : MessageBoxResult.Yes;
+            if (response == MessageBoxResult.Yes)
+            {
+                HideWorkAndDisplay(
+                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
+                    players => PlayersView.ItemsSource = players);
+            }
         }
 
         private static CriteriaSet ExtractCriteriaSet(StackPanel criteriaSetPanel)
@@ -423,6 +429,13 @@ namespace ExplorerFM
             if (realAttribute.HasDisplayPropertyName)
                 valueComboBox.DisplayMemberPath = realAttribute.DisplayPropertyName;
             return valueComboBox;
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            ScrollViewer scv = (ScrollViewer)sender;
+            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
+            e.Handled = true;
         }
     }
 }
