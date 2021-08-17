@@ -109,9 +109,9 @@ namespace ExplorerFM
                 || comparator == Comparator.NotLike;
         }
 
-        public static List<PropertyInfo> GetAttributeProperties(this Type t)
+        public static List<PropertyInfo> GetAttributeProperties<T>(this Type t) where T : System.Attribute
         {
-            return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(FieldAttribute), true).Length > 0).ToList();
+            return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(T), true).Length > 0).ToList();
         }
 
         // not my code

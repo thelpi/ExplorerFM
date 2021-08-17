@@ -52,10 +52,10 @@ namespace ExplorerFM
 
             _dataProvider = new DataProvider(Settings.Default.ConnectionString);
 
-            _attributeProperties = typeof(Datas.Player).GetAttributeProperties()
-                .Concat(typeof(Datas.Club).GetAttributeProperties())
-                .Concat(typeof(Datas.Country).GetAttributeProperties())
-                .Concat(typeof(Datas.Confederation).GetAttributeProperties())
+            _attributeProperties = typeof(Datas.Player).GetAttributeProperties<FieldAttribute>()
+                .Concat(typeof(Datas.Club).GetAttributeProperties<FieldAttribute>())
+                .Concat(typeof(Datas.Country).GetAttributeProperties<FieldAttribute>())
+                .Concat(typeof(Datas.Confederation).GetAttributeProperties<FieldAttribute>())
                 .ToList();
 
             _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
@@ -64,6 +64,38 @@ namespace ExplorerFM
                 { typeof(Datas.Club), () => _dataProvider.Clubs },
                 { typeof(Datas.Confederation), () => _dataProvider.Confederations },
             };
+
+            var allColumnFields = typeof(Datas.Player).GetAttributeProperties<GridViewAttribute>()
+                .Concat(typeof(Datas.Club).GetAttributeProperties<GridViewAttribute>())
+                .Concat(typeof(Datas.Country).GetAttributeProperties<GridViewAttribute>())
+                .Concat(typeof(Datas.Confederation).GetAttributeProperties<GridViewAttribute>())
+                .ToList();
+
+            foreach (var columnField in allColumnFields)
+            {
+                var fullPath = columnField.Name;
+                if (columnField.DeclaringType == typeof(Datas.Confederation))
+                    fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", nameof(Datas.Country.Confederation), ".", fullPath);
+                if (columnField.DeclaringType == typeof(Datas.Country))
+                    fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", fullPath);
+                if (columnField.DeclaringType == typeof(Datas.Club))
+                    fullPath = string.Concat(nameof(Datas.Player.ClubContract), ".", fullPath);
+
+                var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
+                foreach (var attribute in attributes)
+                {
+                    PlayersGrid.Columns.Add(new GridViewColumn
+                    {
+                        Header = attribute.Name,
+                        DisplayMemberBinding = new Binding
+                        {
+                            Path = attribute.NoPath ? null : new PropertyPath(fullPath),
+                            Converter = attribute.Converter,
+                            ConverterParameter = attribute.ConverterParameter
+                        }
+                    });
+                }
+            }
 
             HideWorkAndDisplay<object>(
                 () =>

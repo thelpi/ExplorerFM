@@ -12,7 +12,7 @@ namespace ExplorerFM.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var player = value as Player;
-            var isBest = parameter.ToString().Equals(bool.TrueString, StringComparison.InvariantCultureIgnoreCase);
+            var isBest = (bool)parameter;
 
             var bestPositions = GetPositioning(player.Positions, true, null);
             var bestSides = GetPositioning(player.Sides, true, null);

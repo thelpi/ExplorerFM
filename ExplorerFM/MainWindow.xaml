@@ -9,11 +9,6 @@
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
-        <cvt:PositioningDisplayConverter x:Key="PositioningDisplayConverter" />
-        <cvt:PlayerPositioningDisplayConverter x:Key="PlayerPositioningDisplayConverter" />
-        <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
-        <cvt:ClubDisplayConverter x:Key="ClubDisplayConverter" />
-        <cvt:DateDisplayConverter x:Key="DateDisplayConverter" />
         <cvt:ComparatorDisplayConverter x:Key="ComparatorDisplayConverter" />
         <ControlTemplate x:Key="CriteriaPanelTemplate">
             <Border Margin="5" BorderThickness="0.5" BorderBrush="Gainsboro">
@@ -112,60 +107,7 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.View>
-                        <GridView AllowsColumnReorder="True">
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Fullname}" />
-                            <GridViewColumn Header="Date of birth" DisplayMemberBinding="{Binding Path=ActualDateOfBirth, Converter={StaticResource DateDisplayConverter}}" />
-                            <GridViewColumn Header="Country" DisplayMemberBinding="{Binding Path=Nationality, Converter={StaticResource CountryDisplayConverter}}" />
-                            <GridViewColumn Header="2nd Country" DisplayMemberBinding="{Binding Path=SecondNationality, Converter={StaticResource CountryDisplayConverter}}" />
-                            <GridViewColumn Header="Club" DisplayMemberBinding="{Binding Path=ClubContract, Converter={StaticResource ClubDisplayConverter}}" />
-                            <GridViewColumn Header="Contract end" DisplayMemberBinding="{Binding Path=DateContractEnd, Converter={StaticResource DateDisplayConverter}}" />
-                            <GridViewColumn Header="Tot. attr." DisplayMemberBinding="{Binding Path=AttributesTotal}" />
-                            <GridViewColumn Header="Caps" DisplayMemberBinding="{Binding Path=Caps}" />
-                            <GridViewColumn Header="Int. goals" DisplayMemberBinding="{Binding Path=IntGoals}" />
-                            <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Path=Value}" />
-                            <GridViewColumn Header="Curr. abil." DisplayMemberBinding="{Binding Path=CurrentAbility}" />
-                            <GridViewColumn Header="Pot. abil." DisplayMemberBinding="{Binding Path=PotentialAbility}" />
-                            <GridViewColumn Header="Home rep." DisplayMemberBinding="{Binding Path=HomeReputation}" />
-                            <GridViewColumn Header="Current rep." DisplayMemberBinding="{Binding Path=CurrentReputation}" />
-                            <GridViewColumn Header="World rep." DisplayMemberBinding="{Binding Path=WorldReputation}" />
-                            <GridViewColumn Header="Best pos." DisplayMemberBinding="{Binding Converter={StaticResource PositioningDisplayConverter}, ConverterParameter=true}" />
-                            <GridViewColumn Header="Altern. pos." DisplayMemberBinding="{Binding Converter={StaticResource PositioningDisplayConverter}, ConverterParameter=false}" />
-                            <!--<GridViewColumn Header="Positioning">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <ListBox Background="Green" ItemsSource="{Binding Converter={StaticResource PlayerPositioningDisplayConverter}}">
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <ListBox ItemsSource="{Binding Path=Items}">
-                                                        <ListBox.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                                                            </ItemsPanelTemplate>
-                                                        </ListBox.ItemsPanel>
-                                                        <ListBox.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Rectangle
-                                                                    Height="15" Width="25"
-                                                                    VerticalAlignment="Center"
-                                                                    HorizontalAlignment="Center"
-                                                                    ToolTip="{Binding Path=ToolTip}">
-                                                                    <Rectangle.Fill>
-                                                                        <RadialGradientBrush>
-                                                                            <GradientStop Color="{Binding Path=Color}" Offset="0.33" />
-                                                                            <GradientStop Color="Green"  Offset="1" />
-                                                                        </RadialGradientBrush>
-                                                                    </Rectangle.Fill>
-                                                                </Rectangle>
-                                                            </DataTemplate>
-                                                        </ListBox.ItemTemplate>
-                                                    </ListBox>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>-->
-                        </GridView>
+                        <GridView x:Name="PlayersGrid" AllowsColumnReorder="True" />
                     </ListView.View>
                 </ListView>
             </Grid>
