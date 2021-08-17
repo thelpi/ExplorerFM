@@ -84,6 +84,7 @@
     <Compile Include="FieldsAttributes\SelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\NestedSelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\TripleIdFieldAttribute.cs" />
+    <Compile Include="GuiExtensions.cs" />
     <Compile Include="PlayerWindow.xaml.cs">
       <DependentUpon>PlayerWindow.xaml</DependentUpon>
     </Compile>

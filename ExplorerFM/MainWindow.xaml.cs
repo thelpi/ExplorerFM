@@ -17,30 +17,30 @@ namespace ExplorerFM
 {
     public partial class MainWindow : Window
     {
-        public const string CriteriaPanelName = "CriteriaPanel";
-        public const string AttributeComboBoxName = "AttributeComboBox";
-        public const string ComparatorComboBoxName = "ComparatorComboBox";
-        public const string IsNullCheckBoxName = "IsNullCheckBox";
-        public const string IncludeNullCheckBoxName = "IncludeNullCheckBox";
-        public const string CriterionValuePanelName = "CriterionValuePanel";
-        public const string RemoveCriteriaButtonName = "RemoveCriteriaButton";
-        public const string AddCriterionButtonName = "AddCriterionButton";
-        public const string CopyCriteriaButtonName = "CopyCriteriaButton";
-        public const string RemoveCriterionButtonName = "RemoveCriterionButton";
-        public const string ComboValueName = "ComboValue";
-        public const string NumericValueName = "NumericValue";
+        private readonly string CriteriaPanelName = "CriteriaPanel";
+        private readonly string AttributeComboBoxName = "AttributeComboBox";
+        private readonly string ComparatorComboBoxName = "ComparatorComboBox";
+        private readonly string IsNullCheckBoxName = "IsNullCheckBox";
+        private readonly string IncludeNullCheckBoxName = "IncludeNullCheckBox";
+        private readonly string CriterionValuePanelName = "CriterionValuePanel";
+        private readonly string RemoveCriteriaButtonName = "RemoveCriteriaButton";
+        private readonly string AddCriterionButtonName = "AddCriterionButton";
+        private readonly string CopyCriteriaButtonName = "CopyCriteriaButton";
+        private readonly string RemoveCriterionButtonName = "RemoveCriterionButton";
+        private readonly string ComboValueName = "ComboValue";
+        private readonly string NumericValueName = "NumericValue";
 
-        public const string CriteriaPanelTemplateKey = "CriteriaPanelTemplate";
-        public const string OrLabelTemplateKey = "OrLabelTemplate";
-        public const string AndLabelTemplateKey = "AndLabelTemplate";
-        public const string CriterionPanelTemplateKey = "CriterionPanelTemplate";
-        public const string IntegerValuePanelKey = "IntegerValuePanel";
-        public const string DecimalValuePanelKey = "DecimalValuePanel";
-        public const string StringValuePanelKey = "StringValuePanel";
-        public const string DateValuePanelKey = "DateValuePanel";
-        public const string SelectorValuePanelKey = "SelectorValuePanel";
-        public const string BooleanValuePanelKey = "BooleanValuePanel";
-        public const string SelectorIntegerValuePanelKey = "SelectorIntegerValuePanel";
+        private readonly string CriteriaPanelTemplateKey = "CriteriaPanelTemplate";
+        private readonly string OrLabelTemplateKey = "OrLabelTemplate";
+        private readonly string AndLabelTemplateKey = "AndLabelTemplate";
+        private readonly string CriterionPanelTemplateKey = "CriterionPanelTemplate";
+        private readonly string IntegerValuePanelKey = "IntegerValuePanel";
+        private readonly string DecimalValuePanelKey = "DecimalValuePanel";
+        private readonly string StringValuePanelKey = "StringValuePanel";
+        private readonly string DateValuePanelKey = "DateValuePanel";
+        private readonly string SelectorValuePanelKey = "SelectorValuePanel";
+        private readonly string BooleanValuePanelKey = "BooleanValuePanel";
+        private readonly string SelectorIntegerValuePanelKey = "SelectorIntegerValuePanel";
 
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
@@ -52,14 +52,9 @@ namespace ExplorerFM
         {
             InitializeComponent();
 
+            _attributeProperties = Extensions.GetAllAttribute<FieldAttribute>();
+
             _dataProvider = new DataProvider(Settings.Default.ConnectionString);
-
-            _attributeProperties = typeof(Datas.Player).GetAttributeProperties<FieldAttribute>()
-                .Concat(typeof(Datas.Club).GetAttributeProperties<FieldAttribute>())
-                .Concat(typeof(Datas.Country).GetAttributeProperties<FieldAttribute>())
-                .Concat(typeof(Datas.Confederation).GetAttributeProperties<FieldAttribute>())
-                .ToList();
-
             _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
             {
                 { typeof(Datas.Country), () => _dataProvider.Countries },
@@ -67,56 +62,15 @@ namespace ExplorerFM
                 { typeof(Datas.Confederation), () => _dataProvider.Confederations },
             };
 
-            var allColumnFields = typeof(Datas.Player).GetAttributeProperties<GridViewAttribute>()
-                .Concat(typeof(Datas.Club).GetAttributeProperties<GridViewAttribute>())
-                .Concat(typeof(Datas.Country).GetAttributeProperties<GridViewAttribute>())
-                .Concat(typeof(Datas.Confederation).GetAttributeProperties<GridViewAttribute>())
-                .ToList();
-
+            var allColumnFields = Extensions.GetAllAttribute<GridViewAttribute>();
             foreach (var columnField in allColumnFields)
             {
-                var fullPath = columnField.Name;
-                if (columnField.DeclaringType == typeof(Datas.Confederation))
-                    fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", nameof(Datas.Country.Confederation), ".", fullPath);
-                else if (columnField.DeclaringType == typeof(Datas.Country))
-                    fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", fullPath);
-                else if (columnField.DeclaringType == typeof(Datas.Club))
-                    fullPath = string.Concat(nameof(Datas.Player.ClubContract), ".", fullPath);
-
+                var fullPath = columnField.GetPlayerPropertyPath();
                 var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
                 foreach (var attribute in attributes)
                 {
-                    var columnHeader = new GridViewColumnHeader
-                    {
-                        Content = attribute.Name,
-                    };
-                    if (typeof(IComparable).IsAssignableFrom(columnField.PropertyType)
-                        || (Nullable.GetUnderlyingType(columnField.PropertyType) != null
-                            && typeof(IComparable).IsAssignableFrom(Nullable.GetUnderlyingType(columnField.PropertyType))))
-                    {
-                        columnHeader.Click += (_1, _2) =>
-                        {
-                            var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
-                            if (source != null)
-                            {
-                                PlayersView.ItemsSource = _descendingSort
-                                    ? source.OrderByDescending(_ => _.GetPropertyValue(columnField))
-                                    : source.OrderBy(_ => _.GetPropertyValue(columnField));
-                                _descendingSort = !_descendingSort;
-                            }
-                        };
-                    }
-
-                    PlayersGrid.Columns.Add(new GridViewColumn
-                    {
-                        Header = columnHeader,
-                        DisplayMemberBinding = new Binding
-                        {
-                            Path = attribute.NoPath ? null : new PropertyPath(fullPath),
-                            Converter = attribute.Converter,
-                            ConverterParameter = attribute.ConverterParameter
-                        }
-                    });
+                    PlayersGrid.Columns.Add(
+                        GetAttributeColumn(columnField, fullPath, attribute));
                 }
             }
 
@@ -129,13 +83,39 @@ namespace ExplorerFM
                 nullDummy => { });
         }
 
-        private void PlayersView_MouseDoubleClick( object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void PlayersView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var pItem = PlayersView.SelectedItem;
             if (pItem != null)
             {
                 new PlayerWindow(pItem as Datas.Player).ShowDialog();
             }
+        }
+
+        private void SearchPlayersButton_Click(object sender, RoutedEventArgs e)
+        {
+            var criteriaSet = ExtractCriteriaSet(CriteriaSetPanel);
+            var response = criteriaSet.Criteria.Count == 0
+                ? System.Windows.MessageBox.Show("Extracts without criteria ?", "ExplorerFM", MessageBoxButton.YesNo)
+                : MessageBoxResult.Yes;
+            if (response == MessageBoxResult.Yes)
+            {
+                HideWorkAndDisplay(
+                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
+                    players => PlayersView.ItemsSource = players);
+            }
+        }
+
+        private void AddCriteriaSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddCriteriaSet(true);
+        }
+
+        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            ScrollViewer scv = (ScrollViewer)sender;
+            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
+            e.Handled = true;
         }
 
         private void HideWorkAndDisplay<T>(Func<T> backgroundFunc, Action<T> foregroundFunc)
@@ -154,23 +134,38 @@ namespace ExplorerFM
             });
         }
 
-        private void SearchPlayersButton_Click(
-            object sender,
-            RoutedEventArgs e)
+        private GridViewColumn GetAttributeColumn(PropertyInfo columnField, string fullPath, GridViewAttribute attribute)
         {
-            var criteriaSet = ExtractCriteriaSet(CriteriaSetPanel);
-            var response = criteriaSet.Criteria.Count == 0
-                ? System.Windows.MessageBox.Show("Extracts without criteria ?", "ExplorerFM", MessageBoxButton.YesNo)
-                : MessageBoxResult.Yes;
-            if (response == MessageBoxResult.Yes)
+            var columnHeader = new GridViewColumnHeader
             {
-                HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
-                    players => PlayersView.ItemsSource = players);
-            }
+                Content = attribute.Name,
+            };
+            columnHeader.Click += (_1, _2) =>
+            {
+                var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
+                if (source != null)
+                {
+                    PlayersView.ItemsSource = _descendingSort
+                        ? source.OrderByDescending(_ => _.GetSortablePropertyValue(columnField, attribute))
+                        : source.OrderBy(_ => _.GetSortablePropertyValue(columnField, attribute));
+                    _descendingSort = !_descendingSort;
+                }
+            };
+
+            var column = new GridViewColumn
+            {
+                Header = columnHeader,
+                DisplayMemberBinding = new Binding
+                {
+                    Path = attribute.NoPath ? null : new PropertyPath(fullPath),
+                    Converter = attribute.Converter,
+                    ConverterParameter = attribute.ConverterParameter
+                }
+            };
+            return column;
         }
 
-        private static CriteriaSet ExtractCriteriaSet(StackPanel criteriaSetPanel)
+        private CriteriaSet ExtractCriteriaSet(StackPanel criteriaSetPanel)
         {
             var criteriaSets = new List<CriteriaSet>();
 
@@ -193,7 +188,7 @@ namespace ExplorerFM
             return new CriteriaSet(true, criteriaSets.ToArray());
         }
 
-        private static Criterion ExtractCriterion(StackPanel criterionPanel)
+        private Criterion ExtractCriterion(StackPanel criterionPanel)
         {
             var attributeComboBox = criterionPanel.Find<ComboBox>(AttributeComboBoxName);
             var comparatorComboBox = criterionPanel.Find<ComboBox>(ComparatorComboBoxName);
@@ -220,7 +215,7 @@ namespace ExplorerFM
                 includeNullCheckBox.IsChecked == true);
         }
 
-        private static object GetUiElementValue(UIElement valuatedElement, UIElement elementToValuate = null)
+        private object GetUiElementValue(UIElement valuatedElement, UIElement elementToValuate = null)
         {
             var elementType = valuatedElement.GetType();
             if (elementType == typeof(StackPanel))
@@ -275,14 +270,9 @@ namespace ExplorerFM
                 throw new NotSupportedException();
         }
 
-        private void AddCriteriaSetButton_Click(object sender, RoutedEventArgs e)
-        {
-            AddCriteriaSet(true);
-        }
-
         private void AddCriteriaSet(bool addFirstCriterion)
         {
-            var criteriaSetBorder = GetByTemplateKey<Border>(CriteriaPanelTemplateKey);
+            var criteriaSetBorder = this.GetByTemplateKey<Border>(CriteriaPanelTemplateKey);
             var criteriaPanel = criteriaSetBorder.Find<StackPanel>(CriteriaPanelName);
 
             criteriaSetBorder.Find<Button>(RemoveCriteriaButtonName).Click +=
@@ -309,7 +299,7 @@ namespace ExplorerFM
             }
         }
 
-        private static void CopyCriterion(StackPanel newCriterion, StackPanel currentCriterion)
+        private void CopyCriterion(StackPanel newCriterion, StackPanel currentCriterion)
         {
             newCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex =
                 currentCriterion.Find<ComboBox>(AttributeComboBoxName).SelectedIndex;
@@ -326,7 +316,7 @@ namespace ExplorerFM
 
         private void AddCriterion(StackPanel criteriaPanel)
         {
-            var criterionPanel = GetByTemplateKey<StackPanel>(CriterionPanelTemplateKey);
+            var criterionPanel = this.GetByTemplateKey<StackPanel>(CriterionPanelTemplateKey);
 
             var attributeComboBox = criterionPanel.Find<ComboBox>(AttributeComboBoxName);
             var comparatorComboBox = criterionPanel.Find<ComboBox>(ComparatorComboBoxName);
@@ -390,27 +380,32 @@ namespace ExplorerFM
 
                 if (propAttribute.IsNestedSelector)
                 {
-                    valueElement = GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
+                    valueElement = this.GetByTemplateKey<FrameworkElement>(SelectorIntegerValuePanelKey);
 
-                    var valueComboBox = valueElement.Find<ComboBox>(ComboValueName);
-                    SetComboBoxBindingFromAttribute(valueComboBox, propAttribute.Cast<SelectorFieldAttribute>());
+                    valueElement
+                        .Find<ComboBox>(ComboValueName)
+                        .WithBindingMaxFromAttribute(propAttribute.Cast<SelectorFieldAttribute>(), _dataProvider);
 
-                    WithMinMaxFromAttribute(valueElement.Find<IntegerUpDown>(NumericValueName), propAttribute);
+                    valueElement
+                        .Find<IntegerUpDown>(NumericValueName)
+                        .WithMinMaxFromAttribute(propAttribute);
                 }
                 else if (propAttribute.IsAggregate)
-                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
+                    valueElement = this.GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propAttribute.IsSelector)
-                    valueElement = SetComboBoxBindingFromAttribute(GetByTemplateKey<ComboBox>(SelectorValuePanelKey), propAttribute.Cast<SelectorFieldAttribute>());
+                    valueElement = this
+                        .GetByTemplateKey<ComboBox>(SelectorValuePanelKey)
+                        .WithBindingMaxFromAttribute(propAttribute.Cast<SelectorFieldAttribute>(), _dataProvider);
                 else if (propType == typeof(bool))
-                    valueElement = GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
+                    valueElement = this.GetByTemplateKey<FrameworkElement>(BooleanValuePanelKey);
                 else if (propType == typeof(DateTime))
-                    valueElement = GetByTemplateKey<FrameworkElement>(DateValuePanelKey);
+                    valueElement = this.GetByTemplateKey<FrameworkElement>(DateValuePanelKey);
                 else if (propType == typeof(int))
-                    valueElement = GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
+                    valueElement = this.GetNumericUpDown<int>(IntegerValuePanelKey, propAttribute);
                 else if (propType == typeof(decimal))
-                    valueElement = GetNumericUpDown<decimal>(DecimalValuePanelKey, propAttribute);
+                    valueElement = this.GetNumericUpDown<decimal>(DecimalValuePanelKey, propAttribute);
                 else if (propType == typeof(string))
-                    valueElement = GetByTemplateKey<FrameworkElement>(StringValuePanelKey);
+                    valueElement = this.GetByTemplateKey<FrameworkElement>(StringValuePanelKey);
                 else
                     throw new NotSupportedException();
 
@@ -433,7 +428,17 @@ namespace ExplorerFM
             }
         }
 
-        private static void RemoveCriteriaBase(Panel containerPanel, UIElement relatedContent)
+        private void AddContentGroup(Panel containerPanel, UIElement groupContent, bool isOr)
+        {
+            if (containerPanel.Children.Count > 0)
+            {
+                containerPanel.Children.Add(this.GetByTemplateKey<Label>(isOr ? OrLabelTemplateKey : AndLabelTemplateKey));
+            }
+
+            containerPanel.Children.Add(groupContent);
+        }
+
+        private void RemoveCriteriaBase(Panel containerPanel, UIElement relatedContent)
         {
             var removedIndex = containerPanel.Children.IndexOf(relatedContent);
             containerPanel.Children.RemoveAt(removedIndex);
@@ -447,50 +452,6 @@ namespace ExplorerFM
                 parentContainer.Find<Button>(RemoveCriteriaButtonName)
                     .RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             }
-        }
-
-        private void AddContentGroup(Panel containerPanel, UIElement groupContent, bool isOr)
-        {
-            if (containerPanel.Children.Count > 0)
-            {
-                containerPanel.Children.Add(GetByTemplateKey<Label>(isOr ? OrLabelTemplateKey : AndLabelTemplateKey));
-            }
-
-            containerPanel.Children.Add(groupContent);
-        }
-
-        private T GetByTemplateKey<T>(string key) where T : UIElement
-        {
-            return (FindResource(key) as ControlTemplate).LoadContent() as T;
-        }
-
-        private CommonNumericUpDown<T> GetNumericUpDown<T>(string key, FieldAttribute attribute)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            return WithMinMaxFromAttribute(GetByTemplateKey<CommonNumericUpDown<T>>(key), attribute);
-        }
-
-        private static CommonNumericUpDown<T> WithMinMaxFromAttribute<T>(CommonNumericUpDown<T> element, FieldAttribute attribute)
-            where T : struct, IFormattable, IComparable<T>
-        {
-            element.Minimum = (T)Convert.ChangeType(attribute.Min, typeof(T));
-            element.Maximum = (T)Convert.ChangeType(attribute.Max, typeof(T));
-            return element;
-        }
-
-        private ComboBox SetComboBoxBindingFromAttribute(ComboBox valueComboBox, SelectorFieldAttribute realAttribute)
-        {
-            valueComboBox.ItemsSource = realAttribute.GetValuesFunc(_dataProvider);
-            if (realAttribute.HasDisplayPropertyName)
-                valueComboBox.DisplayMemberPath = realAttribute.DisplayPropertyName;
-            return valueComboBox;
-        }
-
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            ScrollViewer scv = (ScrollViewer)sender;
-            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
-            e.Handled = true;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ExplorerFM.FieldsAttributes;
 
@@ -62,16 +63,29 @@ namespace ExplorerFM.Datas
                 .Sum(_ => _.Value ?? 0);
         }
 
-        public object GetPropertyValue(System.Reflection.PropertyInfo columnField)
+        public object GetSortablePropertyValue(
+            System.Reflection.PropertyInfo columnField,
+            GridViewAttribute gridViewAttribute)
         {
+            object sourceValue = null;
             if (columnField.DeclaringType == typeof(Confederation))
-                return Nationality?.Confederation == null ? null : columnField.GetValue(Nationality?.Confederation);
+                sourceValue = Nationality?.Confederation == null ? null : columnField.GetValue(Nationality?.Confederation);
             else if (columnField.DeclaringType == typeof(Country))
-                return Nationality == null ? null : columnField.GetValue(Nationality);
+                sourceValue = Nationality == null ? null : columnField.GetValue(Nationality);
             else if (columnField.DeclaringType == typeof(Club))
-                return ClubContract == null ? null : columnField.GetValue(ClubContract);
+                sourceValue = ClubContract == null ? null : columnField.GetValue(ClubContract);
             else
-                return columnField.GetValue(this);
+                sourceValue = columnField.GetValue(this);
+
+            var sourceType = Nullable.GetUnderlyingType(columnField.PropertyType) ?? columnField.PropertyType;
+            if (typeof(IComparable).IsAssignableFrom(sourceType))
+                return sourceValue;
+            else
+                return gridViewAttribute.Converter?.Convert(
+                    gridViewAttribute.NoPath ? this : sourceValue,
+                    null,
+                    gridViewAttribute.ConverterParameter,
+                    null);
         }
     }
 }

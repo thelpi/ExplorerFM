@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
-using System.Windows;
 using ExplorerFM.Datas;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
@@ -114,33 +113,6 @@ namespace ExplorerFM
             return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(T), true).Length > 0).ToList();
         }
 
-        // not my code
-        public static void RemoveRoutedEventHandlers(this UIElement element, RoutedEvent routedEvent)
-        {
-            var eventHandlersStore = typeof(UIElement)
-                .GetProperty("EventHandlersStore", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(element, null);
-
-            if (eventHandlersStore != null)
-            {
-                var routedEventHandlers = (RoutedEventHandlerInfo[])eventHandlersStore
-                    .GetType()
-                    .GetMethod("GetRoutedEventHandlers", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Invoke(eventHandlersStore, new object[] { routedEvent });
-
-                if (routedEventHandlers != null)
-                {
-                    foreach (var routedEventHandler in routedEventHandlers)
-                        element.RemoveHandler(routedEvent, routedEventHandler.Handler);
-                }
-            }
-        }
-
-        public static T Find<T>(this FrameworkElement element, string name) where T : UIElement
-        {
-            return element.FindName(name) as T;
-        }
-
         public static bool IsNullOrContainsNull(this object value)
         {
             return value == null
@@ -172,6 +144,27 @@ namespace ExplorerFM
                 return new[] { Comparator.Equal, Comparator.NotEqual };
             else
                 return Enum.GetValues(typeof(Comparator)).Cast<Comparator>().Where(_ => !_.IsStringSymbol());
+        }
+
+        public static string GetPlayerPropertyPath(this PropertyInfo columnField)
+        {
+            var fullPath = columnField.Name;
+            if (columnField.DeclaringType == typeof(Confederation))
+                fullPath = string.Concat(nameof(Player.Nationality), ".", nameof(Country.Confederation), ".", fullPath);
+            else if (columnField.DeclaringType == typeof(Country))
+                fullPath = string.Concat(nameof(Player.Nationality), ".", fullPath);
+            else if (columnField.DeclaringType == typeof(Club))
+                fullPath = string.Concat(nameof(Player.ClubContract), ".", fullPath);
+            return fullPath;
+        }
+
+        public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute
+        {
+            return typeof(Player).GetAttributeProperties<T>()
+                .Concat(typeof(Club).GetAttributeProperties<T>())
+                .Concat(typeof(Country).GetAttributeProperties<T>())
+                .Concat(typeof(Confederation).GetAttributeProperties<T>())
+                .ToList();
         }
     }
 }
