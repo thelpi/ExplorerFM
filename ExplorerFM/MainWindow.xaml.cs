@@ -46,6 +46,8 @@ namespace ExplorerFM
         private readonly IList _attributeProperties;
         private readonly IDictionary<Type, Func<IEnumerable>> _collectionsProvider;
 
+        private bool _descendingSort;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -76,17 +78,38 @@ namespace ExplorerFM
                 var fullPath = columnField.Name;
                 if (columnField.DeclaringType == typeof(Datas.Confederation))
                     fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", nameof(Datas.Country.Confederation), ".", fullPath);
-                if (columnField.DeclaringType == typeof(Datas.Country))
+                else if (columnField.DeclaringType == typeof(Datas.Country))
                     fullPath = string.Concat(nameof(Datas.Player.Nationality), ".", fullPath);
-                if (columnField.DeclaringType == typeof(Datas.Club))
+                else if (columnField.DeclaringType == typeof(Datas.Club))
                     fullPath = string.Concat(nameof(Datas.Player.ClubContract), ".", fullPath);
 
                 var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
                 foreach (var attribute in attributes)
                 {
+                    var columnHeader = new GridViewColumnHeader
+                    {
+                        Content = attribute.Name,
+                    };
+                    if (typeof(IComparable).IsAssignableFrom(columnField.PropertyType)
+                        || (Nullable.GetUnderlyingType(columnField.PropertyType) != null
+                            && typeof(IComparable).IsAssignableFrom(Nullable.GetUnderlyingType(columnField.PropertyType))))
+                    {
+                        columnHeader.Click += (_1, _2) =>
+                        {
+                            var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
+                            if (source != null)
+                            {
+                                PlayersView.ItemsSource = _descendingSort
+                                    ? source.OrderByDescending(_ => _.GetPropertyValue(columnField))
+                                    : source.OrderBy(_ => _.GetPropertyValue(columnField));
+                                _descendingSort = !_descendingSort;
+                            }
+                        };
+                    }
+
                     PlayersGrid.Columns.Add(new GridViewColumn
                     {
-                        Header = attribute.Name,
+                        Header = columnHeader,
                         DisplayMemberBinding = new Binding
                         {
                             Path = attribute.NoPath ? null : new PropertyPath(fullPath),

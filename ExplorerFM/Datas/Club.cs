@@ -61,7 +61,7 @@ namespace ExplorerFM.Datas
         [Field("Facilities", 1, 20)]
         public int? Facilities { get; set; }
 
-        [Field("Reputation", 1, 20)]
+        [Field("Reputation", 1, 10000)]
         public int? Reputation { get; set; }
 
         [Field("HomeShirtForegroundID", 0)]

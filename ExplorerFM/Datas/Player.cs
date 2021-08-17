@@ -61,5 +61,17 @@ namespace ExplorerFM.Datas
                 .Where(_ => !type.HasValue || type == _.Key.Type)
                 .Sum(_ => _.Value ?? 0);
         }
+
+        public object GetPropertyValue(System.Reflection.PropertyInfo columnField)
+        {
+            if (columnField.DeclaringType == typeof(Confederation))
+                return Nationality?.Confederation == null ? null : columnField.GetValue(Nationality?.Confederation);
+            else if (columnField.DeclaringType == typeof(Country))
+                return Nationality == null ? null : columnField.GetValue(Nationality);
+            else if (columnField.DeclaringType == typeof(Club))
+                return ClubContract == null ? null : columnField.GetValue(ClubContract);
+            else
+                return columnField.GetValue(this);
+        }
     }
 }
