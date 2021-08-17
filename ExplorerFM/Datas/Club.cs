@@ -18,7 +18,7 @@ namespace ExplorerFM.Datas
         [Field("PLC")]
         public bool PublicLimitedCompany { get; set; }
 
-        [GridView("Club country", typeof(Converters.CountryDisplayConverter))]
+        [GridView("Club country", 8, typeof(Converters.CountryDisplayConverter))]
         [SelectorField("NationID", nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
         public Country Country { get; set; }
 

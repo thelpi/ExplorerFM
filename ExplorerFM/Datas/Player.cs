@@ -12,8 +12,8 @@ namespace ExplorerFM.Datas
         [NestedSelectorField("SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_side.player_ID = player.ID", 1, 20, typeof(Side))]
         public Dictionary<Side, int?> Sides { get; set; }
 
-        [GridView("Best pos.", typeof(Converters.PositioningDisplayConverter), true, true)]
-        [GridView("Altern. pos.", typeof(Converters.PositioningDisplayConverter), true, false)]
+        [GridView("Best pos.", 2.5, typeof(Converters.PositioningDisplayConverter), true, true)]
+        [GridView("Altern. pos.", 2.6, typeof(Converters.PositioningDisplayConverter), true, false)]
         [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20, typeof(Position))]
         public Dictionary<Position, int?> Positions { get; set; }
 
@@ -29,7 +29,7 @@ namespace ExplorerFM.Datas
         [Field("SquadNumber", 0, 999)]
         public int? SquadNumber { get; set; }
 
-        [GridView("Tot. attr.")]
+        [GridView("Tot. attr.", 12.5)]
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID", 1, 1000)]
         public int AttributesTotal => GetAttributesTotal();
 

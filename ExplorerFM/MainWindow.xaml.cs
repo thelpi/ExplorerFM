@@ -62,17 +62,8 @@ namespace ExplorerFM
                 { typeof(Datas.Confederation), () => _dataProvider.Confederations },
             };
 
-            var allColumnFields = Extensions.GetAllAttribute<GridViewAttribute>();
-            foreach (var columnField in allColumnFields)
-            {
-                var fullPath = columnField.GetPlayerPropertyPath();
-                var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
-                foreach (var attribute in attributes)
-                {
-                    PlayersGrid.Columns.Add(
-                        GetAttributeColumn(columnField, fullPath, attribute));
-                }
-            }
+            foreach (var columnKvp in GetAttributeColumns().OrderBy(_ => _.Value))
+                PlayersGrid.Columns.Add(columnKvp.Key);
 
             HideWorkAndDisplay<object>(
                 () =>
@@ -81,6 +72,22 @@ namespace ExplorerFM
                     return null;
                 },
                 nullDummy => { });
+        }
+
+        private IEnumerable<KeyValuePair<GridViewColumn, double>> GetAttributeColumns()
+        {
+            var allColumnFields = Extensions.GetAllAttribute<GridViewAttribute>();
+            foreach (var columnField in allColumnFields)
+            {
+                var fullPath = columnField.GetPlayerPropertyPath();
+                var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
+                foreach (var attribute in attributes)
+                {
+                    yield return new KeyValuePair<GridViewColumn, double>(
+                        GetAttributeColumn(columnField, fullPath, attribute),
+                        attribute.Priority);
+                }
+            }
         }
 
         private void PlayersView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

@@ -16,7 +16,7 @@ namespace ExplorerFM.Datas
         [SelectorField("ContinentID", nameof(DataProvider.Confederations), nameof(Datas.Confederation.Name))]
         public Confederation Confederation { get; set; }
 
-        [GridView("E.U.")]
+        [GridView("E.U.", 3.5)]
         [Field("is_EU")]
         public bool IsEU { get; set; }
     }

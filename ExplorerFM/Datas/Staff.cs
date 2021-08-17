@@ -21,34 +21,34 @@ namespace ExplorerFM.Datas
         [Field("YearOfBirth", 1900, 2000)]
         public int? YearOfBirth { get; set; }
 
-        [GridView("Country", typeof(Converters.CountryDisplayConverter))]
+        [GridView("Country", 3, typeof(Converters.CountryDisplayConverter))]
         [SelectorField("NationID1", nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country Nationality { get; set; }
 
-        [GridView("2nd Country", typeof(Converters.CountryDisplayConverter))]
+        [GridView("2nd Country", 4, typeof(Converters.CountryDisplayConverter))]
         [SelectorField("NationID2", nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country SecondNationality { get; set; }
 
-        [GridView("Caps")]
+        [GridView("Caps", 5)]
         [Field("Caps", 0, 999)]
         public int Caps { get; set; }
 
-        [GridView("Int. goals")]
+        [GridView("Int. goals", 6)]
         [Field("IntGoals", 0, 999)]
         public int IntGoals { get; set; }
 
-        [GridView("Club", typeof(Converters.ClubDisplayConverter))]
+        [GridView("Club", 7, typeof(Converters.ClubDisplayConverter))]
         [SelectorField("ClubContractID", nameof(DataProvider.Clubs), nameof(Club.Name))]
         public Club ClubContract { get; set; }
 
         [Field("DateContractStart")]
         public DateTime? DateContractStart { get; set; }
 
-        [GridView("Contract end", typeof(Converters.DateDisplayConverter))]
+        [GridView("Contract end", 9, typeof(Converters.DateDisplayConverter))]
         [Field("DateContractEnd")]
         public DateTime? DateContractEnd { get; set; }
 
-        [GridView("Value")]
+        [GridView("Value", 10)]
         [Field("Value", 1)]
         public int? Value { get; set; }
         
@@ -67,32 +67,32 @@ namespace ExplorerFM.Datas
         [TripleIdField("DislikeStaffID")]
         public List<int> DislikeStaffIds { get; set; }
 
-        [GridView("Curr. abil.")]
+        [GridView("Curr. abil.", 11)]
         [Field("CurrentAbility", 1, 200)]
         public int? CurrentAbility { get; set; }
 
-        [GridView("Pot. abil.")]
+        [GridView("Pot. abil.", 12)]
         [Field("PotentialAbility", -2, 200)]
         public int? PotentialAbility { get; set; }
 
-        [GridView("Home rep.")]
+        [GridView("Home rep.", 13)]
         [Field("HomeReputation", 1, 200)]
         public int? HomeReputation { get; set; }
 
-        [GridView("Current rep.")]
+        [GridView("Current rep.", 14)]
         [Field("CurrentReputation", 1, 200)]
         public int? CurrentReputation { get; set; }
 
-        [GridView("World rep.")]
+        [GridView("World rep.", 15)]
         [Field("WorldReputation", 1, 200)]
         public int? WorldReputation { get; set; }
 
-        [GridView("Name")]
+        [GridView("Name", 1)]
         public string Fullname => string.IsNullOrWhiteSpace(Commonname)
             ? string.Concat(Lastname, ", ", Firstname)
             : Commonname;
 
-        [GridView("Date of birth", typeof(Converters.DateDisplayConverter))]
+        [GridView("Date of birth", 2, typeof(Converters.DateDisplayConverter))]
         public DateTime? ActualDateOfBirth => DateOfBirth.HasValue
             ? DateOfBirth.Value
             : (YearOfBirth.HasValue

@@ -6,8 +6,7 @@ namespace ExplorerFM.Datas
     {
         [Field("Name")]
         public string Name { get; set; }
-
-        [GridView("Conf. code")]
+        
         [Field("Name3")]
         public string Code { get; set; }
 
