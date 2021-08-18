@@ -104,6 +104,11 @@
                     </Grid>
                 </Expander>
                 <ListView AlternationCount="2" Grid.Row="2" Grid.Column="0" MouseDoubleClick="PlayersView_MouseDoubleClick" Name="PlayersView">
+                    <ListView.Resources>
+                        <ContextMenu x:Key="PlayerItemContextMenu">
+                            <MenuItem Header="Access to club" Name="ClubAccessMenu" Click="ClubAccessMenu_Click" />
+                        </ContextMenu>
+                    </ListView.Resources>
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Style.Triggers>
@@ -114,6 +119,7 @@
                                     <Setter Property="Background" Value="WhiteSmoke"></Setter>
                                 </Trigger>
                             </Style.Triggers>
+                            <Setter Property="ContextMenu" Value="{StaticResource PlayerItemContextMenu}" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.View>

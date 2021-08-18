@@ -72,6 +72,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ClubWindow.xaml.cs">
+      <DependentUpon>ClubWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\ComparatorDisplayConverter.cs" />
     <Compile Include="Converters\ClubDisplayConverter.cs" />
     <Compile Include="Converters\CountryDisplayConverter.cs" />
@@ -93,6 +96,10 @@
     <Compile Include="RuleEngine\Comparator.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Converters\TypeDisplayConverter.cs" />
+    <Page Include="ClubWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

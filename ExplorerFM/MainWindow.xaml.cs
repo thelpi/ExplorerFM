@@ -460,5 +460,14 @@ namespace ExplorerFM
                     .RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             }
         }
+        
+        private void ClubAccessMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var player = (sender as FrameworkElement).DataContext as Datas.Player;
+
+            HideWorkAndDisplay(
+                () => _dataProvider.GetPlayersByClub(player.ClubContract?.Id),
+                players => new ClubWindow(_dataProvider, player.ClubContract, players).ShowDialog());
+        }
     }
 }

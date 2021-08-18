@@ -10,7 +10,7 @@ namespace ExplorerFM.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value == null
-                ? string.Empty
+                ? (parameter != null ? parameter.ToString() : string.Empty)
                 : (value as Club).Name;
         }
 
