@@ -53,7 +53,7 @@ namespace ExplorerFM.Datas
         {
             var sNote = p == Position.GoalKeeper ? 20 : (Sides.ContainsKey(s) ? Sides[s].GetValueOrDefault(1) : 1);
             var pNote = Positions.ContainsKey(p) ? Positions[p].GetValueOrDefault(1) : 1;
-            return System.Math.Min(sNote, pNote);
+            return Math.Min(sNote, pNote);
         }
 
         private int GetAttributesTotal(AttributeType? type = null)

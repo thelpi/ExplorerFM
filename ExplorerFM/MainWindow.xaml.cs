@@ -95,7 +95,9 @@ namespace ExplorerFM
             var pItem = PlayersView.SelectedItem;
             if (pItem != null)
             {
+                Hide();
                 new PlayerWindow(pItem as Datas.Player).ShowDialog();
+                ShowDialog();
             }
         }
 
@@ -467,7 +469,12 @@ namespace ExplorerFM
 
             HideWorkAndDisplay(
                 () => _dataProvider.GetPlayersByClub(player.ClubContract?.Id),
-                players => new ClubWindow(_dataProvider, player.ClubContract, players).ShowDialog());
+                players =>
+                {
+                    Hide();
+                    new ClubWindow(_dataProvider, player.ClubContract, players).ShowDialog();
+                    Show();
+                });
         }
     }
 }

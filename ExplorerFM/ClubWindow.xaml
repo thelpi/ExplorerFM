@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cvt="clr-namespace:ExplorerFM.Converters"
-        mc:Ignorable="d" Height="450" Width="800">
+        mc:Ignorable="d" MinHeight="450" MinWidth="800">
     <Window.Resources>
         <cvt:ClubDisplayConverter x:Key="ClubDisplayConverter" />
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
@@ -13,8 +13,8 @@
     <Window.Title>
         <Binding Path="LongName" Converter="{StaticResource ClubDisplayConverter}" ConverterParameter="'No club'" />
     </Window.Title>
-    <DockPanel>
-        <ListView AlternationCount="2" DockPanel.Dock="Left" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
+    <StackPanel Margin="10" Orientation="Horizontal">
+        <ListView AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
@@ -28,12 +28,38 @@
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.View>
-                <GridView x:Name="PlayersGrid" AllowsColumnReorder="False">
+                <GridView AllowsColumnReorder="False">
                     <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Fullname}" />
                     <GridViewColumn Header="Date of birth" DisplayMemberBinding="{Binding Path=ActualDateOfBirth, Converter={StaticResource DateDisplayConverter}}" />
                     <GridViewColumn Header="Nationality" DisplayMemberBinding="{Binding Path=Nationality, Converter={StaticResource CountryDisplayConverter}}" />
                 </GridView>
             </ListView.View>
         </ListView>
-    </DockPanel>
+        <StackPanel Margin="10, 0, 0, 0" Width="250" Orientation="Vertical">
+            <ComboBox Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
+            <ComboBox Name="SidesComboBox" Margin="0, 5, 0, 0" SelectionChanged="SidesComboBox_SelectionChanged" />
+            <ListView Margin="0, 5, 0, 0" Name="RatedPlayersListBox" AlternationCount="2">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Style.Triggers>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                                <Setter Property="Background" Value="White"></Setter>
+                            </Trigger>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="WhiteSmoke"></Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False">
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" />
+                        <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=PositionRate}" />
+                        <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=SideRate}" />
+                        <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=AttributeRate}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+    </StackPanel>
 </Window>
