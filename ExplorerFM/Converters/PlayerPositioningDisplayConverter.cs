@@ -11,11 +11,11 @@ namespace ExplorerFM.Converters
     class PlayerPositioningDisplayConverter : IValueConverter
     {
         // ordered
-        private static readonly Side[] Sides = new Side[] { Side.Left, Side.Center, Side.Right };
+        public static readonly Side[] Sides = new Side[] { Side.Left, Side.Center, Side.Right };
 
         // ordered
         // ignore wing back and free role
-        private static readonly Position[] Positions = new Position[]
+        public static readonly Position[] Positions = new Position[]
         {
             Position.Striker, Position.OffensiveMidfielder, Position.Midfielder, Position.DefensiveMidfielder,
             Position.Defender, Position.Sweeper, Position.GoalKeeper

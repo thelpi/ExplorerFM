@@ -97,6 +97,7 @@
     <Compile Include="RuleEngine\Comparator.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Converters\TypeDisplayConverter.cs" />
+    <Compile Include="Tactic.cs" />
     <Page Include="ClubWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

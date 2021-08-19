@@ -4,26 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cvt="clr-namespace:ExplorerFM.Converters"
-        mc:Ignorable="d" MinHeight="450" MinWidth="800">
+        mc:Ignorable="d" Height="579" Width="888">
     <Window.Resources>
         <cvt:ClubDisplayConverter x:Key="ClubDisplayConverter" />
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
         <cvt:DateDisplayConverter x:Key="DateDisplayConverter" />
+        <ControlTemplate x:Key="PlayerPositionTemplate">
+            <Ellipse Width="40" Height="40" />
+        </ControlTemplate>
+        <ControlTemplate x:Key="PlayerNameTemplate">
+            <TextBlock VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" />
+        </ControlTemplate>
     </Window.Resources>
-    <Window.Title>
-        <Binding Path="LongName" Converter="{StaticResource ClubDisplayConverter}" ConverterParameter="'No club'" />
-    </Window.Title>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" />
             <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="280" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
             <RowDefinition />
         </Grid.RowDefinitions>
+        <!-- COL0 -->
         <ListView Grid.Column="0" Grid.RowSpan="3" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -45,6 +49,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <!-- COL1 -->
         <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
         <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="1" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="SidesComboBox" SelectionChanged="SidesComboBox_SelectionChanged" />
         <ListView Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Top" Name="RatedPlayersListBox" AlternationCount="2">
@@ -69,5 +74,26 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <!-- COL2 -->
+        <ComboBox Grid.Column="2" Grid.Row="0" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticsComboBox" Height="25" DisplayMemberPath="Name" SelectionChanged="TacticsComboBox_SelectionChanged" />
+        <Label Grid.Column="2" Grid.Row="1" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticInfoLabel" Height="25" />
+        <Grid Background="ForestGreen" Grid.Column="2" Grid.Row="2" Name="TacticPlayersGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="56" />
+                <ColumnDefinition Width="56" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+                <RowDefinition Height="67" />
+            </Grid.RowDefinitions>
+        </Grid>
     </Grid>
 </Window>
