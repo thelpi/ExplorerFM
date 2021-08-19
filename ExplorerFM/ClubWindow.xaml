@@ -13,8 +13,18 @@
     <Window.Title>
         <Binding Path="LongName" Converter="{StaticResource ClubDisplayConverter}" ConverterParameter="'No club'" />
     </Window.Title>
-    <StackPanel Margin="10" Orientation="Horizontal">
-        <ListView AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <ListView Grid.Column="0" Grid.RowSpan="3" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
@@ -35,31 +45,29 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <StackPanel Margin="10, 0, 0, 0" Width="250" Orientation="Vertical">
-            <ComboBox Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
-            <ComboBox Name="SidesComboBox" Margin="0, 5, 0, 0" SelectionChanged="SidesComboBox_SelectionChanged" />
-            <ListView Margin="0, 5, 0, 0" Name="RatedPlayersListBox" AlternationCount="2">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Style.Triggers>
-                            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                                <Setter Property="Background" Value="White"></Setter>
-                            </Trigger>
-                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                <Setter Property="Background" Value="WhiteSmoke"></Setter>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.View>
-                    <GridView AllowsColumnReorder="False">
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" />
-                        <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=PositionRate}" />
-                        <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=SideRate}" />
-                        <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=AttributeRate}" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </StackPanel>
-    </StackPanel>
+        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
+        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="1" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="SidesComboBox" SelectionChanged="SidesComboBox_SelectionChanged" />
+        <ListView Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Top" Name="RatedPlayersListBox" AlternationCount="2">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                            <Setter Property="Background" Value="White"></Setter>
+                        </Trigger>
+                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                            <Setter Property="Background" Value="WhiteSmoke"></Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" />
+                    <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=PositionRate}" />
+                    <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=SideRate}" />
+                    <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=AttributeRate}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
 </Window>
