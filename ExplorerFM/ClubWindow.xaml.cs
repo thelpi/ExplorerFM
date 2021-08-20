@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using ExplorerFM.Converters;
 using ExplorerFM.Datas;
 using static ExplorerFM.Converters.PlayerPositioningDisplayConverter;
 
@@ -24,6 +23,7 @@ namespace ExplorerFM
         private readonly Club _club;
         private readonly List<Player> _players;
         private readonly DataProvider _dataProvider;
+        private readonly Dictionary<Tuple<Position, Side>, List<PlayerRateItemData>> _playersRateByPosition;
 
         public ClubWindow(DataProvider dataProvider, Club club, List<Player> players)
         {
@@ -32,11 +32,13 @@ namespace ExplorerFM
             _dataProvider = dataProvider;
             _club = club;
             _players = players;
+            
+            _playersRateByPosition = GetRatedPlayersForAll();
 
             Title = club?.LongName ?? NoClub;
             PlayersView.ItemsSource = _players;
-            PositionsComboBox.ItemsSource = System.Enum.GetValues(typeof(Position));
-            SidesComboBox.ItemsSource = System.Enum.GetValues(typeof(Side));
+            PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
+            SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
         }
 
@@ -51,12 +53,12 @@ namespace ExplorerFM
             }
         }
 
-        private void PositionsComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void PositionsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetRatedPlayersListBox();
         }
 
-        private void SidesComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SidesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetRatedPlayersListBox();
         }
@@ -79,14 +81,25 @@ namespace ExplorerFM
                 TacticPlayersGrid.Children.Clear();
                 var cumul = 0;
                 var tactic = TacticsComboBox.SelectedItem as Tactic;
-                foreach (var posGroup in  tactic.Positions.GroupBy(_ => _))
+
+                var playersRateByPositionFilteredOrdered = _playersRateByPosition
+                    .Where(prp => tactic.Positions.Contains(prp.Key))
+                    .OrderByDescending(prp => prp.Value.Max(p => p.PercentOfTotal))
+                    .ToList();
+
+                while (playersRateByPositionFilteredOrdered.Count > 0)
                 {
+                    var prp = playersRateByPositionFilteredOrdered[0];
+
                     var i = 0;
+                    var posGroup = tactic.Positions.Where(tp => tp.Item1 == prp.Key.Item1 && tp.Item2 == prp.Key.Item2);
                     var countGroup = posGroup.Count();
+                    var playersToRemove = new List<PlayerRateItemData>();
                     foreach (var pos in posGroup)
                     {
-                        var ratedPlayers = GetRatedPlayers(pos.Item1, pos.Item2);
-                        var bestPlayer = ratedPlayers.First();
+                        var bestPlayer = prp.Value.ElementAt(i);
+                        playersToRemove.Add(bestPlayer);
+
                         var chip = this.GetByTemplateKey<Ellipse>(PlayerPositionTemplateKey);
                         var text = this.GetByTemplateKey<TextBlock>(PlayerNameTemplateKey);
 
@@ -124,7 +137,14 @@ namespace ExplorerFM
 
                         i++;
                     }
+                    playersRateByPositionFilteredOrdered.RemoveAt(0);
+                    playersRateByPositionFilteredOrdered
+                        .ForEach(prpTmp => prpTmp.Value.RemoveAll(pp => playersToRemove.Any(pr => pr.Id == pp.Id)));
+                    playersRateByPositionFilteredOrdered = playersRateByPositionFilteredOrdered
+                        .OrderByDescending(prpTmp => prpTmp.Value.Max(p => p.PercentOfTotal))
+                        .ToList();
                 }
+
                 TacticInfoLabel.Content = $"Total value: {cumul}";
             }
         }
@@ -137,15 +157,36 @@ namespace ExplorerFM
                 var rate = p.GetPositionSideRate(position, side);
                 playersRatedList.Add(new PlayerRateItemData
                 {
-                    AttributeRate = (int)System.Math.Round((p.AttributesTotal * rate) / (decimal)20),
+                    AttributeRate = (int)Math.Round((p.AttributesTotal * rate) / (decimal)20),
                     Name = p.Fullname,
+                    Id = p.Id,
                     PositionRate = p.Positions[position] ?? 1,
                     SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? 1)
                 });
             }
+
+            var totalRate = playersRatedList.Sum(pr => pr.AttributeRate);
+            foreach (var pr in playersRatedList)
+                pr.PercentOfTotal = (int)Math.Round(pr.AttributeRate / (decimal)totalRate);
+
             return playersRatedList
                 .OrderByDescending(_ => _.AttributeRate)
                 .ToList();
+        }
+
+        private Dictionary<Tuple<Position, Side>, List<PlayerRateItemData>> GetRatedPlayersForAll()
+        {
+            var ratedPlayersAllPos = new Dictionary<Tuple<Position, Side>, List<PlayerRateItemData>>();
+            foreach (var p in Enum.GetValues(typeof(Position)).Cast<Position>())
+            {
+                foreach (var s in Enum.GetValues(typeof(Side)).Cast<Side>())
+                {
+                    ratedPlayersAllPos.Add(
+                        new Tuple<Position, Side>(p, s),
+                        GetRatedPlayers(p, s));
+                }
+            }
+            return ratedPlayersAllPos;
         }
     }
 }
