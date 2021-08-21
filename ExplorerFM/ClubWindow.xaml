@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cvt="clr-namespace:ExplorerFM.Converters"
-        mc:Ignorable="d" Height="609" Width="888">
+        mc:Ignorable="d" SizeToContent="WidthAndHeight">
     <Window.Resources>
         <cvt:ClubDisplayConverter x:Key="ClubDisplayConverter" />
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
@@ -18,12 +18,12 @@
     </Window.Resources>
     <Grid Margin="10" Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280" />
+            <ColumnDefinition Width="320" />
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="280" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition />
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
             <RowDefinition />
@@ -31,8 +31,12 @@
         <!-- ALLSPAN -->
         <ProgressBar Grid.RowSpan="4" Grid.ColumnSpan="3" IsIndeterminate="True" Height="30" Width="250" Name="LoadPlayersProgressBar" Visibility="Collapsed" />
         <!-- COL0 -->
-        <ComboBox Grid.Row="0" Grid.Column="0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="CountryClubComboBox" SelectionChanged="CountryClubComboBox_SelectionChanged"  DisplayMemberPath="Name" />
-        <ComboBox Grid.Row="0" Grid.Column="1" Margin="10, 0, 10, 0" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="ClubComboBox" SelectionChanged="ClubComboBox_SelectionChanged" DisplayMemberPath="Name" />
+        <GroupBox Margin="5" Padding="5" Grid.Row="0" Grid.ColumnSpan="3" Header="Club selection">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox Height="25" Width="150" VerticalContentAlignment="Center" Name="CountryClubComboBox" SelectionChanged="CountryClubComboBox_SelectionChanged"  DisplayMemberPath="Name" />
+                <ComboBox Height="25" Width="150" Margin="10, 0, 0, 0" VerticalContentAlignment="Center" Name="ClubComboBox" SelectionChanged="ClubComboBox_SelectionChanged" DisplayMemberPath="Name" />
+            </StackPanel>
+        </GroupBox>
         <ListView Grid.Row="1" Grid.Column="0" Grid.RowSpan="3" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -55,8 +59,8 @@
             </ListView.View>
         </ListView>
         <!-- COL1 -->
-        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="1" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
-        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="2" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="SidesComboBox" SelectionChanged="SidesComboBox_SelectionChanged" />
+        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="1" Width="150" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
+        <ComboBox Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="2" Width="150" Height="25" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="SidesComboBox" SelectionChanged="SidesComboBox_SelectionChanged" />
         <ListView Margin="10, 0, 10, 0" Grid.Column="1" Grid.Row="3" VerticalAlignment="Top" Name="RatedPlayersListView" AlternationCount="2">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -80,7 +84,7 @@
             </ListView.View>
         </ListView>
         <!-- COL2 -->
-        <ComboBox Grid.Column="2" Grid.Row="1" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticsComboBox" Height="25" DisplayMemberPath="Name" SelectionChanged="TacticsComboBox_SelectionChanged" />
+        <ComboBox Grid.Column="2" Grid.Row="1" Width="150" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticsComboBox" Height="25" DisplayMemberPath="Name" SelectionChanged="TacticsComboBox_SelectionChanged" />
         <Label Grid.Column="2" Grid.Row="2" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticInfoLabel" Height="25" />
         <Grid Height="469" Width="280" Background="ForestGreen" Grid.Column="2" Grid.Row="3" Name="TacticPlayersGrid">
             <Grid.ColumnDefinitions>
