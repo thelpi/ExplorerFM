@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -93,6 +94,27 @@ namespace ExplorerFM
                 : 255 - ((rate - switchStop) / (switchStop * 2) * 255);
 
             return Color.FromArgb(byte.MaxValue, byte.MaxValue, (byte)green, (byte)blue);
+        }
+
+        public static void HideWorkAndDisplay<T>(this ProgressBar pgb,
+            Func<T> backgroundFunc,
+            Action<T> foregroundFunc,
+            params UIElement[] uiElementsToHide)
+        {
+            foreach (var uiElem in uiElementsToHide)
+                uiElem.Visibility = Visibility.Collapsed;
+            pgb.Visibility = Visibility.Visible;
+            Task.Run(() =>
+            {
+                var result = backgroundFunc();
+                pgb.Dispatcher.Invoke(() =>
+                {
+                    foregroundFunc(result);
+                    foreach (var uiElem in uiElementsToHide)
+                        uiElem.Visibility = Visibility.Visible;
+                    pgb.Visibility = Visibility.Collapsed;
+                });
+            });
         }
     }
 }

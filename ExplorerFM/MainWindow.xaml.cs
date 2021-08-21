@@ -129,18 +129,7 @@ namespace ExplorerFM
 
         private void HideWorkAndDisplay<T>(Func<T> backgroundFunc, Action<T> foregroundFunc)
         {
-            MainContentPanel.Visibility = Visibility.Collapsed;
-            LoadingProgressBar.Visibility = Visibility.Visible;
-            Task.Run(() =>
-            {
-                var result = backgroundFunc();
-                Dispatcher.Invoke(() =>
-                {
-                    foregroundFunc(result);
-                    MainContentPanel.Visibility = Visibility.Visible;
-                    LoadingProgressBar.Visibility = Visibility.Collapsed;
-                });
-            });
+            LoadingProgressBar.HideWorkAndDisplay(backgroundFunc, foregroundFunc, MainContentPanel);
         }
 
         private GridViewColumn GetAttributeColumn(PropertyInfo columnField, string fullPath, GridViewAttribute attribute)
@@ -472,7 +461,7 @@ namespace ExplorerFM
                 players =>
                 {
                     Hide();
-                    new ClubWindow(_dataProvider, player.ClubContract, players).ShowDialog();
+                    new ClubWindow(_dataProvider, player.ClubContract).ShowDialog();
                     Show();
                 });
         }

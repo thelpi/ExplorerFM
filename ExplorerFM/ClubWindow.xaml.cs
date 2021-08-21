@@ -4,7 +4,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using ExplorerFM.Datas;
 
 namespace ExplorerFM
@@ -17,22 +16,23 @@ namespace ExplorerFM
         private const string PlayerPositionTemplateKey = "PlayerPositionTemplate";
         private const string PlayerNameTemplateKey = "PlayerNameTemplate";
         private const string NoClub = "Without club";
-        
-        private readonly List<Player> _players;
+
+        private bool _isSourceChange;
+        private List<Player> _players;
         private readonly DataProvider _dataProvider;
 
-        public ClubWindow(DataProvider dataProvider, Club club, List<Player> players)
+        public ClubWindow(DataProvider dataProvider, Club club)
         {
             InitializeComponent();
 
             _dataProvider = dataProvider;
-            _players = players;
-
-            Title = club?.LongName ?? NoClub;
-            PlayersView.ItemsSource = _players;
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
+            CountryClubComboBox.ItemsSource = _dataProvider.Countries;
+            CountryClubComboBox.SelectedItem = club?.Country;
+            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club.Country?.Id);
+            ClubComboBox.SelectedItem = club;
         }
 
         private void PlayersView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -61,7 +61,7 @@ namespace ExplorerFM
             if (PositionsComboBox.SelectedIndex >= 0
                 && SidesComboBox.SelectedIndex >= 0)
             {
-                RatedPlayersListBox.ItemsSource = GetOrderedRatedPlayers(
+                RatedPlayersListView.ItemsSource = GetOrderedRatedPlayers(
                     (Position)PositionsComboBox.SelectedItem,
                     (Side)SidesComboBox.SelectedItem);
             }
@@ -73,10 +73,10 @@ namespace ExplorerFM
             {
                 TacticPlayersGrid.Children.Clear();
 
-                var squad = (TacticsComboBox.SelectedItem as Tactic)
-                    .GetBestSquad(_players, _dataProvider.Attributes.Count);
+                var lineUp = (TacticsComboBox.SelectedItem as Tactic)
+                    .GetBestLineUp(_players, _dataProvider.Attributes.Count);
 
-                foreach (var posGroup in squad.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
+                foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
                 {
                     var groupPlayerCount = posGroup.Count();
                     var currPosIndex = 0;
@@ -95,20 +95,20 @@ namespace ExplorerFM
                                 colIndex = currPosIndex == 0 ? 1 : 3;
                         }
 
-                        AddSquadUiComponent(PlayerPositionTemplateKey,
+                        AddLineUpUiComponent(PlayerPositionTemplateKey,
                             rowIndex, colIndex, posPlayer.Item3);
-                        AddSquadUiComponent(PlayerNameTemplateKey,
+                        AddLineUpUiComponent(PlayerNameTemplateKey,
                             rowIndex, colIndex, posPlayer.Item3);
 
                         currPosIndex++;
                     }
                 }
 
-                TacticInfoLabel.Content = $"Total value: {squad.Sum(_ => _.Item3.Rate)}";
+                TacticInfoLabel.Content = $"Total value: {lineUp.Sum(_ => _.Item3.Rate)}";
             }
         }
 
-        private void AddSquadUiComponent(string key, int row, int column, PlayerRateItemData playerData)
+        private void AddLineUpUiComponent(string key, int row, int column, PlayerRateItemData playerData)
         {
             var element = this.GetByTemplateKey<FrameworkElement>(key);
             element.DataContext = playerData;
@@ -124,6 +124,38 @@ namespace ExplorerFM
                 .Select(p => p.ToRateItemData(position, side, _dataProvider.Attributes.Count))
                 .OrderByDescending(p => p.Rate)
                 .ToList();
+        }
+
+        private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isSourceChange)
+                return;
+
+            var club = ClubComboBox.SelectedItem as Club;
+
+            LoadPlayersProgressBar.HideWorkAndDisplay(
+                () => _dataProvider.GetPlayersByClub(club?.Id),
+                p =>
+                {
+                    _players = p;
+                    Title = club?.LongName ?? NoClub;
+                    PlayersView.ItemsSource = _players;
+                    PositionsComboBox.SelectedIndex = -1;
+                    SidesComboBox.SelectedIndex = -1;
+                    TacticsComboBox.SelectedIndex = -1;
+                    TacticInfoLabel.Content = null;
+                    TacticPlayersGrid.Children.Clear();
+                    RatedPlayersListView.ItemsSource = null;
+                },
+                MainGrid.Children.Cast<UIElement>().ToArray());
+        }
+
+        private void CountryClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _isSourceChange = true;
+            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c =>
+                c.Country?.Id == (CountryClubComboBox.SelectedItem as Country)?.Id);
+            _isSourceChange = false;
         }
     }
 }

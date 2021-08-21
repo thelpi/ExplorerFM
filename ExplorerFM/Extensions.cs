@@ -208,7 +208,7 @@ namespace ExplorerFM
             }
         }
 
-        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestSquad(this Tactic tactic, List<Player> sourcePlayers, int attributesCount)
+        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic, List<Player> sourcePlayers, int attributesCount)
         {
             var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
 
