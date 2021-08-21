@@ -40,9 +40,9 @@ namespace ExplorerFM
             var pItem = PlayersView.SelectedItem;
             if (pItem != null)
             {
-                Hide();
-                new PlayerWindow(pItem as Player).ShowDialog();
-                ShowDialog();
+                //Hide();
+                //new PlayerWindow(pItem as Player).ShowDialog();
+                //ShowDialog();
             }
         }
 
@@ -121,7 +121,7 @@ namespace ExplorerFM
         private IEnumerable<PlayerRateItemData> GetPositioningTopTenPlayers(Position position, Side side)
         {
             return _players
-                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate))
+                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, false))
                 .OrderByDescending(p => p.Rate)
                 .Take(10);
         }

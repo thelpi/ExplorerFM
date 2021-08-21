@@ -94,9 +94,9 @@ namespace ExplorerFM
             var pItem = PlayersView.SelectedItem;
             if (pItem != null)
             {
-                Hide();
-                new PlayerWindow(pItem as Datas.Player).ShowDialog();
-                ShowDialog();
+                //Hide();
+                //new PlayerWindow(pItem as Datas.Player).ShowDialog();
+                //ShowDialog();
             }
         }
 

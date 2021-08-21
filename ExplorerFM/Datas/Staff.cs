@@ -98,5 +98,12 @@ namespace ExplorerFM.Datas
             : (YearOfBirth.HasValue
                 ? new DateTime(YearOfBirth.Value, 7, 1)
                 : default(DateTime?));
+
+        public int GetFixedPotentialAbility()
+        {
+            var pot = PotentialAbility.GetValueOrDefault(100);
+            pot = pot == -1 ? 140 : (pot == -2 ? 180 : pot);
+            return CurrentAbility.HasValue && pot < CurrentAbility ? CurrentAbility.Value : pot;
+        }
     }
 }

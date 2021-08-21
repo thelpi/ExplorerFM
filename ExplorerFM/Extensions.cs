@@ -176,11 +176,18 @@ namespace ExplorerFM
                 .ToList();
         }
 
-        public static PlayerRateItemData ToRateItemData(this Player p, Position position, Side side, int maxTheoreticalRate, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        public static PlayerRateItemData ToRateItemData(this Player p,
+            Position position, Side side,
+            int maxTheoreticalRate, bool potentialRate,
+            NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
+            var ability = potentialRate
+                ? p.GetFixedPotentialAbility()
+                : p.CurrentAbility.GetValueOrDefault(100);
+
             return new PlayerRateItemData
             {
-                Rate = (int)Math.Round(p.AttributesTotal * p.GetPositionSideRate(position, side, nullRateBehavior) / (decimal)20),
+                Rate = (int)Math.Round(p.AttributesTotal * (ability / (decimal)200) * p.GetPositionSideRate(position, side, nullRateBehavior) / 20),
                 Player = p,
                 PositionRate = p.Positions[position] ?? nullRateBehavior.ToRate(),
                 SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? nullRateBehavior.ToRate()),
@@ -222,7 +229,7 @@ namespace ExplorerFM
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate))
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, false))
                         .OrderByDescending(p => p.Rate)
                         .ToList();
                     var bestP = pDatas.First();
