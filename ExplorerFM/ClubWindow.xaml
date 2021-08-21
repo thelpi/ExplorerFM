@@ -77,22 +77,22 @@
         <!-- COL2 -->
         <ComboBox Grid.Column="2" Grid.Row="0" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticsComboBox" Height="25" DisplayMemberPath="Name" SelectionChanged="TacticsComboBox_SelectionChanged" />
         <Label Grid.Column="2" Grid.Row="1" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticInfoLabel" Height="25" />
-        <Grid Background="ForestGreen" Grid.Column="2" Grid.Row="2" Name="TacticPlayersGrid">
+        <Grid Height="469" Width="280" Background="ForestGreen" Grid.Column="2" Grid.Row="2" Name="TacticPlayersGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="56" />
-                <ColumnDefinition Width="56" />
-                <ColumnDefinition Width="56" />
-                <ColumnDefinition Width="56" />
-                <ColumnDefinition Width="56" />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
-                <RowDefinition Height="67" />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
         </Grid>
     </Grid>

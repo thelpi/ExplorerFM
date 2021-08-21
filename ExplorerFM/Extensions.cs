@@ -12,6 +12,15 @@ namespace ExplorerFM
 {
     public static class Extensions
     {
+        public static readonly Side[] OrderedSides = new Side[] { Side.Left, Side.Center, Side.Right };
+        
+        // ignore wing back and free role
+        public static readonly Position[] OrderedPositions = new Position[]
+        {
+            Position.Striker, Position.OffensiveMidfielder, Position.Midfielder, Position.DefensiveMidfielder,
+            Position.Defender, Position.Sweeper, Position.GoalKeeper
+        };
+
         public static string ToCode(this Side side)
         {
             return side.ToString().Substring(0, 1);
@@ -197,6 +206,47 @@ namespace ExplorerFM
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestSquad(this Tactic tactic, List<Player> sourcePlayers, int attributesCount)
+        {
+            var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
+
+            // copy
+            var players = new List<Player>(sourcePlayers);
+            var positions = new List<Tuple<Position, Side>>(tactic.Positions);
+
+            while (positions.Count > 0 && sourcePlayers.Count > 0)
+            {
+                var positionsBest = new List<Tuple<Position, Side, PlayerRateItemData, decimal>>();
+                foreach (var position in positions.Distinct())
+                {
+                    var pDatas = players
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, attributesCount))
+                        .OrderByDescending(p => p.Rate)
+                        .ToList();
+                    var bestP = pDatas.First();
+                    var ratePercent = bestP.Rate / (decimal)pDatas.Sum(p => p.Rate);
+                    positionsBest.Add(
+                        new Tuple<Position, Side, PlayerRateItemData, decimal>(
+                            position.Item1, position.Item2, bestP, ratePercent));
+                }
+
+                var bestPositionBest = positionsBest
+                    .OrderByDescending(p => p.Item4)
+                    .First();
+
+                players.Remove(bestPositionBest.Item3.Player);
+                positions.RemoveAt(
+                    positions.IndexOf(
+                        new Tuple<Position, Side>(
+                            bestPositionBest.Item1, bestPositionBest.Item2)));
+                playerByPos.Add(
+                    new Tuple<Position, Side, PlayerRateItemData>(
+                        bestPositionBest.Item1, bestPositionBest.Item2, bestPositionBest.Item3));
+            }
+
+            return playerByPos;
         }
     }
 }

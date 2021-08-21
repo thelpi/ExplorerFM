@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 using ExplorerFM.Datas;
 
 namespace ExplorerFM
@@ -60,7 +61,7 @@ namespace ExplorerFM
             if (PositionsComboBox.SelectedIndex >= 0
                 && SidesComboBox.SelectedIndex >= 0)
             {
-                RatedPlayersListBox.ItemsSource = GetRatedPlayers(
+                RatedPlayersListBox.ItemsSource = GetOrderedRatedPlayers(
                     (Position)PositionsComboBox.SelectedItem,
                     (Side)SidesComboBox.SelectedItem);
             }
@@ -70,12 +71,54 @@ namespace ExplorerFM
         {
             if (TacticsComboBox.SelectedItem != null)
             {
-                // TODO
-                TacticInfoLabel.Content = "Total value: xxx";
+                TacticPlayersGrid.Children.Clear();
+
+                var squad = (TacticsComboBox.SelectedItem as Tactic)
+                    .GetBestSquad(_players, _dataProvider.Attributes.Count);
+
+                foreach (var posGroup in squad.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
+                {
+                    var groupPlayerCount = posGroup.Count();
+                    var currPosIndex = 0;
+                    foreach (var posPlayer in posGroup)
+                    {
+                        var rowIndex = Array.IndexOf(Extensions.OrderedPositions,
+                            posPlayer.Item1);
+                        var colIndex = Array.IndexOf(Extensions.OrderedSides,
+                            posPlayer.Item2) * 2; // 0,1,2 => 0,2,4
+
+                        if (colIndex == 2)
+                        {
+                            if (groupPlayerCount == 3)
+                                colIndex = currPosIndex == 0 ? 1 : (currPosIndex == 1 ? 2 : 3);
+                            else if (groupPlayerCount == 2)
+                                colIndex = currPosIndex == 0 ? 1 : 3;
+                        }
+
+                        AddSquadUiComponent(PlayerPositionTemplateKey,
+                            rowIndex, colIndex, posPlayer.Item3);
+                        AddSquadUiComponent(PlayerNameTemplateKey,
+                            rowIndex, colIndex, posPlayer.Item3);
+
+                        currPosIndex++;
+                    }
+                }
+
+                TacticInfoLabel.Content = $"Total value: {squad.Sum(_ => _.Item3.Rate)}";
             }
         }
 
-        private List<PlayerRateItemData> GetRatedPlayers(Position position, Side side)
+        private void AddSquadUiComponent(string key, int row, int column, PlayerRateItemData playerData)
+        {
+            var element = this.GetByTemplateKey<FrameworkElement>(key);
+            element.DataContext = playerData;
+            element.SetValue(Grid.ColumnProperty, column);
+            element.SetValue(Grid.RowProperty, row);
+
+            TacticPlayersGrid.Children.Add(element);
+        }
+
+        private List<PlayerRateItemData> GetOrderedRatedPlayers(Position position, Side side)
         {
             return _players
                 .Select(p => p.ToRateItemData(position, side, _dataProvider.Attributes.Count))

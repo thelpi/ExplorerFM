@@ -10,24 +10,13 @@ namespace ExplorerFM.Converters
 {
     class PlayerPositioningDisplayConverter : IValueConverter
     {
-        // ordered
-        public static readonly Side[] Sides = new Side[] { Side.Left, Side.Center, Side.Right };
-
-        // ordered
-        // ignore wing back and free role
-        public static readonly Position[] Positions = new Position[]
-        {
-            Position.Striker, Position.OffensiveMidfielder, Position.Midfielder, Position.DefensiveMidfielder,
-            Position.Defender, Position.Sweeper, Position.GoalKeeper
-        };
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var playerValue = value as Player;
 
-            return Positions
+            return Extensions.OrderedPositions
                 .Select(p =>
-                    new PositioningItemGroup(p, Sides
+                    new PositioningItemGroup(p, Extensions.OrderedSides
                         .ToDictionary(s => s, s => playerValue.GetPositionSideRate(p, s))))
                 .ToList();
         }
