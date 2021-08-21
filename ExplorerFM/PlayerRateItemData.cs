@@ -9,9 +9,9 @@ namespace ExplorerFM
         public int PositionRate { get; set; }
         public int SideRate { get; set; }
         public int Rate { get; set; }
-        public int AttributesCount { private get; set; }
+        public int MaxTheoreticalRate { get; set; }
 
         public Brush Brush => new SolidColorBrush(
-            GuiExtensions.GetColorFromRate(Rate, AttributesCount * 20));
+            GuiExtensions.GetColorFromRate(Rate, MaxTheoreticalRate));
     }
 }

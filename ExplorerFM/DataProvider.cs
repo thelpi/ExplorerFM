@@ -22,6 +22,8 @@ namespace ExplorerFM
         public IReadOnlyCollection<Confederation> Confederations => _confederationDatas;
         public IReadOnlyCollection<Country> Countries => _countryDatas;
 
+        public int MaxTheoreticalRate => 16 * _attributeDatas.Count;
+
         public DataProvider(string connectionString)
         {
             _mySqlService = new MySqlService(connectionString);

@@ -18,12 +18,12 @@
     </Window.Resources>
     <Grid Margin="10" Name="MainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320" />
+            <ColumnDefinition />
             <ColumnDefinition Width="300" />
             <ColumnDefinition Width="280" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition />
+            <RowDefinition Height="68" />
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
             <RowDefinition />

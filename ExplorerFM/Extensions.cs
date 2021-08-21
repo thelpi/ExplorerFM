@@ -176,7 +176,7 @@ namespace ExplorerFM
                 .ToList();
         }
 
-        public static PlayerRateItemData ToRateItemData(this Player p, Position position, Side side, int attributesCount, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        public static PlayerRateItemData ToRateItemData(this Player p, Position position, Side side, int maxTheoreticalRate, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
             return new PlayerRateItemData
             {
@@ -184,7 +184,7 @@ namespace ExplorerFM
                 Player = p,
                 PositionRate = p.Positions[position] ?? nullRateBehavior.ToRate(),
                 SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? nullRateBehavior.ToRate()),
-                AttributesCount = attributesCount
+                MaxTheoreticalRate = maxTheoreticalRate
             };
         }
 
@@ -208,7 +208,7 @@ namespace ExplorerFM
             }
         }
 
-        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic, List<Player> sourcePlayers, int attributesCount)
+        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic, List<Player> sourcePlayers, int maxTheoreticalRate)
         {
             var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
 
@@ -222,7 +222,7 @@ namespace ExplorerFM
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, attributesCount))
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate))
                         .OrderByDescending(p => p.Rate)
                         .ToList();
                     var bestP = pDatas.First();

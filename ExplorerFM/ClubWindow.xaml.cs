@@ -61,7 +61,7 @@ namespace ExplorerFM
             if (PositionsComboBox.SelectedIndex >= 0
                 && SidesComboBox.SelectedIndex >= 0)
             {
-                RatedPlayersListView.ItemsSource = GetOrderedRatedPlayers(
+                RatedPlayersListView.ItemsSource = GetPositioningTopTenPlayers(
                     (Position)PositionsComboBox.SelectedItem,
                     (Side)SidesComboBox.SelectedItem);
             }
@@ -74,7 +74,7 @@ namespace ExplorerFM
                 TacticPlayersGrid.Children.Clear();
 
                 var lineUp = (TacticsComboBox.SelectedItem as Tactic)
-                    .GetBestLineUp(_players, _dataProvider.Attributes.Count);
+                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate);
 
                 foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
                 {
@@ -118,12 +118,12 @@ namespace ExplorerFM
             TacticPlayersGrid.Children.Add(element);
         }
 
-        private List<PlayerRateItemData> GetOrderedRatedPlayers(Position position, Side side)
+        private IEnumerable<PlayerRateItemData> GetPositioningTopTenPlayers(Position position, Side side)
         {
             return _players
-                .Select(p => p.ToRateItemData(position, side, _dataProvider.Attributes.Count))
+                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate))
                 .OrderByDescending(p => p.Rate)
-                .ToList();
+                .Take(10);
         }
 
         private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
