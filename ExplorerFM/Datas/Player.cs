@@ -49,21 +49,20 @@ namespace ExplorerFM.Datas
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 5)", 1, 1000)]
         public int AttributesTechnicalTotal => GetAttributesTotal(AttributeType.Technical);
 
-        public int GetPositionSideRate(Position p, Side s, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        public int GetPositionSideRate(Position p, Side s)
         {
-            int nullRateSubstitute = nullRateBehavior.ToRate();
             var sNote = p == Position.GoalKeeper
                 ? 20
                 : (Sides.ContainsKey(s)
-                    ? Sides[s].GetValueOrDefault(nullRateSubstitute)
-                    : nullRateSubstitute);
+                    ? Sides[s].GetValueOrDefault(1)
+                    : 1);
             var pNote = Positions.ContainsKey(p)
-                ? Positions[p].GetValueOrDefault(nullRateSubstitute)
-                : nullRateSubstitute;
+                ? Positions[p].GetValueOrDefault(1)
+                : 1;
             return Math.Min(sNote, pNote);
         }
 
-        private int GetAttributesTotal(AttributeType? type = null, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        public int GetAttributesTotal(AttributeType? type = null, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
             var attributesToConsider = Attributes
                 .Where(_ => !type.HasValue || type == _.Key.Type);

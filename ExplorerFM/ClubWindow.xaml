@@ -39,7 +39,10 @@
                 </StackPanel>
             </GroupBox>
             <GroupBox Margin="5, 0, 0, 0" Padding="5" Header="Rating parameters">
-                <CheckBox Content="Use potential ability" Name="PotentialAbilityCheckBox" VerticalAlignment="Center" Click="PotentialAbilityCheckBox_Click" />
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Use potential ability" Name="PotentialAbilityCheckBox" VerticalAlignment="Center" Click="PotentialAbilityCheckBox_Click" />
+                    <ComboBox Margin="25, 0, 0, 0" Width="150" Height="25" VerticalAlignment="Center" VerticalContentAlignment="Center" Name="NullRateBehaviorComboBox" SelectionChanged="NullRateBehaviorComboBox_SelectionChanged" />
+                </StackPanel>
             </GroupBox>
         </StackPanel>
         <ListView Grid.Row="1" Grid.Column="0" Grid.RowSpan="3" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">

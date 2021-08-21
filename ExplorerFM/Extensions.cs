@@ -187,10 +187,10 @@ namespace ExplorerFM
 
             return new PlayerRateItemData
             {
-                Rate = (int)Math.Round(p.AttributesTotal * (ability / (decimal)200) * p.GetPositionSideRate(position, side, nullRateBehavior) / 20),
+                Rate = (int)Math.Round(p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20),
                 Player = p,
-                PositionRate = p.Positions[position] ?? nullRateBehavior.ToRate(),
-                SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? nullRateBehavior.ToRate()),
+                PositionRate = p.Positions[position] ?? 1,
+                SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? 1),
                 MaxTheoreticalRate = maxTheoreticalRate
             };
         }
@@ -207,7 +207,7 @@ namespace ExplorerFM
                     return App.Randomizer.Next(1, max + 1);
                 case NullRateBehavior.LocalAverage:
                     if (otherRates.Length == 0)
-                        throw new NotSupportedException();
+                        return max / 2;
                     else
                         return (int)Math.Round(otherRates.Average());
                 default:
@@ -216,7 +216,8 @@ namespace ExplorerFM
         }
 
         public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic,
-            List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
+            List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility,
+            NullRateBehavior nullRateBehavior)
         {
             var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
 
@@ -230,7 +231,7 @@ namespace ExplorerFM
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility))
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility, nullRateBehavior))
                         .OrderByDescending(p => p.Rate)
                         .ToList();
                     var bestP = pDatas.First();

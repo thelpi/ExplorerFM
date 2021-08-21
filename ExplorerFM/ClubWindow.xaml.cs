@@ -22,6 +22,9 @@ namespace ExplorerFM
         private readonly DataProvider _dataProvider;
 
         private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
+        private NullRateBehavior NullRateBehavior => NullRateBehaviorComboBox.SelectedIndex == -1
+            ? NullRateBehavior.Minimal
+            : (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem;
 
         public ClubWindow(DataProvider dataProvider, Club club)
         {
@@ -35,6 +38,8 @@ namespace ExplorerFM
             CountryClubComboBox.SelectedItem = club?.Country;
             ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club.Country?.Id);
             ClubComboBox.SelectedItem = club;
+            NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
+            NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
         }
 
         private void PlayersView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -76,7 +81,7 @@ namespace ExplorerFM
                 TacticPlayersGrid.Children.Clear();
 
                 var lineUp = (TacticsComboBox.SelectedItem as Tactic)
-                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate, UsePotentialAbility);
+                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior);
 
                 foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
                 {
@@ -123,7 +128,7 @@ namespace ExplorerFM
         private IEnumerable<PlayerRateItemData> GetPositioningTopTenPlayers(Position position, Side side)
         {
             return _players
-                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility))
+                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior))
                 .OrderByDescending(p => p.Rate)
                 .Take(10);
         }
@@ -155,11 +160,6 @@ namespace ExplorerFM
             _isSourceChange = false;
         }
 
-        private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            ClearForms();
-        }
-
         private void ClearForms()
         {
             PositionsComboBox.SelectedIndex = -1;
@@ -168,6 +168,16 @@ namespace ExplorerFM
             TacticInfoLabel.Content = null;
             TacticPlayersGrid.Children.Clear();
             RatedPlayersListView.ItemsSource = null;
+        }
+
+        private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            ClearForms();
+        }
+
+        private void NullRateBehaviorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ClearForms();
         }
     }
 }
