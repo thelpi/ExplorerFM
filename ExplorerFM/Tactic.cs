@@ -51,6 +51,13 @@ namespace ExplorerFM
             };
 
             var tactics = new List<Tactic>();
+            tactics.Add(new Tactic("4-3-1-2", fourDefender
+                .Concat(centerMid.Yield(centerMid,
+                    centerMid,
+                    centerOffMid,
+                    centerFw,
+                    centerFw))
+                .ToArray()));
             tactics.Add(new Tactic("4-3-3 DM", fourDefender
                 .Concat(centerFw.Yield(leftFw,
                     rightFw,
