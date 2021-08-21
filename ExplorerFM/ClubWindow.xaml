@@ -10,10 +10,10 @@
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
         <cvt:DateDisplayConverter x:Key="DateDisplayConverter" />
         <ControlTemplate x:Key="PlayerPositionTemplate">
-            <Ellipse Width="40" Height="40" />
+            <Ellipse Width="40" Height="40" Fill="{Binding Path=Brush}" />
         </ControlTemplate>
         <ControlTemplate x:Key="PlayerNameTemplate">
-            <TextBlock VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" />
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Path=Player.Fullname}" />
         </ControlTemplate>
     </Window.Resources>
     <Grid Margin="10">
@@ -67,10 +67,10 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Player.Fullname}" />
                     <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=PositionRate}" />
                     <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=SideRate}" />
-                    <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=AttributeRate}" />
+                    <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=Rate}" />
                 </GridView>
             </ListView.View>
         </ListView>

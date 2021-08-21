@@ -49,18 +49,30 @@ namespace ExplorerFM.Datas
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 5)", 1, 1000)]
         public int AttributesTechnicalTotal => GetAttributesTotal(AttributeType.Technical);
 
-        public int GetPositionSideRate(Position p, Side s)
+        public int GetPositionSideRate(Position p, Side s, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
-            var sNote = p == Position.GoalKeeper ? 20 : (Sides.ContainsKey(s) ? Sides[s].GetValueOrDefault(1) : 1);
-            var pNote = Positions.ContainsKey(p) ? Positions[p].GetValueOrDefault(1) : 1;
+            int nullRateSubstitute = nullRateBehavior.ToRate();
+            var sNote = p == Position.GoalKeeper
+                ? 20
+                : (Sides.ContainsKey(s)
+                    ? Sides[s].GetValueOrDefault(nullRateSubstitute)
+                    : nullRateSubstitute);
+            var pNote = Positions.ContainsKey(p)
+                ? Positions[p].GetValueOrDefault(nullRateSubstitute)
+                : nullRateSubstitute;
             return Math.Min(sNote, pNote);
         }
 
-        private int GetAttributesTotal(AttributeType? type = null)
+        private int GetAttributesTotal(AttributeType? type = null, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
-            return Attributes
-                .Where(_ => !type.HasValue || type == _.Key.Type)
-                .Sum(_ => _.Value ?? 0);
+            var attributesToConsider = Attributes
+                .Where(_ => !type.HasValue || type == _.Key.Type);
+            var knownRates = attributesToConsider
+                .Where(a => a.Value.HasValue)
+                .Select(a => a.Value.Value)
+                .ToArray();
+            return attributesToConsider
+                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(otherRates: knownRates));
         }
 
         public object GetSortablePropertyValue(

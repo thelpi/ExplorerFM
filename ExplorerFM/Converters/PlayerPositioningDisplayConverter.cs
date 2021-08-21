@@ -57,23 +57,8 @@ namespace ExplorerFM.Converters
             public PositioningItem(Position position, Side side, int rate)
             {
                 var invisible = (position == Position.GoalKeeper || position == Position.Sweeper) && side != Side.Center;
-                Color = invisible ? Colors.Green : GetColorFromRate(rate);
+                Color = invisible ? Colors.Green : GuiExtensions.GetColorFromRate(rate);
                 ToolTip = $"{position.ToCode()} {side.ToCode()} ({rate})";
-            }
-
-            private Color GetColorFromRate(int rate)
-            {
-                var switchStop = 20 / (decimal)3;
-
-                var blue = rate > switchStop
-                    ? 0
-                    : 255 - ((rate / switchStop) * 255);
-
-                var green = rate <= switchStop
-                    ? 255
-                    : 255 - (((rate - switchStop) / (switchStop * 2)) * 255);
-
-                return Color.FromArgb(byte.MaxValue, byte.MaxValue, (byte)green, (byte)blue);
             }
         }
     }

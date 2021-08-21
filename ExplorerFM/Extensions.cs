@@ -166,5 +166,37 @@ namespace ExplorerFM
                 .Concat(typeof(Confederation).GetAttributeProperties<T>())
                 .ToList();
         }
+
+        public static PlayerRateItemData ToRateItemData(this Player p, Position position, Side side, int attributesCount, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        {
+            return new PlayerRateItemData
+            {
+                Rate = (int)Math.Round(p.AttributesTotal * p.GetPositionSideRate(position, side, nullRateBehavior) / (decimal)20),
+                Player = p,
+                PositionRate = p.Positions[position] ?? nullRateBehavior.ToRate(),
+                SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? nullRateBehavior.ToRate()),
+                AttributesCount = attributesCount
+            };
+        }
+
+        public static int ToRate(this NullRateBehavior nullRateBehavior, int max = 20, params int[] otherRates)
+        {
+            switch (nullRateBehavior)
+            {
+                case NullRateBehavior.Minimal:
+                    return 1;
+                case NullRateBehavior.GlobalAverage:
+                    return max / 2;
+                case NullRateBehavior.Random:
+                    return App.Randomizer.Next(1, max + 1);
+                case NullRateBehavior.LocalAverage:
+                    if (otherRates.Length == 0)
+                        throw new NotSupportedException();
+                    else
+                        return (int)Math.Round(otherRates.Average());
+                default:
+                    throw new NotSupportedException();
+            }
+        }
     }
 }
