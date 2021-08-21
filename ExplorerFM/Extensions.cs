@@ -215,7 +215,8 @@ namespace ExplorerFM
             }
         }
 
-        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic, List<Player> sourcePlayers, int maxTheoreticalRate)
+        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic,
+            List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
         {
             var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
 
@@ -229,7 +230,7 @@ namespace ExplorerFM
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, false))
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility))
                         .OrderByDescending(p => p.Rate)
                         .ToList();
                     var bestP = pDatas.First();

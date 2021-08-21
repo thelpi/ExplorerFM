@@ -21,6 +21,8 @@ namespace ExplorerFM
         private List<Player> _players;
         private readonly DataProvider _dataProvider;
 
+        private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
+
         public ClubWindow(DataProvider dataProvider, Club club)
         {
             InitializeComponent();
@@ -74,7 +76,7 @@ namespace ExplorerFM
                 TacticPlayersGrid.Children.Clear();
 
                 var lineUp = (TacticsComboBox.SelectedItem as Tactic)
-                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate);
+                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate, UsePotentialAbility);
 
                 foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
                 {
@@ -121,7 +123,7 @@ namespace ExplorerFM
         private IEnumerable<PlayerRateItemData> GetPositioningTopTenPlayers(Position position, Side side)
         {
             return _players
-                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, false))
+                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility))
                 .OrderByDescending(p => p.Rate)
                 .Take(10);
         }
@@ -140,12 +142,7 @@ namespace ExplorerFM
                     _players = p;
                     Title = club?.LongName ?? NoClub;
                     PlayersView.ItemsSource = _players;
-                    PositionsComboBox.SelectedIndex = -1;
-                    SidesComboBox.SelectedIndex = -1;
-                    TacticsComboBox.SelectedIndex = -1;
-                    TacticInfoLabel.Content = null;
-                    TacticPlayersGrid.Children.Clear();
-                    RatedPlayersListView.ItemsSource = null;
+                    ClearForms();
                 },
                 MainGrid.Children.Cast<UIElement>().ToArray());
         }
@@ -156,6 +153,21 @@ namespace ExplorerFM
             ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c =>
                 c.Country?.Id == (CountryClubComboBox.SelectedItem as Country)?.Id);
             _isSourceChange = false;
+        }
+
+        private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            ClearForms();
+        }
+
+        private void ClearForms()
+        {
+            PositionsComboBox.SelectedIndex = -1;
+            SidesComboBox.SelectedIndex = -1;
+            TacticsComboBox.SelectedIndex = -1;
+            TacticInfoLabel.Content = null;
+            TacticPlayersGrid.Children.Clear();
+            RatedPlayersListView.ItemsSource = null;
         }
     }
 }
