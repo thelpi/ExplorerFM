@@ -15,10 +15,11 @@ namespace ExplorerFM
             _connectionString = connectionString;
         }
 
-        public List<T> GetDatas<T>(string sql, Func<IDataReader, T> transformFunc)
+        public List<T> GetDatas<T>(string sql, Func<IDataReader, T> transformFunc, Action<int> countReportFunc = null)
         {
             var results = new List<T>();
 
+            int i = 0;
             using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
@@ -30,6 +31,8 @@ namespace ExplorerFM
                         while (reader.Read())
                         {
                             results.Add(transformFunc(reader));
+                            countReportFunc?.Invoke(i);
+                            i++;
                         }
                     }
                 }

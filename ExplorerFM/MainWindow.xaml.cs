@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -109,9 +108,16 @@ namespace ExplorerFM
                 : MessageBoxResult.Yes;
             if (response == MessageBoxResult.Yes)
             {
+                LoadingProgressBar.IsIndeterminate = false;
                 HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
-                    players => PlayersView.ItemsSource = players);
+                    () => _dataProvider.GetPlayersByCriteria(
+                        criteriaSet,
+                        progress => Dispatcher.Invoke(() => LoadingProgressBar.Value = progress * 100)),
+                    players =>
+                    {
+                        PlayersView.ItemsSource = players;
+                        LoadingProgressBar.IsIndeterminate = true;
+                    });
             }
         }
 
@@ -456,14 +462,9 @@ namespace ExplorerFM
         {
             var player = (sender as FrameworkElement).DataContext as Datas.Player;
 
-            HideWorkAndDisplay(
-                () => _dataProvider.GetPlayersByClub(player.ClubContract?.Id),
-                players =>
-                {
-                    Hide();
-                    new ClubWindow(_dataProvider, player.ClubContract).ShowDialog();
-                    Show();
-                });
+            Hide();
+            new ClubWindow(_dataProvider, player.ClubContract).ShowDialog();
+            Show();
         }
     }
 }

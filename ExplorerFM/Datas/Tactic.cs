@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ExplorerFM.Datas;
 
-namespace ExplorerFM
+namespace ExplorerFM.Datas
 {
     public class Tactic
     {

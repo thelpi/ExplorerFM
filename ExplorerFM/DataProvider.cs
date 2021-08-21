@@ -48,11 +48,16 @@ namespace ExplorerFM
                 GetPlayerFromDataReader);
         }
 
-        public List<Player> GetPlayersByCriteria(CriteriaSet criteria)
+        public List<Player> GetPlayersByCriteria(CriteriaSet criteria, System.Action<double> reportFunc)
         {
+            var count = _mySqlService.GetData(
+                $"SELECT COUNT(*) AS players_count FROM player WHERE {criteria}",
+                r => r.Get<int>("players_count"));
+
             return _mySqlService.GetDatas(
                 $"SELECT * FROM player WHERE {criteria}",
-                GetPlayerFromDataReader);
+                GetPlayerFromDataReader,
+                i => reportFunc?.Invoke(i / (double)count));
         }
 
         private Player GetPlayerFromDataReader(IDataReader r)
