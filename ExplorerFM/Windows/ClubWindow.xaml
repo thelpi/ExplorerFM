@@ -6,7 +6,7 @@
         xmlns:cvt="clr-namespace:ExplorerFM.Converters"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        SizeToContent="WidthAndHeight">
+        Height="675" Width="1200">
     <Window.Resources>
         <cvt:ClubDisplayConverter x:Key="ClubDisplayConverter" />
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />

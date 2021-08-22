@@ -104,20 +104,13 @@ namespace ExplorerFM.Windows
                         criteriaSet,
                         progress => Dispatcher.Invoke(() => LoadingProgressBar.Value = progress * 100)),
                     players => PlayersView.ItemsSource = players,
-                    MainContentPanel);
+                    PlayersView, CriteriaExpander);
             }
         }
 
         private void AddCriteriaSetButton_Click(object sender, RoutedEventArgs e)
         {
             AddCriteriaSet(true);
-        }
-
-        private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            ScrollViewer scv = (ScrollViewer)sender;
-            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
-            e.Handled = true;
         }
 
         private GridViewColumn GetAttributeColumn(PropertyInfo columnField, string fullPath, GridViewAttribute attribute)
