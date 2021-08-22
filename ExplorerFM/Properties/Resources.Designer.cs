@@ -61,6 +61,16 @@ namespace ExplorerFM.Properties {
         }
         
         /// <summary>
+        ///   Recherche une ressource localisée de type System.Byte[].
+        /// </summary>
+        internal static byte[] cmexplorer_database {
+            get {
+                object obj = ResourceManager.GetObject("cmexplorer_database", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap FM_screen {

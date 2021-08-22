@@ -20,7 +20,9 @@ namespace ExplorerFM
                 MessageBox.Show($"The following error prevents the application to start:" +
                         $"\n{testConnectionRes}" +
                         $"\n\nMake sure to have WAMP installed on your computer" +
-                        $", then mount the database script provided with the source code.",
+                        $", then mount the database scripts provided with the source code." +
+                        $"\n\nScripts are zipped into the following:" +
+                        $" {nameof(ExplorerFM.Properties.Resources.cmexplorer_database)}.zip",
                     "ExplorerFM - Error");
                 Environment.Exit(0);
             }
