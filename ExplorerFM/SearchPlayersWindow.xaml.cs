@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using ExplorerFM.FieldsAttributes;
-using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using Xceed.Wpf.Toolkit;
 
@@ -47,13 +46,13 @@ namespace ExplorerFM
 
         private bool _descendingSort;
 
-        public MainWindow()
+        public MainWindow(DataProvider dataProvider)
         {
             InitializeComponent();
 
             _attributeProperties = Extensions.GetAllAttribute<FieldAttribute>();
 
-            _dataProvider = new DataProvider(Settings.Default.ConnectionString);
+            _dataProvider = dataProvider;
             _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
             {
                 { typeof(Datas.Country), () => _dataProvider.Countries },
@@ -63,14 +62,6 @@ namespace ExplorerFM
 
             foreach (var columnKvp in GetAttributeColumns().OrderBy(_ => _.Value))
                 PlayersGrid.Columns.Add(columnKvp.Key);
-
-            HideWorkAndDisplay<object>(
-                () =>
-                {
-                    _dataProvider.Initialize();
-                    return null;
-                },
-                nullDummy => { });
         }
 
         private IEnumerable<KeyValuePair<GridViewColumn, double>> GetAttributeColumns()
@@ -108,16 +99,12 @@ namespace ExplorerFM
                 : MessageBoxResult.Yes;
             if (response == MessageBoxResult.Yes)
             {
-                LoadingProgressBar.IsIndeterminate = false;
-                HideWorkAndDisplay(
+                LoadingProgressBar.HideWorkAndDisplay(
                     () => _dataProvider.GetPlayersByCriteria(
                         criteriaSet,
                         progress => Dispatcher.Invoke(() => LoadingProgressBar.Value = progress * 100)),
-                    players =>
-                    {
-                        PlayersView.ItemsSource = players;
-                        LoadingProgressBar.IsIndeterminate = true;
-                    });
+                    players => PlayersView.ItemsSource = players,
+                    MainContentPanel);
             }
         }
 
@@ -131,11 +118,6 @@ namespace ExplorerFM
             ScrollViewer scv = (ScrollViewer)sender;
             scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
             e.Handled = true;
-        }
-
-        private void HideWorkAndDisplay<T>(Func<T> backgroundFunc, Action<T> foregroundFunc)
-        {
-            LoadingProgressBar.HideWorkAndDisplay(backgroundFunc, foregroundFunc, MainContentPanel);
         }
 
         private GridViewColumn GetAttributeColumn(PropertyInfo columnField, string fullPath, GridViewAttribute attribute)
@@ -464,7 +446,7 @@ namespace ExplorerFM
 
             Hide();
             new ClubWindow(_dataProvider, player.ClubContract).ShowDialog();
-            Show();
+            ShowDialog();
         }
     }
 }

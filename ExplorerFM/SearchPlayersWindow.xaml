@@ -79,7 +79,7 @@
     </Window.Resources>
     <ScrollViewer Height="{Binding ActualHeight}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
         <StackPanel Orientation="Vertical" Margin="10">
-            <ProgressBar IsIndeterminate="True" Visibility="Collapsed" Name="LoadingProgressBar" Maximum="100" Width="200" Height="30" />
+            <ProgressBar Visibility="Collapsed" Name="LoadingProgressBar" Maximum="100" Width="200" Height="30" />
             <Grid Name="MainContentPanel">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />

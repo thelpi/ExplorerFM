@@ -36,7 +36,7 @@ namespace ExplorerFM
             TacticsComboBox.ItemsSource = Tactic.Tactics;
             CountryClubComboBox.ItemsSource = _dataProvider.Countries;
             CountryClubComboBox.SelectedItem = club?.Country;
-            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club.Country?.Id);
+            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club?.Country?.Id);
             ClubComboBox.SelectedItem = club;
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
             NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;

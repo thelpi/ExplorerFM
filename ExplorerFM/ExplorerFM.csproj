@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -89,6 +90,9 @@
     <Compile Include="FieldsAttributes\NestedSelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\TripleIdFieldAttribute.cs" />
     <Compile Include="GuiExtensions.cs" />
+    <Compile Include="IntroWindow.xaml.cs">
+      <DependentUpon>IntroWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PlayerRateItemData.cs" />
     <Compile Include="RuleEngine\CriteriaSet.cs" />
     <Compile Include="RuleEngine\Criterion.cs" />
@@ -100,7 +104,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="IntroWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SearchPlayersWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -122,8 +130,8 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Datas\Position.cs" />
     <Compile Include="Datas\Side.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="SearchPlayersWindow.xaml.cs">
+      <DependentUpon>SearchPlayersWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -155,6 +163,10 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\FM_screen.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
