@@ -14,7 +14,7 @@ using Xceed.Wpf.Toolkit;
 
 namespace ExplorerFM.Windows
 {
-    public partial class MainWindow : Window
+    public partial class SearchPlayersWindow : Window
     {
         private readonly string CriteriaPanelName = "CriteriaPanel";
         private readonly string AttributeComboBoxName = "AttributeComboBox";
@@ -47,7 +47,7 @@ namespace ExplorerFM.Windows
 
         private bool _descendingSort;
 
-        public MainWindow(DataProvider dataProvider)
+        public SearchPlayersWindow(DataProvider dataProvider)
         {
             InitializeComponent();
 

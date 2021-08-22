@@ -28,6 +28,10 @@ namespace ExplorerFM.Windows
             ? NullRateBehavior.Minimal
             : (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem;
 
+        public ClubWindow(DataProvider dataProvider)
+            : this(dataProvider, null)
+        { }
+
         public ClubWindow(DataProvider dataProvider, Club club)
         {
             InitializeComponent();

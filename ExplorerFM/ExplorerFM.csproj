@@ -75,6 +75,9 @@
     </ApplicationDefinition>
     <Compile Include="Extensions\SqlExtensions.cs" />
     <Compile Include="Extensions\SystemExtensions.cs" />
+    <Compile Include="Windows\BestPlayerFinderWindow.xaml.cs">
+      <DependentUpon>BestPlayerFinderWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\ClubWindow.xaml.cs">
       <DependentUpon>ClubWindow.xaml</DependentUpon>
     </Compile>
@@ -101,6 +104,10 @@
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Converters\TypeDisplayConverter.cs" />
     <Compile Include="Datas\Tactic.cs" />
+    <Page Include="Windows\BestPlayerFinderWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\ClubWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

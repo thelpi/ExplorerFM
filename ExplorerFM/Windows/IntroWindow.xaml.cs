@@ -26,21 +26,27 @@ namespace ExplorerFM.Windows
 
         private void ClubExplorerButton_Click(object sender, RoutedEventArgs e)
         {
-            Hide();
-            new ClubWindow(_dataProvider, null).ShowDialog();
-            ShowDialog();
+            ChangeWindow<ClubWindow>();
         }
 
         private void PlayersSearchButton_Click(object sender, RoutedEventArgs e)
         {
-            Hide();
-            new MainWindow(_dataProvider).ShowDialog();
-            ShowDialog();
+            ChangeWindow<SearchPlayersWindow>();
         }
 
         private void BestPlayersFinderButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO
+            ChangeWindow<BestPlayerFinderWindow>();
+        }
+
+        private void ChangeWindow<T>() where T : Window
+        {
+            Hide();
+            var window = typeof(T)
+                .GetConstructor(new[] { typeof(DataProvider) })
+                .Invoke(new[] { _dataProvider }) as T;
+            window.ShowDialog();
+            ShowDialog();
         }
     }
 }

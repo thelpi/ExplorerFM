@@ -1,0 +1,35 @@
+﻿<Window x:Class="ExplorerFM.Windows.BestPlayerFinderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="Best players finder"
+        WindowStartupLocation="CenterScreen"
+        Height="675" Width="1200">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35" />
+            <RowDefinition Height="35" />
+            <RowDefinition Height="35" />
+            <RowDefinition Height="35" />
+            <RowDefinition Height="35" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" Grid.RowSpan="5" Height="25" Width="250" Visibility="Collapsed" Name="LoadPlayersProgressBar" />
+        <ComboBox Grid.Row="0" Height="25" Width="150" VerticalContentAlignment="Center" HorizontalAlignment="Left" Name="PositionsComboBox" SelectionChanged="PositionsComboBox_SelectionChanged" />
+        <ComboBox Grid.Row="1" Height="25" Width="150" VerticalContentAlignment="Center" HorizontalAlignment="Left" Name="SidesComboBox" SelectionChanged="SidesComboBox_SelectionChanged" />
+        <ComboBox Grid.Row="2" Height="25" Width="150" VerticalContentAlignment="Center" HorizontalAlignment="Left" Name="NullRateBehaviorComboBox" SelectionChanged="NullRateBehaviorComboBox_SelectionChanged" />
+        <CheckBox Grid.Row="3" Content="Potential ability" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="PotentialAbilityCheckBox" Click="PotentialAbilityCheckBox_Click" />
+        <CheckBox Grid.Row="4" Content="No club contract" VerticalContentAlignment="Center" VerticalAlignment="Center" Name="NoClubContractCheckBox" Click="NoClubContractCheckBox_Click" />
+        <ListView Grid.Row="5" Name="PlayersListView" AlternationCount="2" ItemContainerStyle="{StaticResource ItemContainerStyle}">
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Player.Fullname}" />
+                    <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=Position}" />
+                    <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=Side}" />
+                    <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=Rate}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>
