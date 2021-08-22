@@ -21,17 +21,18 @@
     <Grid Margin="10" Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition />
             <ColumnDefinition Width="280" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="68" />
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
         <!-- ALLSPAN -->
-        <ProgressBar Grid.RowSpan="4" Grid.ColumnSpan="3" IsIndeterminate="True" Height="30" Width="250" Name="LoadPlayersProgressBar" Visibility="Collapsed" />
+        <ProgressBar Grid.RowSpan="5" Grid.ColumnSpan="3" IsIndeterminate="True" Height="30" Width="250" Name="LoadPlayersProgressBar" Visibility="Collapsed" />
         <!-- COL0 -->
         <StackPanel Orientation="Horizontal" Margin="5" Grid.Row="0" Grid.ColumnSpan="3">
             <GroupBox Padding="5" Header="Club selection">
@@ -47,7 +48,7 @@
                 </StackPanel>
             </GroupBox>
         </StackPanel>
-        <ListView Grid.Row="1" Grid.Column="0" Grid.RowSpan="3" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
+        <ListView Grid.Row="1" Grid.Column="0" Grid.RowSpan="4" AlternationCount="2" MouseDoubleClick="PlayersView_MouseDoubleClick"  Name="PlayersView">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
@@ -93,10 +94,32 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <ListView Margin="10, 10, 10, 0" Grid.Column="1" Grid.Row="4" VerticalAlignment="Top" Name="TopTenPlayersListView" AlternationCount="2">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                            <Setter Property="Background" Value="White"></Setter>
+                        </Trigger>
+                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                            <Setter Property="Background" Value="WhiteSmoke"></Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Player.Fullname}" />
+                    <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=Position}" />
+                    <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=Side}" />
+                    <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=Rate}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
         <!-- COL2 -->
         <ComboBox Grid.Column="2" Grid.Row="1" Width="150" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticsComboBox" Height="25" DisplayMemberPath="Name" SelectionChanged="TacticsComboBox_SelectionChanged" />
         <Label Grid.Column="2" Grid.Row="2" VerticalAlignment="Top" VerticalContentAlignment="Center" Name="TacticInfoLabel" Height="25" />
-        <Grid Height="469" Width="280" Background="ForestGreen" Grid.Column="2" Grid.Row="3" Name="TacticPlayersGrid">
+        <Grid Height="469" Width="280" Background="ForestGreen" Grid.Column="2" Grid.Row="3" Grid.RowSpan="2" Name="TacticPlayersGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />

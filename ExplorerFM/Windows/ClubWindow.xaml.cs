@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -68,9 +69,12 @@ namespace ExplorerFM.Windows
             if (PositionsComboBox.SelectedIndex >= 0
                 && SidesComboBox.SelectedIndex >= 0)
             {
-                RatedPlayersListView.ItemsSource = GetPositioningTopTenPlayers(
-                    (Position)PositionsComboBox.SelectedItem,
-                    (Side)SidesComboBox.SelectedItem);
+                // top 10 best players for the position/side
+                RatedPlayersListView.ItemsSource = GetPlayersRateItemData(
+                        (Position)PositionsComboBox.SelectedItem,
+                        (Side)SidesComboBox.SelectedItem)
+                    .OrderByDescending(p => p.Rate)
+                    .Take(10);
             }
         }
 
@@ -125,12 +129,10 @@ namespace ExplorerFM.Windows
             TacticPlayersGrid.Children.Add(element);
         }
 
-        private IEnumerable<PlayerRateItemData> GetPositioningTopTenPlayers(Position position, Side side)
+        private IEnumerable<PlayerRateItemData> GetPlayersRateItemData(Position position, Side side)
         {
-            return _players
-                .Select(p => p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior))
-                .OrderByDescending(p => p.Rate)
-                .Take(10);
+            return _players.Select(p =>
+                p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior));
         }
 
         private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -168,6 +170,7 @@ namespace ExplorerFM.Windows
             TacticInfoLabel.Content = null;
             TacticPlayersGrid.Children.Clear();
             RatedPlayersListView.ItemsSource = null;
+            TopTenPlayersListView.ItemsSource = GetTopTenRatedPlayers();
         }
 
         private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
@@ -178,6 +181,34 @@ namespace ExplorerFM.Windows
         private void NullRateBehaviorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ClearForms();
+        }
+
+        private IEnumerable<PlayerRateItemData> GetTopTenRatedPlayers()
+        {
+            if (_players == null)
+                return null;
+
+            var fullList = new List<PlayerRateItemData>();
+
+            foreach (var position in Enum.GetValues(typeof(Position)).Cast<Position>())
+            {
+                foreach (var side in Enum.GetValues(typeof(Side)).Cast<Side>())
+                {
+                    fullList.AddRange(GetPlayersRateItemData(position, side));
+                }
+            }
+
+            var finalList = new Dictionary<int, PlayerRateItemData>();
+
+            foreach (var p in fullList.OrderByDescending(r => r.Rate))
+            {
+                if (finalList.Count == 10)
+                    break;
+                if (!finalList.ContainsKey(p.Player.Id))
+                    finalList.Add(p.Player.Id, p);
+            }
+
+            return finalList.Values;
         }
     }
 }

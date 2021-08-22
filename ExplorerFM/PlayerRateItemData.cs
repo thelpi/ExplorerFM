@@ -8,6 +8,8 @@ namespace ExplorerFM
         public Player Player { get; set; }
         public int PositionRate { get; set; }
         public int SideRate { get; set; }
+        public Position Position { get; set; }
+        public Side Side { get; set; }
         public int Rate { get; set; }
         public int MaxTheoreticalRate { get; set; }
 

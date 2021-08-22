@@ -191,6 +191,8 @@ namespace ExplorerFM
                 Player = p,
                 PositionRate = p.Positions[position] ?? 1,
                 SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? 1),
+                Position = position,
+                Side = side,
                 MaxTheoreticalRate = maxTheoreticalRate
             };
         }
