@@ -71,7 +71,7 @@ namespace ExplorerFM.Datas
                 .Select(a => a.Value.Value)
                 .ToArray();
             return attributesToConsider
-                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(otherRates: knownRates));
+                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(attributesToConsider.Count(), knownRates));
         }
 
         public object GetSortablePropertyValue(

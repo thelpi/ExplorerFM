@@ -197,19 +197,19 @@ namespace ExplorerFM
             };
         }
 
-        public static int ToRate(this NullRateBehavior nullRateBehavior, int max = 20, params int[] otherRates)
+        public static int ToRate(this NullRateBehavior nullRateBehavior, int ratesCount, params int[] otherRates)
         {
             switch (nullRateBehavior)
             {
                 case NullRateBehavior.Minimal:
                     return 1;
                 case NullRateBehavior.GlobalAverage:
-                    return max / 2;
+                    return 10;
                 case NullRateBehavior.Random:
-                    return App.Randomizer.Next(1, max + 1);
+                    return App.Randomizer.Next(1, 21);
                 case NullRateBehavior.LocalAverage:
-                    if (otherRates.Length == 0)
-                        return max / 2;
+                    if (otherRates.Length < ratesCount / 2) // at least half rates known
+                        return 10;
                     else
                         return (int)Math.Round(otherRates.Average());
                 default:
