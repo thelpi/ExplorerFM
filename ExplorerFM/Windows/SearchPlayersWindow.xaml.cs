@@ -11,7 +11,7 @@ using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
 using Xceed.Wpf.Toolkit;
 
-namespace ExplorerFM
+namespace ExplorerFM.Windows
 {
     public partial class MainWindow : Window
     {

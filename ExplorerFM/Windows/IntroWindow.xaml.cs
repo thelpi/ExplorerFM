@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using ExplorerFM.Properties;
 
-namespace ExplorerFM
+namespace ExplorerFM.Windows
 {
     public partial class IntroWindow : Window
     {

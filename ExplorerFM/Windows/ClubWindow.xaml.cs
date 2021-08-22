@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using ExplorerFM.Datas;
 
-namespace ExplorerFM
+namespace ExplorerFM.Windows
 {
     /// <summary>
     /// Logique d'interaction pour ClubWindow.xaml

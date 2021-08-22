@@ -73,7 +73,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ClubWindow.xaml.cs">
+    <Compile Include="Windows\ClubWindow.xaml.cs">
       <DependentUpon>ClubWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\ComparatorDisplayConverter.cs" />
@@ -90,7 +90,7 @@
     <Compile Include="FieldsAttributes\NestedSelectorFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\TripleIdFieldAttribute.cs" />
     <Compile Include="GuiExtensions.cs" />
-    <Compile Include="IntroWindow.xaml.cs">
+    <Compile Include="Windows\IntroWindow.xaml.cs">
       <DependentUpon>IntroWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="PlayerRateItemData.cs" />
@@ -100,15 +100,15 @@
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Converters\TypeDisplayConverter.cs" />
     <Compile Include="Datas\Tactic.cs" />
-    <Page Include="ClubWindow.xaml">
+    <Page Include="Windows\ClubWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="IntroWindow.xaml">
+    <Page Include="Windows\IntroWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SearchPlayersWindow.xaml">
+    <Page Include="Windows\SearchPlayersWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -130,7 +130,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Datas\Position.cs" />
     <Compile Include="Datas\Side.cs" />
-    <Compile Include="SearchPlayersWindow.xaml.cs">
+    <Compile Include="Windows\SearchPlayersWindow.xaml.cs">
       <DependentUpon>SearchPlayersWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
