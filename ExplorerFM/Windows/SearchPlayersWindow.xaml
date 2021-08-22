@@ -110,15 +110,7 @@
                         </ContextMenu>
                     </ListView.Resources>
                     <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Style.Triggers>
-                                <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                                    <Setter Property="Background" Value="White"></Setter>
-                                </Trigger>
-                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                    <Setter Property="Background" Value="WhiteSmoke"></Setter>
-                                </Trigger>
-                            </Style.Triggers>
+                        <Style TargetType="ListViewItem" BasedOn="{StaticResource ItemContainerStyle}">
                             <Setter Property="ContextMenu" Value="{StaticResource PlayerItemContextMenu}" />
                         </Style>
                     </ListView.ItemContainerStyle>
