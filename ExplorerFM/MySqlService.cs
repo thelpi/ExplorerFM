@@ -63,5 +63,33 @@ namespace ExplorerFM
                 }
             }
         }
+
+        public static string TestConnection(string connectionString)
+        {
+            string error = null;
+
+            try
+            {
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    connection.Open();
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = "SELECT id FROM player LIMIT 0, 1";
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                                error = "The database exists but no data has been found.";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+
+            return error;
+        }
     }
 }
