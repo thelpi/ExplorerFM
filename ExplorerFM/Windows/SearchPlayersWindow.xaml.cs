@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
 using Xceed.Wpf.Toolkit;
@@ -50,7 +51,7 @@ namespace ExplorerFM.Windows
         {
             InitializeComponent();
 
-            _attributeProperties = Extensions.GetAllAttribute<FieldAttribute>();
+            _attributeProperties = DataProvider.GetAllAttribute<FieldAttribute>();
 
             _dataProvider = dataProvider;
             _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
@@ -66,7 +67,7 @@ namespace ExplorerFM.Windows
 
         private IEnumerable<KeyValuePair<GridViewColumn, double>> GetAttributeColumns()
         {
-            var allColumnFields = Extensions.GetAllAttribute<GridViewAttribute>();
+            var allColumnFields = DataProvider.GetAllAttribute<GridViewAttribute>();
             foreach (var columnField in allColumnFields)
             {
                 var fullPath = columnField.GetPlayerPropertyPath();

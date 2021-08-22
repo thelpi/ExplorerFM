@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
 
 namespace ExplorerFM.RuleEngine

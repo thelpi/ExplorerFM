@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ExplorerFM.Datas;
+using ExplorerFM.Extensions;
+using ExplorerFM.UiDatas;
 
 namespace ExplorerFM.Windows
 {
@@ -93,9 +94,9 @@ namespace ExplorerFM.Windows
                     var currPosIndex = 0;
                     foreach (var posPlayer in posGroup)
                     {
-                        var rowIndex = Array.IndexOf(Extensions.OrderedPositions,
+                        var rowIndex = Array.IndexOf(DataProvider.OrderedPositions,
                             posPlayer.Item1);
-                        var colIndex = Array.IndexOf(Extensions.OrderedSides,
+                        var colIndex = Array.IndexOf(DataProvider.OrderedSides,
                             posPlayer.Item2) * 2; // 0,1,2 => 0,2,4
 
                         if (colIndex == 2)
@@ -119,7 +120,7 @@ namespace ExplorerFM.Windows
             }
         }
 
-        private void AddLineUpUiComponent(string key, int row, int column, PlayerRateItemData playerData)
+        private void AddLineUpUiComponent(string key, int row, int column, PlayerRateUiData playerData)
         {
             var element = this.GetByTemplateKey<FrameworkElement>(key);
             element.DataContext = playerData;
@@ -129,7 +130,7 @@ namespace ExplorerFM.Windows
             TacticPlayersGrid.Children.Add(element);
         }
 
-        private IEnumerable<PlayerRateItemData> GetPlayersRateItemData(Position position, Side side)
+        private IEnumerable<PlayerRateUiData> GetPlayersRateItemData(Position position, Side side)
         {
             return _players.Select(p =>
                 p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior));
@@ -183,12 +184,12 @@ namespace ExplorerFM.Windows
             ClearForms();
         }
 
-        private IEnumerable<PlayerRateItemData> GetTopTenRatedPlayers()
+        private IEnumerable<PlayerRateUiData> GetTopTenRatedPlayers()
         {
             if (_players == null)
                 return null;
 
-            var fullList = new List<PlayerRateItemData>();
+            var fullList = new List<PlayerRateUiData>();
 
             foreach (var position in Enum.GetValues(typeof(Position)).Cast<Position>())
             {
@@ -198,7 +199,7 @@ namespace ExplorerFM.Windows
                 }
             }
 
-            var finalList = new Dictionary<int, PlayerRateItemData>();
+            var finalList = new Dictionary<int, PlayerRateUiData>();
 
             foreach (var p in fullList.OrderByDescending(r => r.Rate))
             {

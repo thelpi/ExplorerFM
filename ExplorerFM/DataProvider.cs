@@ -1,13 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using ExplorerFM.Datas;
+using ExplorerFM.Extensions;
 using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
 {
     public class DataProvider
     {
+        public static readonly Side[] OrderedSides = new Side[] { Side.Left, Side.Center, Side.Right };
+
+        // ignore wing back and free role
+        public static readonly Position[] OrderedPositions = new Position[]
+        {
+            Position.Striker, Position.OffensiveMidfielder, Position.Midfielder, Position.DefensiveMidfielder,
+            Position.Defender, Position.Sweeper, Position.GoalKeeper
+        };
+
         private static readonly System.DateTime DefaultContractDate = new System.DateTime(1996, 1, 2, 0, 0, 0);
 
         private readonly MySqlService _mySqlService;
@@ -58,6 +69,15 @@ namespace ExplorerFM
                 $"SELECT * FROM player WHERE {criteria}",
                 GetPlayerFromDataReader,
                 i => reportFunc?.Invoke(i / (double)count));
+        }
+
+        public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute
+        {
+            return typeof(Player).GetAttributeProperties<T>()
+                .Concat(typeof(Club).GetAttributeProperties<T>())
+                .Concat(typeof(Country).GetAttributeProperties<T>())
+                .Concat(typeof(Confederation).GetAttributeProperties<T>())
+                .ToList();
         }
 
         private Player GetPlayerFromDataReader(IDataReader r)

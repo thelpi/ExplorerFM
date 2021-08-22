@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:sg="clr-namespace:System.Globalization;assembly=mscorlib"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="675" Width="1200">
+        Title="Search players" Height="675" Width="1200">
     <Window.Resources>
         <cvt:ComparatorDisplayConverter x:Key="ComparatorDisplayConverter" />
         <ControlTemplate x:Key="CriteriaPanelTemplate">
@@ -82,7 +82,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <ProgressBar Grid.RowSpan="2" Name="LoadingProgressBar" Maximum="100" Width="200" Height="25" />
+        <ProgressBar Visibility="Hidden" Grid.RowSpan="2" Name="LoadingProgressBar" Maximum="100" Width="200" Height="25" />
         <Expander Name="CriteriaExpander" Margin="0, 0, 0, 5" Header="Search criteria" IsExpanded="True" ExpandDirection="Down"  Grid.Row="0" Grid.Column="0">
             <Grid Margin="30, 5, 0, 5">
                 <Grid.ColumnDefinitions>

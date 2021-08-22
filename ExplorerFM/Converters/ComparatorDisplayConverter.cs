@@ -1,7 +1,7 @@
-﻿using ExplorerFM.RuleEngine;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows.Data;
+using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM.Converters
 {

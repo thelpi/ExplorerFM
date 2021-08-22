@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using ExplorerFM.Extensions;
 using ExplorerFM.Properties;
 
 namespace ExplorerFM.Windows

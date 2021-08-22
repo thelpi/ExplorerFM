@@ -3,11 +3,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using ExplorerFM.FieldsAttributes;
 using Xceed.Wpf.Toolkit;
 
-namespace ExplorerFM
+namespace ExplorerFM.Extensions
 {
     internal static class GuiExtensions
     {
@@ -79,21 +78,6 @@ namespace ExplorerFM
             where T : struct, IFormattable, IComparable<T>
         {
             return element.GetByTemplateKey<CommonNumericUpDown<T>>(key).WithMinMaxFromAttribute(attribute);
-        }
-
-        public static Color GetColorFromRate(int rate, int maxRate = 20)
-        {
-            var switchStop = maxRate / (decimal)3;
-
-            var blue = rate > switchStop
-                ? 0
-                : 255 - (rate / switchStop * 255);
-
-            var green = rate <= switchStop
-                ? 255
-                : 255 - ((rate - switchStop) / (switchStop * 2) * 255);
-
-            return Color.FromArgb(byte.MaxValue, byte.MaxValue, (byte)green, (byte)blue);
         }
 
         public static void HideWorkAndDisplay<T>(this ProgressBar pgb,

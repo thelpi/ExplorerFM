@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Reflection;
 using ExplorerFM.Datas;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
+using ExplorerFM.UiDatas;
 
-namespace ExplorerFM
+namespace ExplorerFM.Extensions
 {
-    public static class Extensions
+    public static class DataExtensions
     {
-        public static readonly Side[] OrderedSides = new Side[] { Side.Left, Side.Center, Side.Right };
-        
-        // ignore wing back and free role
-        public static readonly Position[] OrderedPositions = new Position[]
-        {
-            Position.Striker, Position.OffensiveMidfielder, Position.Midfielder, Position.DefensiveMidfielder,
-            Position.Defender, Position.Sweeper, Position.GoalKeeper
-        };
-
         public static string ToCode(this Side side)
         {
             return side.ToString().Substring(0, 1);
@@ -45,53 +35,12 @@ namespace ExplorerFM
             }
         }
 
-        public static T Get<T>(this IDataReader reader, string columnName)
-        {
-            var sourceValue = reader[reader.GetOrdinal(columnName)];
-
-            var forcedValue = sourceValue == DBNull.Value || sourceValue == null
-                ? default(T)
-                : sourceValue;
-
-            return (T)Convert.ChangeType(forcedValue, typeof(T));
-        }
-
-        public static T? GetNull<T>(this IDataReader reader, string columnName)
-            where T : struct
-        {
-            var sourceValue = reader[reader.GetOrdinal(columnName)];
-
-            var forcedValue = sourceValue == DBNull.Value || sourceValue == null
-                ? null
-                : sourceValue;
-
-            return forcedValue != null
-                ? (T)Convert.ChangeType(forcedValue, typeof(T))
-                : (T?)null;
-        }
-
-        public static T? ToEnum<T>(this int? value) where T : struct
-        {
-            return value.HasValue
-                ? (T)Enum.ToObject(typeof(T), value.Value)
-                : default(T?);
-        }
-
         public static List<T> GetSubList<T>(this List<int> sourceDatas, List<T> fullDatas)
             where T : BaseData
         {
             return sourceDatas
                 .Select(r => fullDatas.Find(c => c.Id == r))
                 .Where(c => c != null)
-                .ToList();
-        }
-
-        public static List<int> GetIdList(this IDataReader reader, string columnNameTemplate)
-        {
-            return Enumerable.Range(1, 3)
-                .Select(x => reader.GetNull<int>(string.Format(columnNameTemplate, x)))
-                .Where(x => x.HasValue)
-                .Select(x => x.Value)
                 .ToList();
         }
 
@@ -117,34 +66,6 @@ namespace ExplorerFM
                 || comparator == Comparator.NotLike;
         }
 
-        public static List<PropertyInfo> GetAttributeProperties<T>(this Type t) where T : System.Attribute
-        {
-            return t.GetProperties().Where(p => p.GetCustomAttributes(typeof(T), true).Length > 0).ToList();
-        }
-
-        public static bool IsNullOrContainsNull(this object value)
-        {
-            return value == null
-                || (value is object[]
-                    && (value as object[]).Contains(null));
-        }
-
-        public static Type GetUnderlyingNotNullType(this Type propType)
-        {
-            var underlyingType = propType;
-            if (typeof(IDictionary).IsAssignableFrom(underlyingType) && underlyingType.IsGenericType)
-                underlyingType = underlyingType.GenericTypeArguments[1];
-            else if (typeof(IList).IsAssignableFrom(underlyingType) && underlyingType.IsGenericType)
-                underlyingType = underlyingType.GenericTypeArguments[0];
-
-            return Nullable.GetUnderlyingType(underlyingType) ?? underlyingType;
-        }
-
-        public static IEnumerable<T> Yield<T>(this T value, params T[] values)
-        {
-            return new[] { value }.Concat(values ?? Enumerable.Empty<T>());
-        }
-
         public static IEnumerable<Comparator> GetComparators(this Type type, FieldAttribute fieldAttribute)
         {
             if (type == typeof(string))
@@ -155,28 +76,7 @@ namespace ExplorerFM
                 return Enum.GetValues(typeof(Comparator)).Cast<Comparator>().Where(_ => !_.IsStringSymbol());
         }
 
-        public static string GetPlayerPropertyPath(this PropertyInfo columnField)
-        {
-            var fullPath = columnField.Name;
-            if (columnField.DeclaringType == typeof(Confederation))
-                fullPath = string.Concat(nameof(Player.Nationality), ".", nameof(Country.Confederation), ".", fullPath);
-            else if (columnField.DeclaringType == typeof(Country))
-                fullPath = string.Concat(nameof(Player.Nationality), ".", fullPath);
-            else if (columnField.DeclaringType == typeof(Club))
-                fullPath = string.Concat(nameof(Player.ClubContract), ".", fullPath);
-            return fullPath;
-        }
-
-        public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute
-        {
-            return typeof(Player).GetAttributeProperties<T>()
-                .Concat(typeof(Club).GetAttributeProperties<T>())
-                .Concat(typeof(Country).GetAttributeProperties<T>())
-                .Concat(typeof(Confederation).GetAttributeProperties<T>())
-                .ToList();
-        }
-
-        public static PlayerRateItemData ToRateItemData(this Player p,
+        public static PlayerRateUiData ToRateItemData(this Player p,
             Position position, Side side,
             int maxTheoreticalRate, bool potentialRate,
             NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
@@ -185,7 +85,7 @@ namespace ExplorerFM
                 ? p.GetFixedPotentialAbility()
                 : p.CurrentAbility.GetValueOrDefault(100);
 
-            return new PlayerRateItemData
+            return new PlayerRateUiData
             {
                 Rate = (int)Math.Round(p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20),
                 Player = p,
@@ -217,11 +117,11 @@ namespace ExplorerFM
             }
         }
 
-        public static List<Tuple<Position, Side, PlayerRateItemData>> GetBestLineUp(this Tactic tactic,
+        public static List<Tuple<Position, Side, PlayerRateUiData>> GetBestLineUp(this Tactic tactic,
             List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility,
             NullRateBehavior nullRateBehavior)
         {
-            var playerByPos = new List<Tuple<Position, Side, PlayerRateItemData>>();
+            var playerByPos = new List<Tuple<Position, Side, PlayerRateUiData>>();
 
             // copy
             var players = new List<Player>(sourcePlayers);
@@ -229,7 +129,7 @@ namespace ExplorerFM
 
             while (positions.Count > 0 && sourcePlayers.Count > 0)
             {
-                var positionsBest = new List<Tuple<Position, Side, PlayerRateItemData, decimal>>();
+                var positionsBest = new List<Tuple<Position, Side, PlayerRateUiData, decimal>>();
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
@@ -239,7 +139,7 @@ namespace ExplorerFM
                     var bestP = pDatas.First();
                     var ratePercent = bestP.Rate / (decimal)pDatas.Sum(p => p.Rate);
                     positionsBest.Add(
-                        new Tuple<Position, Side, PlayerRateItemData, decimal>(
+                        new Tuple<Position, Side, PlayerRateUiData, decimal>(
                             position.Item1, position.Item2, bestP, ratePercent));
                 }
 
@@ -253,11 +153,23 @@ namespace ExplorerFM
                         new Tuple<Position, Side>(
                             bestPositionBest.Item1, bestPositionBest.Item2)));
                 playerByPos.Add(
-                    new Tuple<Position, Side, PlayerRateItemData>(
+                    new Tuple<Position, Side, PlayerRateUiData>(
                         bestPositionBest.Item1, bestPositionBest.Item2, bestPositionBest.Item3));
             }
 
             return playerByPos;
+        }
+
+        public static string GetPlayerPropertyPath(this PropertyInfo columnField)
+        {
+            var fullPath = columnField.Name;
+            if (columnField.DeclaringType == typeof(Confederation))
+                fullPath = string.Concat(nameof(Player.Nationality), ".", nameof(Country.Confederation), ".", fullPath);
+            else if (columnField.DeclaringType == typeof(Country))
+                fullPath = string.Concat(nameof(Player.Nationality), ".", fullPath);
+            else if (columnField.DeclaringType == typeof(Club))
+                fullPath = string.Concat(nameof(Player.ClubContract), ".", fullPath);
+            return fullPath;
         }
     }
 }

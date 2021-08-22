@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using ExplorerFM.Datas;
+using ExplorerFM.Extensions;
 
 namespace ExplorerFM.Converters
 {
