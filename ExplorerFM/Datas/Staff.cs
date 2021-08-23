@@ -6,6 +6,11 @@ namespace ExplorerFM.Datas
 {
     public abstract class Staff : BaseData
     {
+        private const int AverageAbility = 100;
+        private const int GoodPotentialAbility = 140;
+        private const int VeryGoodPotentialAbility = 180;
+        private static readonly DateTime IgnorePotential = new DateTime(1973, 7, 1);
+
         [Field("Firstname")]
         public string Firstname { get; set; }
 
@@ -101,9 +106,18 @@ namespace ExplorerFM.Datas
 
         public int GetFixedPotentialAbility()
         {
-            var pot = PotentialAbility.GetValueOrDefault(100);
-            pot = pot == -1 ? 140 : (pot == -2 ? 180 : pot);
-            return CurrentAbility.HasValue && pot < CurrentAbility ? CurrentAbility.Value : pot;
+            if (ActualDateOfBirth.HasValue && ActualDateOfBirth.Value < IgnorePotential)
+                return CurrentAbility ?? AverageAbility;
+
+            var actualPotential = PotentialAbility ?? AverageAbility;
+            if (PotentialAbility == -1)
+                actualPotential = GoodPotentialAbility;
+            else if (PotentialAbility == -2)
+                actualPotential = VeryGoodPotentialAbility;
+
+            return CurrentAbility.HasValue && actualPotential < CurrentAbility
+                ? CurrentAbility.Value
+                : actualPotential;
         }
     }
 }
