@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using ExplorerFM.FieldsAttributes;
 using Xceed.Wpf.Toolkit;
 
@@ -99,6 +102,52 @@ namespace ExplorerFM.Extensions
                     pgb.Visibility = Visibility.Collapsed;
                 });
             });
+        }
+
+        public static IEnumerable<KeyValuePair<GridViewColumn, double>> GetAttributeColumns(
+            bool fromPlayerRateUiData, Action<GridViewAttribute, PropertyInfo> headerColumnClick)
+        {
+            var columns = new List<KeyValuePair<GridViewColumn, double>>();
+
+            var allColumnFields = DataProvider.GetAllAttribute<GridViewAttribute>();
+            foreach (var columnField in allColumnFields)
+            {
+                var fullPath = columnField.GetPlayerPropertyPath();
+                if (fromPlayerRateUiData)
+                    fullPath = string.Concat(nameof(UiDatas.PlayerRateUiData.Player), ".", fullPath);
+                var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
+                foreach (var attribute in attributes)
+                {
+                    columns.Add(new KeyValuePair<GridViewColumn, double>(
+                        attribute.GetAttributeColumn(columnField, fullPath, headerColumnClick),
+                        attribute.Priority));
+                }
+            }
+
+            return columns.OrderBy(_ => _.Value);
+        }
+
+        private static GridViewColumn GetAttributeColumn(this GridViewAttribute attribute,
+            PropertyInfo columnField, string fullPath, Action<GridViewAttribute, PropertyInfo> headerColumnClick)
+        {
+            var columnHeader = new GridViewColumnHeader
+            {
+                Content = attribute.Name,
+            };
+            if (headerColumnClick != null)
+                columnHeader.Click += (_1, _2) => headerColumnClick(attribute, columnField);
+
+            var column = new GridViewColumn
+            {
+                Header = columnHeader,
+                DisplayMemberBinding = new Binding
+                {
+                    Path = attribute.NoPath ? null : new PropertyPath(fullPath),
+                    Converter = attribute.Converter,
+                    ConverterParameter = attribute.ConverterParameter
+                }
+            };
+            return column;
         }
     }
 }

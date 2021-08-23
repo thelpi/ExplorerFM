@@ -12,7 +12,9 @@ namespace ExplorerFM.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var player = value as Player;
+            var player = value.GetType() == typeof(UiDatas.PlayerRateUiData)
+                ? (value as UiDatas.PlayerRateUiData).Player
+                :  value as Player;
             var isBest = (bool)parameter;
 
             var bestPositions = GetPositioning(player.Positions, true, null);

@@ -61,23 +61,19 @@ namespace ExplorerFM.Windows
                 { typeof(Datas.Confederation), () => _dataProvider.Confederations },
             };
 
-            foreach (var columnKvp in GetAttributeColumns().OrderBy(_ => _.Value))
+            foreach (var columnKvp in GuiExtensions.GetAttributeColumns(false, HeaderColumnClick))
                 PlayersGrid.Columns.Add(columnKvp.Key);
         }
 
-        private IEnumerable<KeyValuePair<GridViewColumn, double>> GetAttributeColumns()
+        private void HeaderColumnClick(GridViewAttribute attribute, PropertyInfo property)
         {
-            var allColumnFields = DataProvider.GetAllAttribute<GridViewAttribute>();
-            foreach (var columnField in allColumnFields)
+            var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
+            if (source != null)
             {
-                var fullPath = columnField.GetPlayerPropertyPath();
-                var attributes = columnField.GetCustomAttributes<GridViewAttribute>();
-                foreach (var attribute in attributes)
-                {
-                    yield return new KeyValuePair<GridViewColumn, double>(
-                        GetAttributeColumn(columnField, fullPath, attribute),
-                        attribute.Priority);
-                }
+                PlayersView.ItemsSource = _descendingSort
+                    ? source.OrderByDescending(_ => _.GetSortablePropertyValue(property, attribute))
+                    : source.OrderBy(_ => _.GetSortablePropertyValue(property, attribute));
+                _descendingSort = !_descendingSort;
             }
         }
 
@@ -112,37 +108,6 @@ namespace ExplorerFM.Windows
         private void AddCriteriaSetButton_Click(object sender, RoutedEventArgs e)
         {
             AddCriteriaSet(true);
-        }
-
-        private GridViewColumn GetAttributeColumn(PropertyInfo columnField, string fullPath, GridViewAttribute attribute)
-        {
-            var columnHeader = new GridViewColumnHeader
-            {
-                Content = attribute.Name,
-            };
-            columnHeader.Click += (_1, _2) =>
-            {
-                var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
-                if (source != null)
-                {
-                    PlayersView.ItemsSource = _descendingSort
-                        ? source.OrderByDescending(_ => _.GetSortablePropertyValue(columnField, attribute))
-                        : source.OrderBy(_ => _.GetSortablePropertyValue(columnField, attribute));
-                    _descendingSort = !_descendingSort;
-                }
-            };
-
-            var column = new GridViewColumn
-            {
-                Header = columnHeader,
-                DisplayMemberBinding = new Binding
-                {
-                    Path = attribute.NoPath ? null : new PropertyPath(fullPath),
-                    Converter = attribute.Converter,
-                    ConverterParameter = attribute.ConverterParameter
-                }
-            };
-            return column;
         }
 
         private CriteriaSet ExtractCriteriaSet(StackPanel criteriaSetPanel)
