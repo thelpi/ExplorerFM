@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
+using ExplorerFM.UiDatas;
 
 namespace ExplorerFM.Windows
 {
@@ -14,8 +16,9 @@ namespace ExplorerFM.Windows
         private const int MaxPlayersTake = 50;
 
         private readonly DataProvider _dataProvider;
+        public Player SelectedPlayer { get; private set; }
 
-        public BestPlayerFinderWindow(DataProvider dataProvider)
+        public BestPlayerFinderWindow(DataProvider dataProvider, Position? position = null, Side? side = null)
         {
             InitializeComponent();
             _dataProvider = dataProvider;
@@ -24,6 +27,17 @@ namespace ExplorerFM.Windows
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
             NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
             NationalityComboBox.ItemsSource = dataProvider.Countries.WithNullEntry();
+
+            if (position.HasValue)
+            {
+                PositionsComboBox.SelectedItem = position.Value;
+                PositionsComboBox.IsReadOnly = true;
+            }
+            if (side.HasValue)
+            {
+                SidesComboBox.SelectedItem = side.Value;
+                SidesComboBox.IsReadOnly = true;
+            }
 
             foreach (var columnKvp in GuiExtensions.GetAttributeColumns(true, null))
                 PlayersGridView.Columns.Add(columnKvp.Key);
@@ -113,6 +127,12 @@ namespace ExplorerFM.Windows
                     players => PlayersListView.ItemsSource = players,
                     (PlayersListView as UIElement).Yield(CriteriaGrid.Children.Cast<UIElement>().ToArray()).ToArray());
             }
+        }
+
+        private void SelectPlayerButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedPlayer = ((sender as Button).DataContext as PlayerRateUiData).Player;
+            Close();
         }
     }
 }

@@ -16,7 +16,6 @@ namespace ExplorerFM.Windows
     public partial class ClubWindow : Window
     {
         private const string PlayerPositionTemplateKey = "PlayerPositionTemplate";
-        private const string PlayerNameTemplateKey = "PlayerNameTemplate";
         private const string NoClub = "Without club";
 
         private bool _isSourceChange;
@@ -112,8 +111,6 @@ namespace ExplorerFM.Windows
                         }
 
                         AddLineUpUiComponent(PlayerPositionTemplateKey,
-                            rowIndex, colIndex, posPlayer.Item3);
-                        AddLineUpUiComponent(PlayerNameTemplateKey,
                             rowIndex, colIndex, posPlayer.Item3);
 
                         currPosIndex++;
@@ -214,6 +211,20 @@ namespace ExplorerFM.Windows
             }
 
             return finalList.Values;
+        }
+
+        private void PlayerLineUpButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            var p = (sender as FrameworkElement).DataContext as PlayerRateUiData;
+
+            Hide();
+            var win = new BestPlayerFinderWindow(_dataProvider, p.Position, p.Side);
+            win.ShowDialog();
+            var player = win.SelectedPlayer;
+            _players.Add(player);
+            _players.Remove(p.Player);
+            TacticsComboBox_SelectionChanged(null, null);
+            ShowDialog();
         }
     }
 }

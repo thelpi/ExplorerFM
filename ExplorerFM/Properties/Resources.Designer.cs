@@ -73,6 +73,16 @@ namespace ExplorerFM.Properties {
         /// <summary>
         ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap endturn {
+            get {
+                object obj = ResourceManager.GetObject("endturn", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une ressource localisée de type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap FM_screen {
             get {
                 object obj = ResourceManager.GetObject("FM_screen", resourceCulture);

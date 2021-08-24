@@ -52,6 +52,15 @@
             <ListView.View>
                 <GridView AllowsColumnReorder="False" x:Name="PlayersGridView">
                     <!-- player info columns are added by code-behind -->
+                    <GridViewColumn>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Height="20" Width="20" Name="SelectPlayerButton" Click="SelectPlayerButton_Click">
+                                    <Image Source="./../Resources/endturn.png" />
+                                </Button>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Pos." DisplayMemberBinding="{Binding Path=PositionRate}" />
                     <GridViewColumn Header="Side" DisplayMemberBinding="{Binding Path=SideRate}" />
                     <GridViewColumn Header="Rate" DisplayMemberBinding="{Binding Path=Rate}" />

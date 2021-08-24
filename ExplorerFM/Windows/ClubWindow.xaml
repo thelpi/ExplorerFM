@@ -12,10 +12,10 @@
         <cvt:CountryDisplayConverter x:Key="CountryDisplayConverter" />
         <cvt:DateDisplayConverter x:Key="DateDisplayConverter" />
         <ControlTemplate x:Key="PlayerPositionTemplate">
-            <Ellipse Width="40" Height="40" Fill="{Binding Path=Brush}" />
-        </ControlTemplate>
-        <ControlTemplate x:Key="PlayerNameTemplate">
-            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Path=Player.Fullname}" />
+            <StackPanel Orientation="Vertical">
+                <Ellipse Width="40" Height="40" Fill="{Binding Path=Brush}" Mouse.MouseUp="PlayerLineUpButton_Click" />
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Path=Player.Fullname}" />
+            </StackPanel>
         </ControlTemplate>
     </Window.Resources>
     <Grid Margin="10" Name="MainGrid">
