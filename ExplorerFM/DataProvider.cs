@@ -27,6 +27,7 @@ namespace ExplorerFM
         private readonly List<Club> _clubDatas;
         private readonly List<Confederation> _confederationDatas;
         private readonly List<Country> _countryDatas;
+        private readonly Dictionary<int, Player> _playerDatas;
 
         public IReadOnlyCollection<Attribute> Attributes => _attributeDatas;
         public IReadOnlyCollection<Club> Clubs => _clubDatas;
@@ -42,6 +43,7 @@ namespace ExplorerFM
             _clubDatas = new List<Club>();
             _confederationDatas = new List<Confederation>();
             _countryDatas = new List<Country>();
+            _playerDatas = new Dictionary<int, Player>();
         }
 
         public void Initialize()
@@ -82,39 +84,45 @@ namespace ExplorerFM
 
         private Player GetPlayerFromDataReader(IDataReader r)
         {
-            return new Player
+            var pId = r.Get<int>("ID");
+            if (!_playerDatas.ContainsKey(pId))
             {
-                Caps = r.Get<int>("Caps"),
-                ClubContract = _clubDatas.Find(_ => _.Id == r.GetNull<int>("ClubContractID")),
-                Commonname = r.Get<string>("Commonname"),
-                CurrentAbility = r.GetNull<int>("CurrentAbility"),
-                CurrentReputation = r.GetNull<int>("CurrentReputation"),
-                DateContractEnd = r.GetNull<System.DateTime>("DateContractEnd"),
-                DateContractStart = r.GetNull<System.DateTime>("DateContractStart"),
-                DislikeClubIds = r.GetIdList("DislikeClubID{0}"),
-                FavClubIds = r.GetIdList("FavClubID{0}"),
-                DateOfBirth = r.GetNull<System.DateTime>("DateOfBirth"),
-                DislikeStaffIds = r.GetIdList("DislikeStaffID{0}"),
-                FavStaffIds = r.GetIdList("FavStaffID{0}"),
-                Firstname = r.Get<string>("Firstname"),
-                HomeReputation = r.GetNull<int>("HomeReputation"),
-                Id = r.Get<int>("ID"),
-                IntGoals = r.Get<int>("IntGoals"),
-                Lastname = r.Get<string>("Lastname"),
-                LeftFoot = r.GetNull<int>("LeftFoot"),
-                Nationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID1")),
-                PotentialAbility = r.GetNull<int>("PotentialAbility"),
-                RightFoot = r.GetNull<int>("RightFoot"),
-                SecondNationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID2")),
-                SquadNumber = r.GetNull<int>("SquadNumber"),
-                Value = r.GetNull<int>("Value"),
-                Wage = r.GetNull<int>("Wage"),
-                WorldReputation = r.GetNull<int>("WorldReputation"),
-                YearOfBirth = r.GetNull<int>("YearOfBirth"),
-                Sides = GetRates("side", r.Get<int>("ID"), _ => (Side)_),
-                Positions = GetRates("position", r.Get<int>("ID"), _ => (Position)_),
-                Attributes = GetRates("attribute", r.Get<int>("ID"), _ => _attributeDatas.Find(a => a.Id == _))
-            };
+                _playerDatas.Add(pId, new Player
+                {
+                    Caps = r.Get<int>("Caps"),
+                    ClubContract = _clubDatas.Find(_ => _.Id == r.GetNull<int>("ClubContractID")),
+                    Commonname = r.Get<string>("Commonname"),
+                    CurrentAbility = r.GetNull<int>("CurrentAbility"),
+                    CurrentReputation = r.GetNull<int>("CurrentReputation"),
+                    DateContractEnd = r.GetNull<System.DateTime>("DateContractEnd"),
+                    DateContractStart = r.GetNull<System.DateTime>("DateContractStart"),
+                    DislikeClubIds = r.GetIdList("DislikeClubID{0}"),
+                    FavClubIds = r.GetIdList("FavClubID{0}"),
+                    DateOfBirth = r.GetNull<System.DateTime>("DateOfBirth"),
+                    DislikeStaffIds = r.GetIdList("DislikeStaffID{0}"),
+                    FavStaffIds = r.GetIdList("FavStaffID{0}"),
+                    Firstname = r.Get<string>("Firstname"),
+                    HomeReputation = r.GetNull<int>("HomeReputation"),
+                    Id = pId,
+                    IntGoals = r.Get<int>("IntGoals"),
+                    Lastname = r.Get<string>("Lastname"),
+                    LeftFoot = r.GetNull<int>("LeftFoot"),
+                    Nationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID1")),
+                    PotentialAbility = r.GetNull<int>("PotentialAbility"),
+                    RightFoot = r.GetNull<int>("RightFoot"),
+                    SecondNationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID2")),
+                    SquadNumber = r.GetNull<int>("SquadNumber"),
+                    Value = r.GetNull<int>("Value"),
+                    Wage = r.GetNull<int>("Wage"),
+                    WorldReputation = r.GetNull<int>("WorldReputation"),
+                    YearOfBirth = r.GetNull<int>("YearOfBirth"),
+                    Sides = GetRates("side", pId, _ => (Side)_),
+                    Positions = GetRates("position", pId, _ => (Position)_),
+                    Attributes = GetRates("attribute", pId, _ => _attributeDatas.Find(a => a.Id == _))
+                });
+            }
+
+            return _playerDatas[pId];
         }
 
         private void BuildAttributesList()
