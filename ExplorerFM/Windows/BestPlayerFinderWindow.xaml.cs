@@ -23,7 +23,7 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
             NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
-            NationalityComboBox.ItemsSource = dataProvider.Countries;
+            NationalityComboBox.ItemsSource = dataProvider.Countries.WithNullEntry();
 
             foreach (var columnKvp in GuiExtensions.GetAttributeColumns(true, null))
                 PlayersGridView.Columns.Add(columnKvp.Key);
@@ -42,6 +42,9 @@ namespace ExplorerFM.Windows
                 var side = (Side)SidesComboBox.SelectedItem;
                 var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
                 var country = NationalityComboBox.SelectedItem as Country;
+                var maxValue = ValueIntUpDown.Value;
+                var maxRep = ReputationIntUpDown.Value;
+                var maxAge = AgeDatePicker.SelectedDate;
 
                 var criteria = new List<RuleEngine.Criterion>();
                 if (NoClubContractCheckBox.IsChecked == true)
@@ -63,6 +66,36 @@ namespace ExplorerFM.Windows
                             countryProp.DeclaringType,
                             RuleEngine.Comparator.Equal,
                             country, false, false));
+                }
+                if (maxAge.HasValue)
+                {
+                    var dobProp = typeof(Player).GetProperty(nameof(Player.DateOfBirth));
+                    criteria.Add(
+                        new RuleEngine.Criterion(
+                            dobProp.GetCustomAttribute<FieldAttribute>(),
+                            dobProp.DeclaringType,
+                            RuleEngine.Comparator.GreaterEqual,
+                            maxAge.Value, false, true));
+                }
+                if (maxValue.HasValue)
+                {
+                    var valueProp = typeof(Player).GetProperty(nameof(Player.Value));
+                    criteria.Add(
+                        new RuleEngine.Criterion(
+                            valueProp.GetCustomAttribute<FieldAttribute>(),
+                            valueProp.DeclaringType,
+                            RuleEngine.Comparator.LowerEqual,
+                            maxValue.Value, false, true));
+                }
+                if (maxRep.HasValue)
+                {
+                    var repProp = typeof(Player).GetProperty(nameof(Player.CurrentReputation));
+                    criteria.Add(
+                        new RuleEngine.Criterion(
+                            repProp.GetCustomAttribute<FieldAttribute>(),
+                            repProp.DeclaringType,
+                            RuleEngine.Comparator.LowerEqual,
+                            maxRep.Value, false, true));
                 }
 
                 LoadPlayersProgressBar.HideWorkAndDisplay(

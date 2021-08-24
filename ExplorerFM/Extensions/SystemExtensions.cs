@@ -42,5 +42,13 @@ namespace ExplorerFM.Extensions
         {
             return new[] { value }.Concat(values ?? Enumerable.Empty<T>());
         }
+
+        public static IEnumerable<T> WithNullEntry<T>(this IEnumerable<T> sourceCollection, bool last = false)
+            where T : class
+        {
+            var collectionCopy = new List<T>(sourceCollection);
+            collectionCopy.Insert(last ? collectionCopy.Count : 0, null);
+            return collectionCopy;
+        }
     }
 }
