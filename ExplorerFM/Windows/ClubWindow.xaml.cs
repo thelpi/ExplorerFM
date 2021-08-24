@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +20,7 @@ namespace ExplorerFM.Windows
         private const string NoClub = "Without club";
 
         private bool _isSourceChange;
-        private List<Player> _players;
+        private ObservableCollection<Player> _players;
         private readonly DataProvider _dataProvider;
 
         private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
@@ -86,39 +87,44 @@ namespace ExplorerFM.Windows
         {
             if (TacticsComboBox.SelectedItem != null)
             {
-                TacticPlayersGrid.Children.Clear();
-
-                var lineUp = (TacticsComboBox.SelectedItem as Tactic)
-                    .GetBestLineUp(_players, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior);
-
-                foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
-                {
-                    var groupPlayerCount = posGroup.Count();
-                    var currPosIndex = 0;
-                    foreach (var posPlayer in posGroup)
-                    {
-                        var rowIndex = Array.IndexOf(DataProvider.OrderedPositions,
-                            posPlayer.Item1);
-                        var colIndex = Array.IndexOf(DataProvider.OrderedSides,
-                            posPlayer.Item2) * 2; // 0,1,2 => 0,2,4
-
-                        if (colIndex == 2)
-                        {
-                            if (groupPlayerCount == 3)
-                                colIndex = currPosIndex == 0 ? 1 : (currPosIndex == 1 ? 2 : 3);
-                            else if (groupPlayerCount == 2)
-                                colIndex = currPosIndex == 0 ? 1 : 3;
-                        }
-
-                        AddLineUpUiComponent(PlayerPositionTemplateKey,
-                            rowIndex, colIndex, posPlayer.Item3);
-
-                        currPosIndex++;
-                    }
-                }
-
-                TacticInfoLabel.Content = $"Total value: {lineUp.Sum(_ => _.Item3.Rate)}";
+                SetTacticLineUp();
             }
+        }
+
+        private void SetTacticLineUp()
+        {
+            TacticPlayersGrid.Children.Clear();
+
+            var lineUp = (TacticsComboBox.SelectedItem as Tactic)
+                .GetBestLineUp(_players.ToList(), _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior);
+
+            foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
+            {
+                var groupPlayerCount = posGroup.Count();
+                var currPosIndex = 0;
+                foreach (var posPlayer in posGroup)
+                {
+                    var rowIndex = Array.IndexOf(DataProvider.OrderedPositions,
+                        posPlayer.Item1);
+                    var colIndex = Array.IndexOf(DataProvider.OrderedSides,
+                        posPlayer.Item2) * 2; // 0,1,2 => 0,2,4
+
+                    if (colIndex == 2)
+                    {
+                        if (groupPlayerCount == 3)
+                            colIndex = currPosIndex == 0 ? 1 : (currPosIndex == 1 ? 2 : 3);
+                        else if (groupPlayerCount == 2)
+                            colIndex = currPosIndex == 0 ? 1 : 3;
+                    }
+
+                    AddLineUpUiComponent(PlayerPositionTemplateKey,
+                        rowIndex, colIndex, posPlayer.Item3);
+
+                    currPosIndex++;
+                }
+            }
+
+            TacticInfoLabel.Content = $"Total value: {lineUp.Sum(_ => _.Item3.Rate)}";
         }
 
         private void AddLineUpUiComponent(string key, int row, int column, PlayerRateUiData playerData)
@@ -148,7 +154,7 @@ namespace ExplorerFM.Windows
                 () => _dataProvider.GetPlayersByClub(club?.Id),
                 p =>
                 {
-                    _players = p;
+                    _players = new ObservableCollection<Player>(p);
                     Title = club?.LongName ?? NoClub;
                     PlayersView.ItemsSource = _players;
                     ClearForms();
@@ -218,12 +224,33 @@ namespace ExplorerFM.Windows
             var p = (sender as FrameworkElement).DataContext as PlayerRateUiData;
 
             Hide();
-            var win = new BestPlayerFinderWindow(_dataProvider, p.Position, p.Side);
+            var win = new BestPlayerFinderWindow(_dataProvider,
+                p.Position,
+                p.Side,
+                (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem,
+                PotentialAbilityCheckBox.IsChecked);
             win.ShowDialog();
+
             var player = win.SelectedPlayer;
-            _players.Add(player);
-            _players.Remove(p.Player);
-            TacticsComboBox_SelectionChanged(null, null);
+            if (player != null && !_players.Contains(player))
+            {
+                var res = MessageBox.Show($"Replace {p.Player.Fullname} from squad ?" +
+                        $"\n\nYes: new player will replace the selected player." +
+                        $"\nNo: new player will be added to the squad." +
+                        $"\nCancel: no player will be added nor removed.",
+                    "ExplorerFM",
+                    MessageBoxButton.YesNoCancel);
+                if (res != MessageBoxResult.Cancel)
+                {
+                    _players.Add(player);
+                    if (res == MessageBoxResult.Yes)
+                        _players.Remove(p.Player);
+                    SetTacticLineUp();
+                    TopTenPlayersListView.ItemsSource = GetTopTenRatedPlayers();
+                    SetRatedPlayersListBox();
+                }
+            }
+
             ShowDialog();
         }
     }

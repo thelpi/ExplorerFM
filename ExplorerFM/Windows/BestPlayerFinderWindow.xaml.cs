@@ -13,30 +13,45 @@ namespace ExplorerFM.Windows
 {
     public partial class BestPlayerFinderWindow : Window
     {
-        private const int MaxPlayersTake = 50;
+        private const int MaxPlayersTake = 1000;
 
         private readonly DataProvider _dataProvider;
         public Player SelectedPlayer { get; private set; }
 
-        public BestPlayerFinderWindow(DataProvider dataProvider, Position? position = null, Side? side = null)
+        public BestPlayerFinderWindow(DataProvider dataProvider,
+            Position? position = null, Side? side = null, NullRateBehavior? nullRateBehavior = null, bool? usePotential = null)
         {
             InitializeComponent();
             _dataProvider = dataProvider;
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
-            NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
             NationalityComboBox.ItemsSource = dataProvider.Countries.WithNullEntry();
+
+            if (nullRateBehavior.HasValue)
+            {
+                NullRateBehaviorComboBox.SelectedItem = nullRateBehavior.Value;
+                NullRateBehaviorComboBox.IsEnabled = false;
+            }
+            else
+                NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
 
             if (position.HasValue)
             {
                 PositionsComboBox.SelectedItem = position.Value;
-                PositionsComboBox.IsReadOnly = true;
+                PositionsComboBox.IsEnabled = false;
             }
+
             if (side.HasValue)
             {
                 SidesComboBox.SelectedItem = side.Value;
-                SidesComboBox.IsReadOnly = true;
+                SidesComboBox.IsEnabled = false;
+            }
+
+            if (usePotential.HasValue)
+            {
+                PotentialAbilityCheckBox.IsChecked = usePotential;
+                PotentialAbilityCheckBox.IsEnabled = false;
             }
 
             foreach (var columnKvp in GuiExtensions.GetAttributeColumns(true, null))
@@ -52,16 +67,15 @@ namespace ExplorerFM.Windows
         {
             if (PositionsComboBox.SelectedIndex >= 0 && SidesComboBox.SelectedIndex >= 0)
             {
-                var position = (Position)PositionsComboBox.SelectedItem;
-                var side = (Side)SidesComboBox.SelectedItem;
-                var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
                 var country = NationalityComboBox.SelectedItem as Country;
                 var maxValue = ValueIntUpDown.Value;
                 var maxRep = ReputationIntUpDown.Value;
                 var maxAge = AgeDatePicker.SelectedDate;
+                var isUe = EuropeanUnionCheckBox.IsChecked == true;
+                var noClubContract = NoClubContractCheckBox.IsChecked == true;
 
                 var criteria = new List<RuleEngine.Criterion>();
-                if (NoClubContractCheckBox.IsChecked == true)
+                if (noClubContract)
                 {
                     var clubContractProp = typeof(Player).GetProperty(nameof(Player.ClubContract));
                     criteria.Add(
@@ -111,6 +125,20 @@ namespace ExplorerFM.Windows
                             RuleEngine.Comparator.LowerEqual,
                             maxRep.Value, false, true));
                 }
+                if (isUe)
+                {
+                    var isEuProp = typeof(Country).GetProperty(nameof(Country.IsEU));
+                    criteria.Add(
+                        new RuleEngine.Criterion(
+                            isEuProp.GetCustomAttribute<FieldAttribute>(),
+                            isEuProp.DeclaringType,
+                            RuleEngine.Comparator.Equal,
+                            true, false, false));
+                }
+
+                var position = (Position)PositionsComboBox.SelectedItem;
+                var side = (Side)SidesComboBox.SelectedItem;
+                var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
 
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
