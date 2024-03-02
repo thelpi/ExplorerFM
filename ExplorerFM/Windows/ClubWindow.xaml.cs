@@ -85,9 +85,14 @@ namespace ExplorerFM.Windows
                 && SidesComboBox.SelectedIndex >= 0)
             {
                 // top 10 best players for the position/side
-                RatedPlayersListView.ItemsSource = GetPlayersRateItemData(
-                        (Position)PositionsComboBox.SelectedItem,
-                        (Side)SidesComboBox.SelectedItem)
+                RatedPlayersListView.ItemsSource = _players
+                    .Select(p =>
+                        p.ToRateItemData(
+                            (Position)PositionsComboBox.SelectedItem,
+                            (Side)SidesComboBox.SelectedItem,
+                            _dataProvider.MaxTheoreticalRate,
+                            UsePotentialAbility,
+                            NullRateBehavior))
                     .OrderByDescending(p => p.Rate)
                     .Take(10);
             }
@@ -145,12 +150,6 @@ namespace ExplorerFM.Windows
             element.SetValue(Grid.RowProperty, row);
 
             TacticPlayersGrid.Children.Add(element);
-        }
-
-        private IEnumerable<PlayerRateUiData> GetPlayersRateItemData(Position position, Side side)
-        {
-            return _players.Select(p =>
-                p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior));
         }
 
         private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -227,17 +226,23 @@ namespace ExplorerFM.Windows
             if (_players == null)
                 return null;
 
-            var fullList = new List<PlayerRateUiData>();
+            var fullList = new List<PlayerRateUiData>(_players.Count * 10);
 
-            foreach (var position in Enum.GetValues(typeof(Position)).Cast<Position>())
+            foreach (var p in _players)
             {
-                foreach (var side in Enum.GetValues(typeof(Side)).Cast<Side>())
+                var bestSides = p.Sides.Where(x => x.Value == p.Sides.Max(y => y.Value)).Select(x => x.Key);
+                var bestPositions = p.Positions.Where(x => x.Value == p.Positions.Max(y => y.Value)).Select(x => x.Key);
+                foreach (var position in bestPositions)
                 {
-                    fullList.AddRange(GetPlayersRateItemData(position, side));
+                    foreach (var side in bestSides)
+                    {
+                        fullList.Add(
+                            p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior));
+                    }
                 }
             }
 
-            var finalList = new Dictionary<int, PlayerRateUiData>();
+            var finalList = new Dictionary<int, PlayerRateUiData>(fullList.Count);
 
             foreach (var p in fullList.OrderByDescending(r => r.Rate))
             {

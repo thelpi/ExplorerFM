@@ -127,7 +127,7 @@ namespace ExplorerFM.Extensions
             var players = new List<Player>(sourcePlayers);
             var positions = new List<Tuple<Position, Side>>(tactic.Positions);
 
-            while (positions.Count > 0 && sourcePlayers.Count > 0)
+            while (positions.Count > 0 && players.Count > 0)
             {
                 var positionsBest = new List<Tuple<Position, Side, PlayerRateUiData, decimal>>();
                 foreach (var position in positions.Distinct())
@@ -143,9 +143,7 @@ namespace ExplorerFM.Extensions
                             position.Item1, position.Item2, bestP, ratePercent));
                 }
 
-                var bestPositionBest = positionsBest
-                    .OrderByDescending(p => p.Item4)
-                    .First();
+                var bestPositionBest = positionsBest.First(x => x.Item4 == positionsBest.Max(y => y.Item4));
 
                 players.Remove(bestPositionBest.Item3.Player);
                 positions.RemoveAt(
