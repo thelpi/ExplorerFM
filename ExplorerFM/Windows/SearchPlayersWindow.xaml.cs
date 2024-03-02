@@ -43,7 +43,6 @@ namespace ExplorerFM.Windows
 
         private readonly DataProvider _dataProvider;
         private readonly IList _attributeProperties;
-        private readonly IDictionary<Type, Func<IEnumerable>> _collectionsProvider;
 
         private bool _descendingSort;
 
@@ -54,12 +53,6 @@ namespace ExplorerFM.Windows
             _attributeProperties = DataProvider.GetAllAttribute<FieldAttribute>();
 
             _dataProvider = dataProvider;
-            _collectionsProvider = new Dictionary<Type, Func<IEnumerable>>
-            {
-                { typeof(Datas.Country), () => _dataProvider.Countries },
-                { typeof(Datas.Club), () => _dataProvider.Clubs },
-                { typeof(Datas.Confederation), () => _dataProvider.Confederations },
-            };
 
             foreach (var columnKvp in GuiExtensions.GetAttributeColumns(false, HeaderColumnClick))
                 PlayersGrid.Columns.Add(columnKvp.Key);
@@ -67,8 +60,7 @@ namespace ExplorerFM.Windows
 
         private void HeaderColumnClick(GridViewAttribute attribute, PropertyInfo property)
         {
-            var source = PlayersView.ItemsSource as IEnumerable<Datas.Player>;
-            if (source != null)
+            if (PlayersView.ItemsSource is IEnumerable<Datas.Player> source)
             {
                 PlayersView.ItemsSource = _descendingSort
                     ? source.OrderByDescending(_ => _.GetSortablePropertyValue(property, attribute))
@@ -404,7 +396,7 @@ namespace ExplorerFM.Windows
             var player = (sender as FrameworkElement).DataContext as Datas.Player;
 
             Hide();
-            new ClubWindow(_dataProvider, player.ClubContract).ShowDialog();
+            new ClubWindow(_dataProvider, false, player.ClubContract, null).ShowDialog();
             ShowDialog();
         }
     }

@@ -39,6 +39,14 @@ namespace ExplorerFM.Windows
             ChangeWindow<BestPlayerFinderWindow>();
         }
 
+        private void CountryExplorerButton_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            var window = new ClubWindow(_dataProvider, true, null, null);
+            window.ShowDialog();
+            ShowDialog();
+        }
+
         private void ChangeWindow<T>() where T : Window
         {
             Hide();

@@ -18,10 +18,12 @@ namespace ExplorerFM.Windows
     {
         private const string PlayerPositionTemplateKey = "PlayerPositionTemplate";
         private const string NoClub = "Without club";
+        private const string NoCountry = "Without country";
 
         private bool _isSourceChange;
         private ObservableCollection<Player> _players;
         private readonly DataProvider _dataProvider;
+        private readonly bool _isCountry;
 
         private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
         private NullRateBehavior NullRateBehavior => NullRateBehaviorComboBox.SelectedIndex == -1
@@ -29,21 +31,29 @@ namespace ExplorerFM.Windows
             : (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem;
 
         public ClubWindow(DataProvider dataProvider)
-            : this(dataProvider, null)
+            : this(dataProvider, false, null, null)
         { }
 
-        public ClubWindow(DataProvider dataProvider, Club club)
+        public ClubWindow(DataProvider dataProvider, bool isCountry, Club club, Country country)
         {
             InitializeComponent();
 
+            _isCountry = isCountry;
             _dataProvider = dataProvider;
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
             CountryClubComboBox.ItemsSource = _dataProvider.Countries;
-            CountryClubComboBox.SelectedItem = club?.Country;
-            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club?.Country?.Id);
-            ClubComboBox.SelectedItem = club;
+            CountryClubComboBox.SelectedItem = club?.Country ?? country;
+            if (isCountry)
+            {
+                ClubComboBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == club?.Country?.Id);
+                ClubComboBox.SelectedItem = club;
+            }
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
             NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
         }
@@ -164,10 +174,31 @@ namespace ExplorerFM.Windows
 
         private void CountryClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _isSourceChange = true;
-            ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c =>
-                c.Country?.Id == (CountryClubComboBox.SelectedItem as Country)?.Id);
-            _isSourceChange = false;
+            if (_isCountry)
+            {
+                if (_isSourceChange)
+                    return;
+
+                var country = CountryClubComboBox.SelectedItem as Country;
+
+                LoadPlayersProgressBar.HideWorkAndDisplay(
+                    () => _dataProvider.GetPlayersByCountry(country?.Id),
+                    p =>
+                    {
+                        _players = new ObservableCollection<Player>(p);
+                        Title = country?.LongName ?? NoCountry;
+                        PlayersView.ItemsSource = _players;
+                        ClearForms();
+                    },
+                    MainGrid.Children.Cast<UIElement>().ToArray());
+            }
+            else
+            {
+                _isSourceChange = true;
+                ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c =>
+                    c.Country?.Id == (CountryClubComboBox.SelectedItem as Country)?.Id);
+                _isSourceChange = false;
+            }
         }
 
         private void ClearForms()

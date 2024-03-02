@@ -17,9 +17,9 @@ namespace ExplorerFM
 
         public List<T> GetDatas<T>(string sql, Func<IDataReader, T> transformFunc, Action<int> countReportFunc = null)
         {
-            var results = new List<T>();
+            var results = new List<T>(10000);
 
-            int i = 0;
+            var i = 0;
             using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();
@@ -30,7 +30,9 @@ namespace ExplorerFM
                     {
                         while (reader.Read())
                         {
-                            results.Add(transformFunc(reader));
+                            var data = transformFunc(reader);
+                            if (data != null)
+                                results.Add(data);
                             countReportFunc?.Invoke(i);
                             i++;
                         }
@@ -46,10 +48,8 @@ namespace ExplorerFM
             return GetDatas(sql, transformFunc).FirstOrDefault();
         }
 
-        public T GetValue<T>(string sql, T defaultValue = default(T))
+        public T GetValue<T>(string sql, T defaultValue = default)
         {
-            var results = new List<T>();
-
             using (var connection = new MySqlConnection(_connectionString))
             {
                 connection.Open();

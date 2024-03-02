@@ -2,6 +2,7 @@
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
 using ExplorerFM.RuleEngine;
@@ -19,30 +20,28 @@ namespace ExplorerFM
             Position.Defender, Position.Sweeper, Position.GoalKeeper
         };
 
-        private static readonly System.DateTime DefaultContractDate = new System.DateTime(1996, 1, 2, 0, 0, 0);
-
         private readonly MySqlService _mySqlService;
 
-        private readonly List<Attribute> _attributeDatas;
-        private readonly List<Club> _clubDatas;
-        private readonly List<Confederation> _confederationDatas;
-        private readonly List<Country> _countryDatas;
+        private readonly Dictionary<int, Attribute> _attributeDatas;
+        private readonly Dictionary<int, Club> _clubDatas;
+        private readonly Dictionary<int, Confederation> _confederationDatas;
+        private readonly Dictionary<int, Country> _countryDatas;
         private readonly Dictionary<int, Player> _playerDatas;
 
-        public IReadOnlyCollection<Attribute> Attributes => _attributeDatas;
-        public IReadOnlyCollection<Club> Clubs => _clubDatas;
-        public IReadOnlyCollection<Confederation> Confederations => _confederationDatas;
-        public IReadOnlyCollection<Country> Countries => _countryDatas;
+        public IEnumerable<Attribute> Attributes => _attributeDatas.Values;
+        public IEnumerable<Club> Clubs => _clubDatas.Values;
+        public IEnumerable<Confederation> Confederations => _confederationDatas.Values;
+        public IEnumerable<Country> Countries => _countryDatas.Values;
 
         public int MaxTheoreticalRate => 16 * _attributeDatas.Count;
 
         public DataProvider(string connectionString)
         {
             _mySqlService = new MySqlService(connectionString);
-            _attributeDatas = new List<Attribute>();
-            _clubDatas = new List<Club>();
-            _confederationDatas = new List<Confederation>();
-            _countryDatas = new List<Country>();
+            _attributeDatas = new Dictionary<int, Attribute>();
+            _clubDatas = new Dictionary<int, Club>();
+            _confederationDatas = new Dictionary<int, Confederation>();
+            _countryDatas = new Dictionary<int, Country>();
             _playerDatas = new Dictionary<int, Player>();
         }
 
@@ -56,9 +55,16 @@ namespace ExplorerFM
 
         public List<Player> GetPlayersByClub(int? clubId)
         {
-            return _mySqlService.GetDatas(
-                $"SELECT * FROM player WHERE ClubContractID {(clubId.HasValue ? $"= {clubId.Value}" : "IS NULL")}",
-                GetPlayerFromDataReader);
+            return GetPlayers($"SELECT * FROM player WHERE ClubContractID {(clubId.HasValue ? $"= {clubId.Value}" : "IS NULL")}");
+        }
+
+        public List<Player> GetPlayersByCountry(int? countryId)
+        {
+            var sql = $"SELECT * FROM player WHERE NationID1 = {countryId} OR (Caps = 0 AND NationID2 = {countryId})";
+            if (!countryId.HasValue)
+                sql = "SELECT * FROM player WHERE NationID1 IS NULL AND NationID2 IS NULL";
+
+            return GetPlayers(sql);
         }
 
         public List<Player> GetPlayersByCriteria(CriteriaSet criteria, System.Action<double> reportFunc)
@@ -67,10 +73,21 @@ namespace ExplorerFM
                 $"SELECT COUNT(*) AS players_count FROM player WHERE {criteria}",
                 r => r.Get<int>("players_count"));
 
-            return _mySqlService.GetDatas(
-                $"SELECT * FROM player WHERE {criteria}",
-                GetPlayerFromDataReader,
+            return GetPlayers($"SELECT * FROM player WHERE {criteria}",
                 i => reportFunc?.Invoke(i / (double)count));
+        }
+
+        private List<Player> GetPlayers(string sql, System.Action<int> reportFunc = null)
+        {
+            var players = _mySqlService.GetDatas(
+                sql,
+                GetPlayerFromDataReader,
+                reportFunc);
+
+            while (players.Any(p => !p.Loaded))
+                System.Threading.Thread.Sleep(100);
+
+            return players;
         }
 
         public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute
@@ -87,12 +104,16 @@ namespace ExplorerFM
             var pId = r.Get<int>("ID");
             if (!_playerDatas.ContainsKey(pId))
             {
-                _playerDatas.Add(pId, new Player
+                var ability = r.GetNull<int>("CurrentAbility");
+                var potential = r.GetNull<int>("PotentialAbility");
+                if ((!potential.HasValue || (potential >= 0 && potential < 100)) && (ability < 100 || !ability.HasValue))
+                    return null;
+
+                var p = new Player
                 {
                     Caps = r.Get<int>("Caps"),
-                    ClubContract = _clubDatas.Find(_ => _.Id == r.GetNull<int>("ClubContractID")),
                     Commonname = r.Get<string>("Commonname"),
-                    CurrentAbility = r.GetNull<int>("CurrentAbility"),
+                    CurrentAbility = ability,
                     CurrentReputation = r.GetNull<int>("CurrentReputation"),
                     DateContractEnd = r.GetNull<System.DateTime>("DateContractEnd"),
                     DateContractStart = r.GetNull<System.DateTime>("DateContractStart"),
@@ -107,27 +128,56 @@ namespace ExplorerFM
                     IntGoals = r.Get<int>("IntGoals"),
                     Lastname = r.Get<string>("Lastname"),
                     LeftFoot = r.GetNull<int>("LeftFoot"),
-                    Nationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID1")),
-                    PotentialAbility = r.GetNull<int>("PotentialAbility"),
+                    PotentialAbility = potential,
                     RightFoot = r.GetNull<int>("RightFoot"),
-                    SecondNationality = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID2")),
                     SquadNumber = r.GetNull<int>("SquadNumber"),
                     Value = r.GetNull<int>("Value"),
                     Wage = r.GetNull<int>("Wage"),
                     WorldReputation = r.GetNull<int>("WorldReputation"),
                     YearOfBirth = r.GetNull<int>("YearOfBirth"),
-                    Sides = GetRates("side", pId, _ => (Side)_),
-                    Positions = GetRates("position", pId, _ => (Position)_),
-                    Attributes = GetRates("attribute", pId, _ => _attributeDatas.Find(a => a.Id == _))
+                    ClubContract = GetClub(r.GetNull<int>("ClubContractID")),
+                    Nationality = GetCountry(r.GetNull<int>("NationID1")),
+                    SecondNationality = GetCountry(r.GetNull<int>("NationID2"))
+                };
+
+                Task.Run(() =>
+                {
+                    p.Sides = GetRates("side", pId, _ => (Side)_);
+                    p.Positions = GetRates("position", pId, _ => (Position)_);
+                    p.Attributes = GetRates("attribute", pId, _ => _attributeDatas[_]);
+                    p.Loaded = true;
                 });
+
+                _playerDatas.Add(pId, p);
             }
 
             return _playerDatas[pId];
         }
 
+        private Club GetClub(int? clubId)
+        {
+            return clubId.HasValue && _clubDatas.ContainsKey(clubId.Value)
+                ? _clubDatas[clubId.Value]
+                : null;
+        }
+
+        private Country GetCountry(int? countryId)
+        {
+            return countryId.HasValue && _countryDatas.ContainsKey(countryId.Value)
+                ? _countryDatas[countryId.Value]
+                : null;
+        }
+
+        private Confederation GetConfederation(int? confederationId)
+        {
+            return confederationId.HasValue && _confederationDatas.ContainsKey(confederationId.Value)
+                ? _confederationDatas[confederationId.Value]
+                : null;
+        }
+
         private void BuildAttributesList()
         {
-            BuildDatasList(
+            BuildDataList(
                 _attributeDatas,
                 new[] { "ID", "name", "type_ID" },
                 "attribute",
@@ -141,7 +191,7 @@ namespace ExplorerFM
 
         private void BuildConfederationsList()
         {
-            BuildDatasList(
+            BuildDataList(
                 _confederationDatas,
                 new[] { "ID", "Name3", "Name", "PeopleName", "FedName", "FedSigle", "Strength" },
                 "confederation",
@@ -159,14 +209,14 @@ namespace ExplorerFM
 
         private void BuildCountriesList()
         {
-            BuildDatasList(
+            BuildDataList(
                 _countryDatas,
                 new[] { "ID", "Name", "NameShort", "Name3", "ContinentID", "is_EU" },
                 "country",
                 r => new Country
                 {
                     Code = r.Get<string>("Name3"),
-                    Confederation = _confederationDatas.Find(_ => _.Id == r.GetNull<int>("ContinentID")),
+                    Confederation = GetConfederation(r.GetNull<int>("ContinentID")),
                     Id = r.Get<int>("ID"),
                     IsEU = r.Get<byte>("is_EU") != 0,
                     LongName = r.Get<string>("Name"),
@@ -176,7 +226,7 @@ namespace ExplorerFM
 
         private void BuildClubsList()
         {
-            BuildDatasList(
+            BuildDataList(
                 _clubDatas,
                 new[] { "ID", "LongName", "ShortName", "StadiumOwner", "PLC", "NationID",
                     "DivisionID", "DivisionPreviousID", "LastPosition", "DivisionReserveID",
@@ -192,7 +242,7 @@ namespace ExplorerFM
                 "club",
                 r => new Club
                 {
-                    Country = _countryDatas.Find(_ => _.Id == r.GetNull<int>("NationID")),
+                    Country = GetCountry(r.GetNull<int>("NationID")),
                     PublicLimitedCompany = r.Get<byte>("PLC") != 0,
                     AverageAttendance = r.GetNull<int>("AverageAttendance"),
                     AwayShirtBackgroundId = r.GetNull<int>("AwayShirtBackgroundID"),
@@ -224,16 +274,19 @@ namespace ExplorerFM
                 });
         }
 
-        private void BuildDatasList<T>(
-            List<T> targetList,
+        private void BuildDataList<T>(
+            Dictionary<int, T> targetList,
             string[] columns,
             string table,
             System.Func<IDataReader, T> transformFunc)
+            where T : BaseData
         {
             targetList.Clear();
-            targetList.AddRange(_mySqlService.GetDatas(
+            var sourceData = _mySqlService.GetDatas(
                 $"SELECT {string.Join(", ", columns)} FROM {table}",
-                transformFunc));
+                transformFunc);
+            foreach (var data in sourceData)
+                targetList.Add(data.Id, data);
         }
 
         private Dictionary<T, int?> GetRates<T>(

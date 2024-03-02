@@ -30,6 +30,8 @@ namespace ExplorerFM.Datas
         [Field("SquadNumber", 0, 999)]
         public int? SquadNumber { get; set; }
 
+        public bool Loaded { get; set; }
+
         [GridView("Tot. attr.", 12.5)]
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID", 1, 1000)]
         public int AttributesTotal => GetAttributesTotal();

@@ -14,11 +14,13 @@
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <Image Source="./../Resources/FM_screen.png" Width="360" Height="170" />
         <ProgressBar Grid.Row="1" Grid.RowSpan="3" Height="25" Width="150" IsIndeterminate="True" Name="DatasLoadingProgressBar" />
         <Button Grid.Row="1" Height="25" Content="Club explorer" Width="150" Name="ClubExplorerButton" Click="ClubExplorerButton_Click" />
-        <Button Grid.Row="2" Height="25" Content="Players search" Width="150" Name="PlayersSearchButton" Click="PlayersSearchButton_Click" />
-        <Button Grid.Row="3" Height="25" Content="Best players finder" Width="150" Name="BestPlayersFinderButton" Click="BestPlayersFinderButton_Click" />
+        <Button Grid.Row="2" Height="25" Content="Country explorer" Width="150" Name="CountryExplorerButton" Click="CountryExplorerButton_Click" />
+        <Button Grid.Row="3" Height="25" Content="Players search" Width="150" Name="PlayersSearchButton" Click="PlayersSearchButton_Click" />
+        <Button Grid.Row="4" Height="25" Content="Best players finder" Width="150" Name="BestPlayersFinderButton" Click="BestPlayersFinderButton_Click" />
     </Grid>
 </Window>

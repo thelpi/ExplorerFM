@@ -67,7 +67,6 @@ namespace ExplorerFM.Windows
         {
             if (PositionsComboBox.SelectedIndex >= 0 && SidesComboBox.SelectedIndex >= 0)
             {
-                var country = NationalityComboBox.SelectedItem as Country;
                 var maxValue = ValueIntUpDown.Value;
                 var maxRep = ReputationIntUpDown.Value;
                 var maxAge = AgeDatePicker.SelectedDate;
@@ -85,7 +84,7 @@ namespace ExplorerFM.Windows
                             RuleEngine.Comparator.Equal,
                             null, true, false));
                 }
-                if (country != null)
+                if (NationalityComboBox.SelectedItem is Country country)
                 {
                     var countryProp = typeof(Player).GetProperty(nameof(Player.Nationality));
                     criteria.Add(
