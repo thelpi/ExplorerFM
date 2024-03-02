@@ -181,7 +181,7 @@ namespace ExplorerFM.Windows
                 var country = CountryClubComboBox.SelectedItem as Country;
 
                 LoadPlayersProgressBar.HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCountry(country?.Id),
+                    () => _dataProvider.GetPlayersByCountry(country?.Id, true),
                     p =>
                     {
                         _players = new ObservableCollection<Player>(p);

@@ -144,6 +144,7 @@ namespace ExplorerFM
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId,
+            bool selectionEligible,
             IReadOnlyDictionary<int, Club> clubs,
             IReadOnlyDictionary<int, Country> countries)
         {
@@ -151,9 +152,22 @@ namespace ExplorerFM
 
             if (countryId.HasValue)
             {
-                filter &= Builders<StaffDto>.Filter.Or(
-                    Builders<StaffDto>.Filter.Eq(x => x.Nation1.Id, countryId.Value),
-                    Builders<StaffDto>.Filter.Eq(x => x.Nation2.Id, countryId.Value));
+                if (!selectionEligible)
+                {
+                    filter &= Builders<StaffDto>.Filter.Or(
+                        Builders<StaffDto>.Filter.Eq(x => x.Nation1.Id, countryId.Value),
+                        Builders<StaffDto>.Filter.Eq(x => x.Nation2.Id, countryId.Value));
+                }
+                else
+                {
+                    filter &= Builders<StaffDto>.Filter.Or(
+                        Builders<StaffDto>.Filter.Eq(x => x.Nation1.Id, countryId.Value),
+                        Builders<StaffDto>.Filter.And(
+                            Builders<StaffDto>.Filter.Eq(x => x.Nation2.Id, countryId.Value),
+                            Builders<StaffDto>.Filter.Or(
+                                Builders<StaffDto>.Filter.Eq(x => x.Caps, 0),
+                                Builders<StaffDto>.Filter.Eq(x => x.Caps, null))));
+                }
             }
             else
             {

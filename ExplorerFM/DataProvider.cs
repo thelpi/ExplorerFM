@@ -62,9 +62,9 @@ namespace ExplorerFM
             return _mongoService.GetPlayersByClub(clubId, _clubDatas, _countryDatas);
         }
 
-        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId)
+        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible)
         {
-            return _mongoService.GetPlayersByCountry(countryId, _clubDatas, _countryDatas);
+            return _mongoService.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
         }
 
         public List<Player> GetPlayersByCriteria(CriteriaSet criteria, System.Action<double> reportFunc)
