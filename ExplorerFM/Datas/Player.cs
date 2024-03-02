@@ -18,7 +18,7 @@ namespace ExplorerFM.Datas
         [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20, typeof(Position))]
         public Dictionary<Position, int?> Positions { get; set; }
 
-        [NestedSelectorField("SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_attribute.player_ID = player.ID", 1, 20, nameof(DataProvider.Attributes), nameof(Attribute.Name))]
+        [NestedSelectorField("SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_attribute.player_ID = player.ID", 1, 20, "Attributes", "Name")]
         public Dictionary<Attribute, int?> Attributes { get; set; }
 
         [Field("LeftFoot", 1, 20)]
@@ -41,7 +41,7 @@ namespace ExplorerFM.Datas
         public int AttributesGoalkeeperTotal => GetAttributesTotal(AttributeType.Goalkeeper);
 
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 2)", 1, 1000)]
-        public int AttributesKickoffTotal => GetAttributesTotal(AttributeType.Kickoff);
+        public int AttributesKickoffTotal => GetAttributesTotal(AttributeType.Technical);
 
         [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 3)", 1, 1000)]
         public int AttributesPhysicalTotal => GetAttributesTotal(AttributeType.Physical);

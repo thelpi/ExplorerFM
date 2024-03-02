@@ -12,7 +12,7 @@ namespace ExplorerFM.Windows
         {
             InitializeComponent();
 
-            _dataProvider = new DataProvider(Settings.Default.ConnectionString);
+            _dataProvider = new DataProvider(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase);
             
             DatasLoadingProgressBar.HideWorkAndDisplay<object>(
                 () =>

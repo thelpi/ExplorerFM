@@ -26,9 +26,28 @@ namespace ExplorerFM.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=cmexplorer;Uid=root;Pwd=")]
-        public string ConnectionString {
+        public string MySqlConnectionString {
             get {
-                return ((string)(this["ConnectionString"]));
+                return ((string)(this["MySqlConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("mongodb+srv://thelpi33:w3bjwsIysqUclx64@lpicluster.ystipxk.mongodb.net/?retryWrit" +
+            "es=true&w=majority&appName=LpiCluster")]
+        public string MongoConnectionString {
+            get {
+                return ((string)(this["MongoConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("cmexplorer")]
+        public string MongoDatabase {
+            get {
+                return ((string)(this["MongoDatabase"]));
             }
         }
     }

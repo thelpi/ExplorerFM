@@ -13,17 +13,11 @@ namespace ExplorerFM
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var testConnectionRes = MySqlService.TestConnection(Settings.Default.ConnectionString);
+            var testConnectionRes = MongoService.TestConnection(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase);
 
             if (!string.IsNullOrWhiteSpace(testConnectionRes))
             {
-                MessageBox.Show($"The following error prevents the application to start:" +
-                        $"\n{testConnectionRes}" +
-                        $"\n\nMake sure to have WAMP installed on your computer" +
-                        $", then mount the database scripts provided with the source code." +
-                        $"\n\nScripts are zipped into the following:" +
-                        $" {nameof(ExplorerFM.Properties.Resources.cmexplorer_database)}.zip",
-                    "ExplorerFM - Error");
+                MessageBox.Show($"The following error prevents the application to start:\n{testConnectionRes}", "ExplorerFM - Error");
                 Environment.Exit(0);
             }
 
