@@ -68,13 +68,14 @@ namespace ExplorerFM.Datas
         public int GetAttributesTotal(AttributeType? type = null, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
             var attributesToConsider = Attributes
-                .Where(_ => !type.HasValue || type == _.Key.Type);
+                .Where(_ => !type.HasValue || type == _.Key.Type)
+                .ToList();
             var knownRates = attributesToConsider
                 .Where(a => a.Value.HasValue)
                 .Select(a => a.Value.Value)
                 .ToArray();
             return attributesToConsider
-                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(attributesToConsider.Count(), knownRates));
+                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(attributesToConsider.Count, knownRates));
         }
 
         public object GetSortablePropertyValue(
