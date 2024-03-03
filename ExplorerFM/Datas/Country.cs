@@ -4,6 +4,9 @@ namespace ExplorerFM.Datas
 {
     public class Country : BaseData
     {
+        public const int NoCountryId = -1;
+        public const int AllCountryId = -2;
+
         [Field("Name")]
         public string LongName { get; set; }
 

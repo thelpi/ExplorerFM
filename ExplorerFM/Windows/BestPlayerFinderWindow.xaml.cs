@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using ExplorerFM.Datas;
-using ExplorerFM.Datas.Dtos;
 using ExplorerFM.Extensions;
-using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
 using ExplorerFM.UiDatas;
 
@@ -32,7 +29,11 @@ namespace ExplorerFM.Windows
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
-            NationalityComboBox.ItemsSource = dataProvider.Countries.WithNullEntry();
+
+            var collectionCopy = new List<Country>(dataProvider.Countries);
+            collectionCopy.Insert(0, new Country { Id = Country.NoCountryId, Name = "No country" });
+            collectionCopy.Insert(0, new Country { Id = Country.AllCountryId, Name = "All country" });
+            NationalityComboBox.ItemsSource = collectionCopy;
 
             if (nullRateBehavior.HasValue)
             {
@@ -92,21 +93,38 @@ namespace ExplorerFM.Windows
                 {
                     criteria.Add(noClubCriterion);
                 }
-                if (NationalityComboBox.SelectedItem is Country country)
+                if (NationalityComboBox.SelectedItem is Country country && country.Id != Country.AllCountryId)
                 {
-                    criteria.Add(new CriteriaSet(true, new Criterion
+                    if (country.Id == Country.NoCountryId)
                     {
-                        FieldName = "country1._id",
-                        FieldValue = country.Id,
-                        Comparator = Comparator.Equal,
-                        IncludeNullValue = false
-                    }, new Criterion
+                        criteria.Add(new CriteriaSet(false, new Criterion
+                        {
+                            FieldName = "country1",
+                            FieldValue = null,
+                            Comparator = Comparator.Equal
+                        }, new Criterion
+                        {
+                            FieldName = "country2",
+                            FieldValue = null,
+                            Comparator = Comparator.Equal
+                        }));
+                    }
+                    else
                     {
-                        FieldName = "country2._id",
-                        FieldValue = country.Id,
-                        Comparator = Comparator.Equal,
-                        IncludeNullValue = false
-                    }));
+                        criteria.Add(new CriteriaSet(true, new Criterion
+                        {
+                            FieldName = "country1._id",
+                            FieldValue = country.Id,
+                            Comparator = Comparator.Equal,
+                            IncludeNullValue = false
+                        }, new Criterion
+                        {
+                            FieldName = "country2._id",
+                            FieldValue = country.Id,
+                            Comparator = Comparator.Equal,
+                            IncludeNullValue = false
+                        }));
+                    }
                 }
                 if (maxAge.HasValue)
                 {
@@ -221,6 +239,10 @@ namespace ExplorerFM.Windows
                     },
                     players => PlayersListView.ItemsSource = players,
                     PlayersListView.Yield(CriteriaGrid.Children.Cast<UIElement>().ToArray()).ToArray());
+            }
+            else
+            {
+                MessageBox.Show("Positioning is mandatory.", "ExplorerFM - Warning");
             }
         }
 
