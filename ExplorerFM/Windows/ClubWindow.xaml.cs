@@ -268,7 +268,7 @@ namespace ExplorerFM.Windows
             win.ShowDialog();
 
             var player = win.SelectedPlayer;
-            if (player != null && !_players.Contains(player))
+            if (player != null && !_players.Any(x => x.Id == player.Id))
             {
                 var res = MessageBox.Show($"Replace {p.Player.Fullname} from squad ?" +
                         $"\n\nYes: new player will replace the selected player." +

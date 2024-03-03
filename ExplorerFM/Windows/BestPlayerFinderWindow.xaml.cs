@@ -20,8 +20,12 @@ namespace ExplorerFM.Windows
         private readonly DataProvider _dataProvider;
         public Player SelectedPlayer { get; private set; }
 
+        public BestPlayerFinderWindow(DataProvider dataProvider)
+            : this(dataProvider, null, null, null, null)
+        { }
+
         public BestPlayerFinderWindow(DataProvider dataProvider,
-            Position? position = null, Side? side = null, NullRateBehavior? nullRateBehavior = null, bool? usePotential = null)
+            Position? position, Side? side, NullRateBehavior? nullRateBehavior, bool? usePotential)
         {
             InitializeComponent();
             _dataProvider = dataProvider;
@@ -67,7 +71,7 @@ namespace ExplorerFM.Windows
 
         private void SearchPlayersAndSetSource()
         {
-            if (PositionsComboBox.SelectedIndex >= 0 && SidesComboBox.SelectedIndex >= 0)
+            if (PositionsComboBox.SelectedIndex >= 0 && (SidesComboBox.SelectedIndex >= 0 || (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper))
             {
                 var maxValue = ValueIntUpDown.Value;
                 var maxRep = ReputationIntUpDown.Value;
@@ -167,7 +171,7 @@ namespace ExplorerFM.Windows
                 }
 
                 var position = (Position)PositionsComboBox.SelectedItem;
-                var side = (Side)SidesComboBox.SelectedItem;
+                var side = SidesComboBox.SelectedIndex > -1 ? (Side)SidesComboBox.SelectedItem : Side.Center;
                 var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
 
                 if (position != Position.GoalKeeper)
@@ -201,6 +205,8 @@ namespace ExplorerFM.Windows
                     FieldValue = 15
                 });
 
+                var nullRateBehavior = NullRateBehaviorComboBox.SelectedIndex > -1 ? (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem : NullRateBehavior.Minimal;
+
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
                     {
@@ -209,7 +215,7 @@ namespace ExplorerFM.Windows
                             progress => Dispatcher.Invoke(() => LoadPlayersProgressBar.Value = progress * 100));
                         return players
                             .Select(p => p.ToRateItemData(
-                                position, side, _dataProvider.MaxTheoreticalRate, potentialAbility))
+                                position, side, _dataProvider.MaxTheoreticalRate, potentialAbility, nullRateBehavior))
                             .OrderByDescending(p => p.Rate)
                             .Take(MaxPlayersTake);
                     },
