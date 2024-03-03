@@ -20,5 +20,9 @@ namespace ExplorerFM.Datas.Dtos
         [BsonElement("confederationId")]
         [BsonIgnoreIfNull]
         public int? ConfederationId { get; set; }
+
+        [BsonElement("isEU")]
+        [BsonIgnoreIfNull]
+        public bool IsEU { get; set; }
     }
 }

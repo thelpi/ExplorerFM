@@ -5,8 +5,10 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using ExplorerFM.Datas;
+using ExplorerFM.Datas.Dtos;
 using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
+using ExplorerFM.RuleEngine;
 using ExplorerFM.UiDatas;
 
 namespace ExplorerFM.Windows
@@ -73,66 +75,84 @@ namespace ExplorerFM.Windows
                 var isUe = EuropeanUnionCheckBox.IsChecked == true;
                 var noClubContract = NoClubContractCheckBox.IsChecked == true;
 
-                var criteria = new List<RuleEngine.Criterion>();
+                var criteria = new List<CriterionBase>();
                 if (noClubContract)
                 {
-                    var clubContractProp = typeof(Player).GetProperty(nameof(Player.ClubContract));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            clubContractProp.GetCustomAttribute<FieldAttribute>(),
-                            clubContractProp.DeclaringType,
-                            RuleEngine.Comparator.Equal,
-                            null, true, false));
+                    criteria.Add(new Criterion
+                    {
+                        Comparator = Comparator.Equal,
+                        FieldName = "club",
+                        FieldValue = null,
+                        IncludeNullValue = false
+                    });
                 }
                 if (NationalityComboBox.SelectedItem is Country country)
                 {
-                    var countryProp = typeof(Player).GetProperty(nameof(Player.Nationality));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            countryProp.GetCustomAttribute<FieldAttribute>(),
-                            countryProp.DeclaringType,
-                            RuleEngine.Comparator.Equal,
-                            country, false, false));
+                    criteria.Add(new CriteriaSet(true, new Criterion
+                    {
+                        FieldName = "country1.id",
+                        FieldValue = country.Id,
+                        Comparator = Comparator.Equal,
+                        IncludeNullValue = false
+                    }, new Criterion
+                    {
+                        FieldName = "country2.id",
+                        FieldValue = country.Id,
+                        Comparator = Comparator.Equal,
+                        IncludeNullValue = false
+                    }));
                 }
                 if (maxAge.HasValue)
                 {
-                    var dobProp = typeof(Player).GetProperty(nameof(Player.DateOfBirth));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            dobProp.GetCustomAttribute<FieldAttribute>(),
-                            dobProp.DeclaringType,
-                            RuleEngine.Comparator.GreaterEqual,
-                            maxAge.Value, false, true));
+                    criteria.Add(new CriteriaSet(true, new Criterion
+                    {
+                        Comparator = Comparator.GreaterEqual,
+                        FieldName = "dateOfBirth",
+                        FieldValue = maxAge.Value,
+                        IncludeNullValue = false
+                    }, new Criterion
+                    {
+                        Comparator = Comparator.GreaterEqual,
+                        FieldName = "yearOfBirth",
+                        FieldValue = maxAge.Value.Year,
+                        IncludeNullValue = false
+                    }));
                 }
                 if (maxValue.HasValue)
                 {
-                    var valueProp = typeof(Player).GetProperty(nameof(Player.Value));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            valueProp.GetCustomAttribute<FieldAttribute>(),
-                            valueProp.DeclaringType,
-                            RuleEngine.Comparator.LowerEqual,
-                            maxValue.Value, false, true));
+                    criteria.Add(new Criterion
+                    {
+                        Comparator = Comparator.LowerEqual,
+                        FieldName = "value",
+                        FieldValue = maxValue.Value,
+                        IncludeNullValue = true
+                    });
                 }
                 if (maxRep.HasValue)
                 {
-                    var repProp = typeof(Player).GetProperty(nameof(Player.CurrentReputation));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            repProp.GetCustomAttribute<FieldAttribute>(),
-                            repProp.DeclaringType,
-                            RuleEngine.Comparator.LowerEqual,
-                            maxRep.Value, false, true));
+                    criteria.Add(new Criterion
+                    {
+                        Comparator = Comparator.LowerEqual,
+                        FieldName = "playerFeatures.currentReputation",
+                        FieldValue = maxRep.Value,
+                        IncludeNullValue = true
+                    });
                 }
                 if (isUe)
                 {
-                    var isEuProp = typeof(Country).GetProperty(nameof(Country.IsEU));
-                    criteria.Add(
-                        new RuleEngine.Criterion(
-                            isEuProp.GetCustomAttribute<FieldAttribute>(),
-                            isEuProp.DeclaringType,
-                            RuleEngine.Comparator.Equal,
-                            true, false, false));
+                    criteria.Add(new CriteriaSet(true, new Criterion
+                    {
+                        Comparator = Comparator.Equal,
+                        FieldName = "country1.isEU",
+                        FieldValue = true,
+                        IncludeNullValue = false
+                    }, new Criterion
+                    {
+                        Comparator = Comparator.Equal,
+                        FieldName = "country2.isEU",
+                        FieldValue = true,
+                        IncludeNullValue = false
+                    }));
                 }
 
                 var position = (Position)PositionsComboBox.SelectedItem;
@@ -143,7 +163,7 @@ namespace ExplorerFM.Windows
                     () =>
                     {
                         var players = _dataProvider.GetPlayersByCriteria(
-                            new RuleEngine.CriteriaSet(false, criteria.ToArray()),
+                            new CriteriaSet(false, criteria.ToArray()),
                             progress => Dispatcher.Invoke(() => LoadPlayersProgressBar.Value = progress * 100));
                         return players
                             .Select(p => p.ToRateItemData(
@@ -152,7 +172,7 @@ namespace ExplorerFM.Windows
                             .Take(MaxPlayersTake);
                     },
                     players => PlayersListView.ItemsSource = players,
-                    (PlayersListView as UIElement).Yield(CriteriaGrid.Children.Cast<UIElement>().ToArray()).ToArray());
+                    PlayersListView.Yield(CriteriaGrid.Children.Cast<UIElement>().ToArray()).ToArray());
             }
         }
 

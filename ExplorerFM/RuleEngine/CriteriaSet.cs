@@ -14,12 +14,5 @@ namespace ExplorerFM.RuleEngine
             Criteria = criteria;
             Or = or;
         }
-
-        public override string ToString()
-        {
-            return !(Criteria?.Count > 0)
-                ? SqlAll
-                : $"({string.Join($") {(Or ? SqlOr : SqlAnd)} (", Criteria)})";
-        }
     }
 }

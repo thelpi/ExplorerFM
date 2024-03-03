@@ -3,8 +3,10 @@ using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using ExplorerFM.Datas;
 using ExplorerFM.Datas.Dtos;
+using ExplorerFM.RuleEngine;
 using MongoDB.Driver;
 
 namespace ExplorerFM
@@ -88,7 +90,7 @@ namespace ExplorerFM
                     Code = dto.Name3,
                     Confederation = dto.ConfederationId.HasValue && confederations.TryGetValue(dto.ConfederationId.Value, out var confederation) ? confederation : null,
                     Id = dto.ID,
-                    IsEU = false, // TODO
+                    IsEU = dto.IsEU,
                     LongName = dto.Name,
                     Name = dto.NameShort
                 };
@@ -123,6 +125,76 @@ namespace ExplorerFM
             }
 
             return confederations;
+        }
+
+        private FilterDefinition<StaffDto> TransformCriterion(Criterion criterion)
+        {
+            var filter = Builders<StaffDto>.Filter.Empty;
+            switch (criterion.Comparator)
+            {
+                case Comparator.Equal:
+                    filter &= Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.NotEqual:
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue));
+                    break;
+                case Comparator.GreaterEqual:
+                    filter &= Builders<StaffDto>.Filter.Gte(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Greater:
+                    filter &= Builders<StaffDto>.Filter.Gt(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.LowerEqual:
+                    filter &= Builders<StaffDto>.Filter.Lte(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Lower:
+                    filter &= Builders<StaffDto>.Filter.Lt(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Like:
+                    filter &= Builders<StaffDto>.Filter.Regex(criterion.FieldName, new MongoDB.Bson.BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase)));
+                    break;
+                case Comparator.NotLike:
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Regex(criterion.FieldName, new MongoDB.Bson.BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase))));
+                    break;
+            }
+
+            if (criterion.IncludeNullValue)
+                filter |= Builders<StaffDto>.Filter.Exists(criterion.FieldName);
+
+            return filter;
+        }
+
+        private FilterDefinition<StaffDto> TransformCriteriaSet(CriteriaSet criteriaSet)
+        {
+            var filter = FilterDefinition<StaffDto>.Empty;
+
+            if (criteriaSet.Or)
+            {
+                filter &= Builders<StaffDto>.Filter.Or(
+                    criteriaSet.Criteria
+                        .Select(x =>
+                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                        .ToArray());
+            }
+            else
+            {
+                filter &= Builders<StaffDto>.Filter.And(
+                    criteriaSet.Criteria
+                        .Select(x =>
+                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                        .ToArray());
+            }
+
+            return filter;
+        }
+
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
+            IReadOnlyDictionary<int, Club> clubs,
+            IReadOnlyDictionary<int, Country> countries)
+        {
+            var filter = TransformCriteriaSet(criteria);
+
+            return GetPlayersByFilter(filter, clubs, countries);
         }
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId,

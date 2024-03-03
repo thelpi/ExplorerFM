@@ -5,7 +5,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ExplorerFM.Datas.Dtos
 {
-    internal class ClubDto
+    public class ClubDto
     {
         [BsonId]
         [BsonElement("id")]
@@ -121,7 +121,7 @@ namespace ExplorerFM.Datas.Dtos
         public IReadOnlyList<int> RivalClubs { get; set; }
     }
 
-    internal class CountryClubDto
+    public class CountryClubDto
     {
         [BsonElement("id")]
         public int Id { get; set; }
@@ -129,9 +129,13 @@ namespace ExplorerFM.Datas.Dtos
         [BsonElement("confederationId")]
         [BsonIgnoreIfNull]
         public int? ConfederationId { get; set; }
+
+        [BsonElement("isEU")]
+        [BsonIgnoreIfNull]
+        public bool IsEU { get; set; }
     }
 
-    internal enum ClubStatutDto
+    public enum ClubStatutDto
     {
         Professional = 1,
         SemiProfessional,

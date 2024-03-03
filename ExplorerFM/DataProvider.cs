@@ -67,9 +67,9 @@ namespace ExplorerFM
             return _mongoService.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
         }
 
-        public List<Player> GetPlayersByCriteria(CriteriaSet criteria, System.Action<double> reportFunc)
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, Action<double> reportFunc)
         {
-            throw new NotImplementedException();
+            return _mongoService.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas);
         }
 
         public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute

@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ExplorerFM.Datas.Dtos
 {
-    internal class StaffDto
+    public class StaffDto
     {
         [BsonId]
         [BsonElement("id")]
@@ -125,7 +125,7 @@ namespace ExplorerFM.Datas.Dtos
         public bool IsPlayer { get; set; }
     }
 
-    internal class PlayerSidesDto
+    public class PlayerSidesDto
     {
         [BsonElement("right")]
         [BsonIgnoreIfNull]
@@ -140,7 +140,7 @@ namespace ExplorerFM.Datas.Dtos
         public int? SidesCenter { get; set; }
     }
 
-    internal class PlayerPositionsDto
+    public class PlayerPositionsDto
     {
         [BsonElement("goalKeeper")]
         [BsonIgnoreIfNull]
@@ -179,7 +179,7 @@ namespace ExplorerFM.Datas.Dtos
         public int? PosFreeRole { get; set; }
     }
 
-    internal class PlayerFeaturesDto
+    public class PlayerFeaturesDto
     {
         [BsonElement("specialPotential")]
         [BsonIgnoreIfNull]
@@ -218,7 +218,7 @@ namespace ExplorerFM.Datas.Dtos
         public int? RightFoot { get; set; }
     }
 
-    internal class CoachFeaturesDto
+    public class CoachFeaturesDto
     {
         [BsonElement("specialPotential")]
         [BsonIgnoreIfNull]
@@ -245,7 +245,7 @@ namespace ExplorerFM.Datas.Dtos
         public int? ChWorldReputation { get; set; }
     }
 
-    internal class PlayerAttributesDto
+    public class PlayerAttributesDto
     {
         [BsonElement("adaptability")]
         [BsonIgnoreIfNull]
@@ -440,7 +440,7 @@ namespace ExplorerFM.Datas.Dtos
         public int? WorkRate { get; set; }
     }
 
-    internal class CoachAttributesDto
+    public class CoachAttributesDto
     {
         [BsonElement("adaptability")]
         [BsonIgnoreIfNull]
@@ -576,7 +576,7 @@ namespace ExplorerFM.Datas.Dtos
         PlayerAssistantManager
     }
 
-    internal class StaffCountryDto
+    public class StaffCountryDto
     {
         [BsonElement("id")]
         public int Id { get; set; }
@@ -584,9 +584,13 @@ namespace ExplorerFM.Datas.Dtos
         [BsonElement("confederationId")]
         [BsonIgnoreIfNull]
         public int? ConfederationId { get; set; }
+
+        [BsonElement("isEU")]
+        [BsonIgnoreIfNull]
+        public bool IsEU { get; set; }
     }
 
-    internal class StaffClubDto
+    public class StaffClubDto
     {
         [BsonElement("id")]
         public int Id { get; set; }

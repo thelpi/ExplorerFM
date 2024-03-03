@@ -143,13 +143,13 @@ namespace ExplorerFM.Windows
 
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
-            return new Criterion(
-                attrPropInfo.GetCustomAttribute<FieldAttribute>(),
-                attrPropInfo.DeclaringType,
-                (Comparator)comparatorComboBox.SelectedItem,
-                value,
-                isNullCheckBox.IsChecked == true,
-                includeNullCheckBox.IsChecked == true);
+            return new Criterion
+            {
+                Comparator = (Comparator)comparatorComboBox.SelectedItem,
+                FieldName = attrPropInfo.GetCustomAttribute<FieldAttribute>().Name,
+                FieldValue = value,
+                IncludeNullValue = includeNullCheckBox.IsChecked == true
+            };
         }
 
         private object GetUiElementValue(UIElement valuatedElement, UIElement elementToValuate = null)

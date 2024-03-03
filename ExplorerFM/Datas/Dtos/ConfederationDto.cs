@@ -2,7 +2,7 @@
 
 namespace ExplorerFM.Datas.Dtos
 {
-    internal class ConfederationDto
+    public class ConfederationDto
     {
         [BsonId]
         [BsonElement("id")]
