@@ -396,7 +396,8 @@ namespace ExplorerFM.Windows
             var player = (sender as FrameworkElement).DataContext as Datas.Player;
 
             Hide();
-            new ClubWindow(_dataProvider, false, player.ClubContract, null).ShowDialog();
+            // player.ClubContract
+            new ClubWindow(_dataProvider, false).ShowDialog();
             ShowDialog();
         }
     }

@@ -7,6 +7,8 @@ namespace ExplorerFM.Datas
 {
     public class Club : BaseData
     {
+        public const int NoClubId = -1;
+
         [Field("LongName")]
         public string LongName { get; set; }
 
