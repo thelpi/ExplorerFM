@@ -75,16 +75,18 @@ namespace ExplorerFM.Windows
                 var isUe = EuropeanUnionCheckBox.IsChecked == true;
                 var noClubContract = NoClubContractCheckBox.IsChecked == true;
 
-                var criteria = new List<CriterionBase>();
+                var noClubCriterion = new Criterion
+                {
+                    Comparator = Comparator.Equal,
+                    FieldName = "club",
+                    FieldValue = null,
+                    IncludeNullValue = false
+                };
+
+                var criteria = new List<CriterionBase>(5);
                 if (noClubContract)
                 {
-                    criteria.Add(new Criterion
-                    {
-                        Comparator = Comparator.Equal,
-                        FieldName = "club",
-                        FieldValue = null,
-                        IncludeNullValue = false
-                    });
+                    criteria.Add(noClubCriterion);
                 }
                 if (NationalityComboBox.SelectedItem is Country country)
                 {
@@ -120,13 +122,22 @@ namespace ExplorerFM.Windows
                 }
                 if (maxValue.HasValue)
                 {
-                    criteria.Add(new Criterion
+                    var standardCriterion = new Criterion
                     {
                         Comparator = Comparator.LowerEqual,
                         FieldName = "value",
                         FieldValue = maxValue.Value,
                         IncludeNullValue = true
-                    });
+                    };
+                    if (noClubContract)
+                    {
+                        criteria.Add(standardCriterion);
+                    }
+                    else
+                    {
+                        // some player have value while being free agent
+                        criteria.Add(new CriteriaSet(true, standardCriterion, noClubCriterion));
+                    }
                 }
                 if (maxRep.HasValue)
                 {

@@ -159,7 +159,7 @@ namespace ExplorerFM
             }
 
             if (criterion.IncludeNullValue)
-                filter |= Builders<StaffDto>.Filter.Exists(criterion.FieldName);
+                filter |= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Exists(criterion.FieldName));
 
             return filter;
         }
