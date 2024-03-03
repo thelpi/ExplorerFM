@@ -92,13 +92,13 @@ namespace ExplorerFM.Windows
                 {
                     criteria.Add(new CriteriaSet(true, new Criterion
                     {
-                        FieldName = "country1.id",
+                        FieldName = "country1._id",
                         FieldValue = country.Id,
                         Comparator = Comparator.Equal,
                         IncludeNullValue = false
                     }, new Criterion
                     {
-                        FieldName = "country2.id",
+                        FieldName = "country2._id",
                         FieldValue = country.Id,
                         Comparator = Comparator.Equal,
                         IncludeNullValue = false
@@ -169,6 +169,37 @@ namespace ExplorerFM.Windows
                 var position = (Position)PositionsComboBox.SelectedItem;
                 var side = (Side)SidesComboBox.SelectedItem;
                 var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
+
+                if (position != Position.GoalKeeper)
+                {
+                    criteria.Add(new Criterion
+                    {
+                        Comparator = Comparator.GreaterEqual,
+                        FieldName = $"playerSides.{(side == Side.Right ? "right" : (side == Side.Center ? "center" : "left"))}",
+                        FieldValue = 15
+                    });
+                }
+
+                var posName = "";
+                switch (position)
+                {
+                    case Position.Defender: posName = "defender"; break;
+                    case Position.Sweeper: posName = "sweeper"; break;
+                    case Position.GoalKeeper: posName = "goalKeeper"; break;
+                    case Position.DefensiveMidfielder: posName = "defMidfielder"; break;
+                    case Position.Midfielder: posName = "midfielder"; break;
+                    case Position.OffensiveMidfielder: posName = "offMidfielder"; break;
+                    case Position.WingBack: posName = "wingBack"; break;
+                    case Position.Striker: posName = "forward"; break;
+                    case Position.FreeRole: posName = "freeRole"; break;
+                }
+
+                criteria.Add(new Criterion
+                {
+                    Comparator = Comparator.GreaterEqual,
+                    FieldName = $"playerPositions.{posName}",
+                    FieldValue = 15
+                });
 
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
