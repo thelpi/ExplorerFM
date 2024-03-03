@@ -184,7 +184,6 @@
     <Compile Include="Datas\Dtos\ConfederationDto.cs" />
     <Compile Include="Datas\Dtos\CountryDto.cs" />
     <Compile Include="Datas\Dtos\StaffDto.cs" />
-    <Compile Include="Extensions\SqlExtensions.cs" />
     <Compile Include="Extensions\SystemExtensions.cs" />
     <Compile Include="MongoService.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
