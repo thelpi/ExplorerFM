@@ -9,89 +9,89 @@ namespace ExplorerFM.Datas
     {
         public const int NoClubId = -1;
 
-        [Field("LongName")]
+        [Field]
         public string LongName { get; set; }
 
-        [Field("ShortName")]
+        [Field]
         public string Name { get; set; }
 
-        [Field("StadiumOwner")]
+        [Field]
         public bool StadiumOwner { get; set; }
 
-        [Field("PLC")]
+        [Field]
         public bool PublicLimitedCompany { get; set; }
 
         [GridView("Club country", 8, typeof(Converters.CountryDisplayConverter))]
-        [SelectorField("NationID", nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
+        [SelectorField(nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
         public Country Country { get; set; }
 
-        [Field("DivisionID", 0)]
+        [Field(0)]
         public int? DivisionId { get; set; }
 
-        [Field("DivisionPreviousID", 0)]
+        [Field(0)]
         public int? PreviousDivisionId { get; set; }
 
-        [Field("DivisionReserveID", 0)]
+        [Field(0)]
         public int? ReserveDivisionId { get; set; }
 
-        [Field("LastPosition", 1, 100)]
+        [Field(1, 100)]
         public int? LastPosition { get; set; }
 
-        [Field("StadiumID", 0)]
+        [Field(0)]
         public int? StadiumId { get; set; }
 
-        [Field("StadiumReserveID", 0)]
+        [Field(0)]
         public int? ReserveStadiumId { get; set; }
 
-        [SelectorField("Statut", typeof(ClubStatut))]
+        [SelectorField(typeof(ClubStatut))]
         public ClubStatut Statut { get; set; }
 
-        [Field("Bank")]
+        [Field]
         public int? Bank { get; set; }
 
-        [SelectorField("MatchDay", typeof(DayOfWeek))]
+        [SelectorField(typeof(DayOfWeek))]
         public DayOfWeek? MatchDay { get; set; }
 
-        [Field("AverageAttendance", 1)]
+        [Field(1)]
         public int? AverageAttendance { get; set; }
 
-        [Field("MinimumAttendance", 1)]
+        [Field(1)]
         public int? MinimumAttendance { get; set; }
 
-        [Field("MaximumAttendance", 1)]
+        [Field(1)]
         public int? MaximumAttendance { get; set; }
 
-        [Field("Facilities", 1, 20)]
+        [Field(1, 20)]
         public int? Facilities { get; set; }
 
-        [Field("Reputation", 1, 10000)]
+        [Field(1, 10000)]
         public int? Reputation { get; set; }
 
-        [Field("HomeShirtForegroundID", 0)]
+        [Field(0)]
         public int? HomeShirtForegroundId { get; set; }
 
-        [Field("HomeShirtBackgroundID", 0)]
+        [Field(0)]
         public int? HomeShirtBackgroundId { get; set; }
 
-        [Field("AwayShirtForegroundID", 0)]
+        [Field(0)]
         public int? AwayShirtForegroundId { get; set; }
 
-        [Field("AwayShirtBackgroundID", 0)]
+        [Field(0)]
         public int? AwayShirtBackgroundId { get; set; }
 
-        [Field("ThirdShirtForegroundID", 0)]
+        [Field(0)]
         public int? ThirdShirtForegroundId { get; set; }
 
-        [Field("ThirdShirtBackgroundID", 0)]
+        [Field(0)]
         public int? ThirdShirtBackgroundId { get; set; }
 
-        [TripleIdField("LikedStaffID")]
+        [TripleIdField]
         public List<int> LikedStaffIds { get; set; }
 
-        [TripleIdField("DislikedStaffID")]
+        [TripleIdField]
         public List<int> DislikedStaffIds { get; set; }
 
-        [TripleIdField("RivalClubsID")]
+        [TripleIdField]
         public List<int> RivalClubIds { get; set; }
 
         public List<Club> GetRivalClubs<T>(List<Club> clubs)

@@ -4,7 +4,6 @@ namespace ExplorerFM.FieldsAttributes
 {
     public class FieldAttribute : Attribute
     {
-        public string Name { get; }
         public int Min { get; }
         public int Max { get; }
 
@@ -13,17 +12,16 @@ namespace ExplorerFM.FieldsAttributes
         public bool IsNestedSelector => GetType() == typeof(NestedSelectorFieldAttribute);
         public bool IsSelector => typeof(SelectorFieldAttribute).IsAssignableFrom(GetType());
 
-        public FieldAttribute(string name)
-            : this(name, int.MinValue, int.MaxValue)
+        public FieldAttribute()
+            : this(int.MinValue, int.MaxValue)
         { }
 
-        public FieldAttribute(string name, int min)
-            : this(name, min, int.MaxValue)
+        public FieldAttribute(int min)
+            : this(min, int.MaxValue)
         { }
 
-        public FieldAttribute(string name, int min, int max)
+        public FieldAttribute(int min, int max)
         {
-            Name = name;
             Min = min;
             Max = max;
         }

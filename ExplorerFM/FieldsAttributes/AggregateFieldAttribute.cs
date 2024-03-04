@@ -2,8 +2,8 @@
 {
     public class AggregateFieldAttribute : FieldAttribute
     {
-        public AggregateFieldAttribute(string name, int min, int max)
-            : base(name, min, max)
+        public AggregateFieldAttribute(int min, int max)
+            : base(min, max)
         { }
     }
 }

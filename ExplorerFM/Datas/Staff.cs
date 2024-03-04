@@ -11,85 +11,85 @@ namespace ExplorerFM.Datas
         private const int VeryGoodPotentialAbility = 180;
         private static readonly DateTime IgnorePotential = new DateTime(1973, 7, 1);
 
-        [Field("Firstname")]
+        [Field]
         public string Firstname { get; set; }
 
-        [Field("Lastname")]
+        [Field]
         public string Lastname { get; set; }
 
-        [Field("Commonname")]
+        [Field]
         public string Commonname { get; set; }
 
-        [Field("DateOfBirth")]
+        [Field]
         public DateTime? DateOfBirth { get; set; }
 
-        [Field("YearOfBirth", 1900, 2000)]
+        [Field(1900, 2000)]
         public int? YearOfBirth { get; set; }
 
         [GridView("Country", 3, typeof(Converters.CountryDisplayConverter))]
-        [SelectorField("NationID1", nameof(DataProvider.Countries), nameof(Country.Name))]
+        [SelectorField(nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country Nationality { get; set; }
 
         [GridView("2nd Country", 4, typeof(Converters.CountryDisplayConverter))]
-        [SelectorField("NationID2", nameof(DataProvider.Countries), nameof(Country.Name))]
+        [SelectorField(nameof(DataProvider.Countries), nameof(Country.Name))]
         public Country SecondNationality { get; set; }
 
         [GridView("Caps", 5)]
-        [Field("Caps", 0, 999)]
+        [Field(0, 999)]
         public int Caps { get; set; }
 
         [GridView("Int. goals", 6)]
-        [Field("IntGoals", 0, 999)]
+        [Field(0, 999)]
         public int IntGoals { get; set; }
 
         [GridView("Club", 7, typeof(Converters.ClubDisplayConverter))]
-        [SelectorField("ClubContractID", nameof(DataProvider.Clubs), nameof(Club.Name))]
+        [SelectorField(nameof(DataProvider.Clubs), nameof(Club.Name))]
         public Club ClubContract { get; set; }
 
-        [Field("DateContractStart")]
+        [Field]
         public DateTime? DateContractStart { get; set; }
 
         [GridView("Contract end", 9, typeof(Converters.DateDisplayConverter))]
-        [Field("DateContractEnd")]
+        [Field]
         public DateTime? DateContractEnd { get; set; }
 
         [GridView("Value", 10)]
-        [Field("Value", 1)]
+        [Field(1)]
         public int? Value { get; set; }
         
-        [Field("Wage", 1)]
+        [Field(1)]
         public int? Wage { get; set; }
 
-        [TripleIdField("FavClubID")]
+        [TripleIdField]
         public List<int> FavClubIds { get; set; }
 
-        [TripleIdField("FavStaffID")]
+        [TripleIdField]
         public List<int> FavStaffIds { get; set; }
 
-        [TripleIdField("DislikeClubID")]
+        [TripleIdField]
         public List<int> DislikeClubIds { get; set; }
 
-        [TripleIdField("DislikeStaffID")]
+        [TripleIdField]
         public List<int> DislikeStaffIds { get; set; }
 
         [GridView("Curr. abil.", 11)]
-        [Field("CurrentAbility", 1, 200)]
+        [Field(1, 200)]
         public int? CurrentAbility { get; set; }
 
         [GridView("Pot. abil.", 12)]
-        [Field("PotentialAbility", -2, 200)]
+        [Field(-2, 200)]
         public int? PotentialAbility { get; set; }
 
         [GridView("Home rep.", 13)]
-        [Field("HomeReputation", 1, 200)]
+        [Field(1, 200)]
         public int? HomeReputation { get; set; }
 
         [GridView("Current rep.", 14)]
-        [Field("CurrentReputation", 1, 200)]
+        [Field(1, 200)]
         public int? CurrentReputation { get; set; }
 
         [GridView("World rep.", 15)]
-        [Field("WorldReputation", 1, 200)]
+        [Field(1, 200)]
         public int? WorldReputation { get; set; }
 
         [GridView("Name", 1)]

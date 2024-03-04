@@ -144,7 +144,7 @@ namespace ExplorerFM.Windows
             return new Criterion
             {
                 Comparator = (Comparator)comparatorComboBox.SelectedItem,
-                FieldName = attrPropInfo.GetCustomAttribute<FieldAttribute>().Name,
+                FieldName = "", // TODO
                 FieldValue = value,
                 IncludeNullValue = includeNullCheckBox.IsChecked == true
             };

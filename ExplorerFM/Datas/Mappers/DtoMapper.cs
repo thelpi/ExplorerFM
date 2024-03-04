@@ -124,7 +124,7 @@ namespace ExplorerFM.Datas.Mappers
                 Id = dto.ID,
                 Name = dto.Name,
                 PeopleName = dto.PeopleName,
-                Strength = dto.Strength / (decimal)100
+                Strength = dto.Strength
             };
         }
 

@@ -10,46 +10,46 @@ namespace ExplorerFM.Datas
     {
         public const int PositioningTolerance = 15;
         
-        [NestedSelectorField("SELECT player_side.rate FROM player_side WHERE player_side.side_ID = {0} AND player_side.player_ID = player.ID", 1, 20, typeof(Side))]
+        [NestedSelectorField(1, 20, typeof(Side))]
         public Dictionary<Side, int?> Sides { get; set; }
 
         [GridView("Best pos.", 2.5, typeof(Converters.PositioningDisplayConverter), true, true)]
         [GridView("Altern. pos.", 2.6, typeof(Converters.PositioningDisplayConverter), true, false)]
-        [NestedSelectorField("SELECT player_position.rate FROM player_position WHERE player_position.position_ID = {0} AND player_position.player_ID = player.ID", 1, 20, typeof(Position))]
+        [NestedSelectorField(1, 20, typeof(Position))]
         public Dictionary<Position, int?> Positions { get; set; }
 
-        [NestedSelectorField("SELECT player_attribute.rate FROM player_attribute WHERE player_attribute.attribute_ID = {0} AND player_attribute.player_ID = player.ID", 1, 20, nameof(DataProvider.Attributes), nameof(Attribute.Name))]
+        [NestedSelectorField(1, 20, nameof(DataProvider.Attributes), nameof(Attribute.Name))]
         public Dictionary<Attribute, int?> Attributes { get; set; }
 
-        [Field("LeftFoot", 1, 20)]
+        [Field(1, 20)]
         public int? LeftFoot { get; set; }
 
-        [Field("RightFoot", 1, 20)]
+        [Field(1, 20)]
         public int? RightFoot { get; set; }
 
-        [Field("SquadNumber", 0, 999)]
+        [Field(0, 999)]
         public int? SquadNumber { get; set; }
 
         public bool Loaded { get; set; }
 
         [GridView("Tot. attr.", 12.5)]
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesTotal => GetAttributesTotal();
 
         // the identifier of attribute_type is hardcoded here
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 1)", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesGoalkeeperTotal => GetAttributesTotal(AttributeType.Goalkeeper);
 
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 2)", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesKickoffTotal => GetAttributesTotal(AttributeType.Technical);
 
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 3)", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesPhysicalTotal => GetAttributesTotal(AttributeType.Physical);
 
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 4)", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesPsychologicalTotal => GetAttributesTotal(AttributeType.Psychological);
 
-        [AggregateField("SELECT SUM(IFNULL(player_attribute.rate, {0})) FROM player_attribute WHERE player_attribute.player_ID = player.ID AND player_attribute.attribute_ID IN (SELECT attribute.ID FROM attribute where attribute.type_ID = 5)", 1, 1000)]
+        [AggregateField(1, 1000)]
         public int AttributesTechnicalTotal => GetAttributesTotal(AttributeType.Technical);
 
         public int GetPositionSideRate(Position p, Side s)

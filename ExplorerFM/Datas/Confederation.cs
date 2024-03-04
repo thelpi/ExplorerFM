@@ -4,22 +4,22 @@ namespace ExplorerFM.Datas
 {
     public class Confederation : BaseData
     {
-        [Field("Name")]
+        [Field]
         public string Name { get; set; }
         
-        [Field("Name3")]
+        [Field]
         public string Code { get; set; }
 
-        [Field("PeopleName")]
+        [Field]
         public string PeopleName { get; set; }
 
-        [Field("FedName")]
+        [Field]
         public string FedName { get; set; }
 
-        [Field("FedSigle")]
+        [Field]
         public string FedCode { get; set; }
 
-        [Field("Strength", 0, 1)]
-        public decimal Strength { get; set; }
+        [Field(0, 100)]
+        public int Strength { get; set; }
     }
 }
