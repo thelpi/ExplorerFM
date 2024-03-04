@@ -1,3 +1,0 @@
-﻿Console MySQL >>
-set @@global.show_compatibility_56=ON;
-see: https://stackoverflow.com/questions/31967527/table-performance-schema-session-variables-doesnt-exist

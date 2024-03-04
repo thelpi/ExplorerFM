@@ -66,10 +66,6 @@
     <Reference Include="MongoDB.Libmongocrypt, Version=1.8.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MongoDB.Libmongocrypt.1.8.2\lib\netstandard2.0\MongoDB.Libmongocrypt.dll</HintPath>
     </Reference>
-    <Reference Include="MySql.Data, Version=5.2.3.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\TheTennisProject\TheTennisProject\bin\Debug\MySql.Data.dll</HintPath>
-    </Reference>
     <Reference Include="SharpCompress, Version=0.30.1.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpCompress.0.30.1\lib\net461\SharpCompress.dll</HintPath>
     </Reference>
@@ -181,9 +177,21 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Datas\Dtos\ClubDto.cs" />
+    <Compile Include="Datas\Dtos\ClubStatutDto.cs" />
+    <Compile Include="Datas\Dtos\CoachAttributesDto.cs" />
+    <Compile Include="Datas\Dtos\CoachFeaturesDto.cs" />
     <Compile Include="Datas\Dtos\ConfederationDto.cs" />
+    <Compile Include="Datas\Dtos\CountryClubDto.cs" />
     <Compile Include="Datas\Dtos\CountryDto.cs" />
+    <Compile Include="Datas\Mappers\DtoMapper.cs" />
+    <Compile Include="Datas\Dtos\PlayerAttributesDto.cs" />
+    <Compile Include="Datas\Dtos\PlayerFeaturesDto.cs" />
+    <Compile Include="Datas\Dtos\PlayerPositionsDto.cs" />
+    <Compile Include="Datas\Dtos\PlayerSidesDto.cs" />
+    <Compile Include="Datas\Dtos\StaffClubDto.cs" />
+    <Compile Include="Datas\Dtos\StaffCountryDto.cs" />
     <Compile Include="Datas\Dtos\StaffDto.cs" />
+    <Compile Include="Datas\Dtos\StaffTypeDto.cs" />
     <Compile Include="Extensions\SystemExtensions.cs" />
     <Compile Include="MongoService.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
@@ -293,9 +301,6 @@
     <Resource Include="Resources\endturn.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="MySqlErrorFix.txt" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.SecurityToken.3.7.100.14\analyzers\dotnet\cs\AWSSDK.SecurityToken.CodeAnalysis.dll" />

@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using ExplorerFM.Datas;
 using ExplorerFM.Datas.Dtos;
+using ExplorerFM.Datas.Mappers;
 using ExplorerFM.RuleEngine;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace ExplorerFM
@@ -18,174 +18,65 @@ namespace ExplorerFM
         private readonly IMongoCollection<CountryDto> _countriesCollection;
         private readonly IMongoCollection<ClubDto> _clubsCollection;
 
+        private const string _staffCollectionName = "staff";
+        private const string _confederationsCollectionName = "confederations";
+        private const string _countriesCollectionName = "countries";
+        private const string _clubsCollectionName = "clubs";
+
+        public static string TestConnection(string connectionString, string database)
+        {
+            string error = null;
+
+            try
+            {
+                new MongoClient(connectionString)
+                    .GetDatabase(database)
+                    .GetCollection<StaffDto>(_staffCollectionName)
+                    .Find(Builders<StaffDto>.Filter.Eq(x => x.ID, 0));
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+
+            return error;
+        }
+
         public MongoService(string connectionString, string database)
         {
             var db = new MongoClient(connectionString).GetDatabase(database);
 
-            _staffCollection = db.GetCollection<StaffDto>("staff");
-            _confederationsCollection = db.GetCollection<ConfederationDto>("confederations");
-            _countriesCollection = db.GetCollection<CountryDto>("countries");
-            _clubsCollection = db.GetCollection<ClubDto>("clubs");
+            _staffCollection = db.GetCollection<StaffDto>(_staffCollectionName);
+            _confederationsCollection = db.GetCollection<ConfederationDto>(_confederationsCollectionName);
+            _countriesCollection = db.GetCollection<CountryDto>(_countriesCollectionName);
+            _clubsCollection = db.GetCollection<ClubDto>(_clubsCollectionName);
         }
 
         public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
         {
-            var filter = Builders<ClubDto>.Filter.Empty;
-
-            var dtos = _clubsCollection.Find(filter).ToList();
-
-            var clubs = new List<Club>(dtos.Count);
-            foreach (var dto in dtos)
-            {
-                var club = new Club
-                {
-                    DislikedStaffIds = dto.DislikedStaff?.ToList() ?? new List<int>(),
-                    DivisionId = dto.DivisionID,
-                    MatchDay = dto.MatchDay,
-                    PreviousDivisionId = dto.DivisionPreviousID,
-                    ReserveDivisionId = dto.DivisionReserveID,
-                    AverageAttendance = dto.AverageAttendance,
-                    AwayShirtBackgroundId = dto.AwayShirtBackgroundID,
-                    AwayShirtForegroundId = dto.AwayShirtForegroundID,
-                    Bank = dto.Bank,
-                    Country = dto.Country != null && countries.TryGetValue(dto.Country.Id, out var country) ? country : null,
-                    Facilities = dto.Facilities,
-                    HomeShirtBackgroundId = dto.HomeShirtBackgroundID,
-                    HomeShirtForegroundId = dto.HomeShirtForegroundID,
-                    Id = dto.ID,
-                    LastPosition = dto.LastPosition,
-                    LikedStaffIds = dto.LikedStaff?.ToList() ?? new List<int>(),
-                    LongName = dto.LongName,
-                    MaximumAttendance = dto.MaximumAttendance,
-                    MinimumAttendance = dto.MinimumAttendance,
-                    Name = dto.ShortName,
-                    PublicLimitedCompany = dto.PLC,
-                    Reputation = dto.Reputation,
-                    ReserveStadiumId = dto.StadiumReserveID,
-                    RivalClubIds = dto.RivalClubs?.ToList() ?? new List<int>(),
-                    StadiumId = dto.StadiumID,
-                    StadiumOwner = dto.StadiumOwner,
-                    Statut = (ClubStatut)(int)dto.Statut,
-                    ThirdShirtBackgroundId = dto.ThirdShirtBackgroundID,
-                    ThirdShirtForegroundId = dto.ThirdShirtForegroundID
-                };
-
-                clubs.Add(club);
-            }
-
-            return clubs;
+            return _clubsCollection
+                .Find(Builders<ClubDto>.Filter.Empty)
+                .ToEnumerable()
+                .Select(dto => dto.ToClub(countries))
+                .ToList();
         }
 
         public IReadOnlyList<Country> GetCountries(IReadOnlyDictionary<int, Confederation> confederations)
         {
-            var filter = Builders<CountryDto>.Filter.Empty;
-
-            var dtos = _countriesCollection.Find(filter).ToList();
-
-            var countries = new List<Country>(dtos.Count);
-            foreach (var dto in dtos)
-            {
-                var country = new Country
-                {
-                    Code = dto.Name3,
-                    Confederation = dto.ConfederationId.HasValue && confederations.TryGetValue(dto.ConfederationId.Value, out var confederation) ? confederation : null,
-                    Id = dto.ID,
-                    IsEU = dto.IsEU,
-                    LongName = dto.Name,
-                    Name = dto.NameShort
-                };
-
-                countries.Add(country);
-            }
-
-            return countries;
+            return _countriesCollection
+                .Find(Builders<CountryDto>.Filter.Empty)
+                .ToEnumerable()
+                .Select(dto => dto.ToCountry(confederations))
+                .ToList();
         }
 
         public IReadOnlyList<Confederation> GetConfederations()
         {
-            var filter = Builders<ConfederationDto>.Filter.Empty;
-
-            var dtos = _confederationsCollection.Find(filter).ToList();
-
-            var confederations = new List<Confederation>(dtos.Count);
-            foreach (var dto in dtos)
-            {
-                var confederation = new Confederation
-                {
-                    Code = dto.Name3,
-                    FedCode = dto.FedSigle,
-                    FedName = dto.FedName,
-                    Id = dto.ID,
-                    Name = dto.Name,
-                    PeopleName = dto.PeopleName,
-                    Strength = dto.Strength / (decimal)100
-                };
-
-                confederations.Add(confederation);
-            }
-
-            return confederations;
-        }
-
-        private FilterDefinition<StaffDto> TransformCriterion(Criterion criterion)
-        {
-            var filter = Builders<StaffDto>.Filter.Empty;
-            switch (criterion.Comparator)
-            {
-                case Comparator.Equal:
-                    filter &= Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue);
-                    break;
-                case Comparator.NotEqual:
-                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue));
-                    break;
-                case Comparator.GreaterEqual:
-                    filter &= Builders<StaffDto>.Filter.Gte(criterion.FieldName, criterion.FieldValue);
-                    break;
-                case Comparator.Greater:
-                    filter &= Builders<StaffDto>.Filter.Gt(criterion.FieldName, criterion.FieldValue);
-                    break;
-                case Comparator.LowerEqual:
-                    filter &= Builders<StaffDto>.Filter.Lte(criterion.FieldName, criterion.FieldValue);
-                    break;
-                case Comparator.Lower:
-                    filter &= Builders<StaffDto>.Filter.Lt(criterion.FieldName, criterion.FieldValue);
-                    break;
-                case Comparator.Like:
-                    filter &= Builders<StaffDto>.Filter.Regex(criterion.FieldName, new MongoDB.Bson.BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase)));
-                    break;
-                case Comparator.NotLike:
-                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Regex(criterion.FieldName, new MongoDB.Bson.BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase))));
-                    break;
-            }
-
-            if (criterion.IncludeNullValue)
-                filter |= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Exists(criterion.FieldName));
-
-            return filter;
-        }
-
-        private FilterDefinition<StaffDto> TransformCriteriaSet(CriteriaSet criteriaSet)
-        {
-            var filter = FilterDefinition<StaffDto>.Empty;
-
-            if (criteriaSet.Or)
-            {
-                filter &= Builders<StaffDto>.Filter.Or(
-                    criteriaSet.Criteria
-                        .Select(x =>
-                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
-                        .ToArray());
-            }
-            else
-            {
-                filter &= Builders<StaffDto>.Filter.And(
-                    criteriaSet.Criteria
-                        .Select(x =>
-                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
-                        .ToArray());
-            }
-
-            return filter;
+            return _confederationsCollection
+                .Find(Builders<ConfederationDto>.Filter.Empty)
+                .ToEnumerable()
+                .Select(dto => dto.ToConfederation())
+                .ToList();
         }
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
@@ -236,9 +127,7 @@ namespace ExplorerFM
                         Builders<StaffDto>.Filter.Eq(x => x.Nation1.Id, countryId.Value),
                         Builders<StaffDto>.Filter.And(
                             Builders<StaffDto>.Filter.Eq(x => x.Nation2.Id, countryId.Value),
-                            Builders<StaffDto>.Filter.Or(
-                                Builders<StaffDto>.Filter.Eq(x => x.Caps, 0),
-                                Builders<StaffDto>.Filter.Eq(x => x.Caps, null))));
+                            Builders<StaffDto>.Filter.Eq(x => x.Caps, 0)));
                 }
             }
             else
@@ -265,90 +154,72 @@ namespace ExplorerFM
                 Builders<StaffDto>.Filter.Eq(x => x.PlayerFeatures.SpecialPotential, -1),
                 Builders<StaffDto>.Filter.Eq(x => x.PlayerFeatures.SpecialPotential, -2));
 
-            var dtos = _staffCollection.Find(filter).ToList();
-
-            var players = new List<Player>(dtos.Count);
-            foreach (var dto in dtos)
-            {
-                var player = new Player
-                {
-                    DateContractEnd = dto.DateContractEnd,
-                    DateContractStart = dto.DateContractStart,
-                    DateOfBirth = dto.DateOfBirth,
-                    DislikeClubIds = dto.DislikeClubs?.ToList() ?? new List<int>(),
-                    DislikeStaffIds = dto.DislikeStaffs?.ToList() ?? new List<int>(),
-                    Caps = dto.Caps ?? 0,
-                    ClubContract = dto.ClubContract != null && clubs.TryGetValue(dto.ClubContract.Id, out var club) ? club : null,
-                    Commonname = dto.Commonname,
-                    CurrentAbility = dto.PlayerFeatures.CurrentAbility,
-                    CurrentReputation = dto.PlayerFeatures.CurrentReputation,
-                    FavClubIds = dto.FavClubs?.ToList() ?? new List<int>(),
-                    FavStaffIds = dto.FavStaffs?.ToList() ?? new List<int>(),
-                    Firstname = dto.Firstname,
-                    HomeReputation = dto.PlayerFeatures.HomeReputation,
-                    Id = dto.ID,
-                    IntGoals = dto.IntGoals ?? 0,
-                    Lastname =dto.Lastname ,
-                    LeftFoot = dto.PlayerFeatures.LeftFoot,
-                    Loaded = true,
-                    Nationality = dto.Nation1 != null && countries.TryGetValue(dto.Nation1.Id, out var country) ? country : null,
-                    PotentialAbility = dto.PlayerFeatures.SpecialPotential.HasValue
-                        ? dto.PlayerFeatures.SpecialPotential.Value
-                        : dto.PlayerFeatures.PotentialAbility,
-                    RightFoot = dto.PlayerFeatures.RightFoot,
-                    SecondNationality = dto.Nation2 != null && countries.TryGetValue(dto.Nation2.Id, out var country2) ? country2 : null,
-                    SquadNumber = dto.PlayerFeatures.SquadNumber,
-                    Value = dto.Value,
-                    Wage = dto.Wage,
-                    WorldReputation = dto.PlayerFeatures.WorldReputation,
-                    YearOfBirth = dto.YearOfBirth,
-                    Sides = new Dictionary<Side, int?>
-                    {
-                        { Side.Left, dto.PlayerSides.SidesLeft },
-                        { Side.Right, dto.PlayerSides.SidesRight },
-                        { Side.Center, dto.PlayerSides.SidesCenter },
-                    },
-                    Attributes = _propertiesMapper.ToDictionary(x => x.Key, x => (int?)x.Value.GetValue(dto.PlayerAttributes)),
-                    Positions = new Dictionary<Position, int?>
-                    {
-                        { Position.Striker, dto.PlayerPositions.PosForward },
-                        { Position.OffensiveMidfielder, dto.PlayerPositions.PosOffMil },
-                        { Position.Midfielder, dto.PlayerPositions.PosMil },
-                        { Position.Defender, dto.PlayerPositions.PosDefender },
-                        { Position.DefensiveMidfielder, dto.PlayerPositions.PosDelMil },
-                        { Position.FreeRole, dto.PlayerPositions.PosFreeRole },
-                        { Position.GoalKeeper, dto.PlayerPositions.PosGoalKeeper },
-                        { Position.Sweeper, dto.PlayerPositions.PosSweeper },
-                        { Position.WingBack, dto.PlayerPositions.PosWing }
-                    }
-                };
-
-                players.Add(player);
-            }
-
-            return players;
+            return _staffCollection
+                .Find(filter)
+                .ToEnumerable()
+                .Select(dto => dto.ToPlayer(clubs, countries))
+                .ToList();
         }
 
-        private static readonly Dictionary<Datas.Attribute, PropertyInfo> _propertiesMapper =
-            typeof(PlayerAttributesDto).GetProperties().ToDictionary(x => Datas.Attribute.GetPlayerAttributeBy(x.Name), x => x);
-
-        public static string TestConnection(string connectionString, string database)
+        private FilterDefinition<StaffDto> TransformCriterion(Criterion criterion)
         {
-            string error = null;
-
-            try
+            var filter = Builders<StaffDto>.Filter.Empty;
+            switch (criterion.Comparator)
             {
-                new MongoClient(connectionString)
-                    .GetDatabase(database)
-                    .GetCollection<StaffDto>("staff")
-                    .Find(Builders<StaffDto>.Filter.Eq(x => x.ID, 0));
-            }
-            catch (Exception ex)
-            {
-                error = ex.Message;
+                case Comparator.Equal:
+                    filter &= Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.NotEqual:
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue));
+                    break;
+                case Comparator.GreaterEqual:
+                    filter &= Builders<StaffDto>.Filter.Gte(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Greater:
+                    filter &= Builders<StaffDto>.Filter.Gt(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.LowerEqual:
+                    filter &= Builders<StaffDto>.Filter.Lte(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Lower:
+                    filter &= Builders<StaffDto>.Filter.Lt(criterion.FieldName, criterion.FieldValue);
+                    break;
+                case Comparator.Like:
+                    filter &= Builders<StaffDto>.Filter.Regex(criterion.FieldName, new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase)));
+                    break;
+                case Comparator.NotLike:
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Regex(criterion.FieldName, new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase))));
+                    break;
             }
 
-            return error;
+            if (criterion.IncludeNullValue)
+                filter |= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Exists(criterion.FieldName));
+
+            return filter;
+        }
+
+        private FilterDefinition<StaffDto> TransformCriteriaSet(CriteriaSet criteriaSet)
+        {
+            var filter = FilterDefinition<StaffDto>.Empty;
+
+            if (criteriaSet.Or)
+            {
+                filter &= Builders<StaffDto>.Filter.Or(
+                    criteriaSet.Criteria
+                        .Select(x =>
+                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                        .ToArray());
+            }
+            else
+            {
+                filter &= Builders<StaffDto>.Filter.And(
+                    criteriaSet.Criteria
+                        .Select(x =>
+                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                        .ToArray());
+            }
+
+            return filter;
         }
     }
 }

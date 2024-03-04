@@ -120,25 +120,4 @@ namespace ExplorerFM.Datas.Dtos
         [BsonIgnoreIfNull]
         public IReadOnlyList<int> RivalClubs { get; set; }
     }
-
-    public class CountryClubDto
-    {
-        [BsonElement("id")]
-        public int Id { get; set; }
-
-        [BsonElement("confederationId")]
-        [BsonIgnoreIfNull]
-        public int? ConfederationId { get; set; }
-
-        [BsonElement("isEU")]
-        [BsonIgnoreIfNull]
-        public bool IsEU { get; set; }
-    }
-
-    public enum ClubStatutDto
-    {
-        Professional = 1,
-        SemiProfessional,
-        Amateur
-    }
 }
