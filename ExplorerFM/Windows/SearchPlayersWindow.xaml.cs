@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.RuleEngine;
@@ -141,13 +142,8 @@ namespace ExplorerFM.Windows
 
             var attrPropInfo = attributeComboBox.SelectedItem as PropertyInfo;
 
-            return new Criterion
-            {
-                Comparator = (Comparator)comparatorComboBox.SelectedItem,
-                FieldName = "", // TODO
-                FieldValue = value,
-                IncludeNullValue = includeNullCheckBox.IsChecked == true
-            };
+            // TODO
+            return new Criterion(typeof(Staff), "", value, (Comparator)comparatorComboBox.SelectedItem, includeNullCheckBox.IsChecked == true);
         }
 
         private object GetUiElementValue(UIElement valuatedElement, UIElement elementToValuate = null)

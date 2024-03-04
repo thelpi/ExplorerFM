@@ -80,77 +80,40 @@ namespace ExplorerFM.Windows
                 var isUe = EuropeanUnionCheckBox.IsChecked == true;
                 var noClubContract = NoClubContractCheckBox.IsChecked == true;
 
-                var noClubCriterion = new Criterion
-                {
-                    Comparator = Comparator.Equal,
-                    FieldName = "club",
-                    FieldValue = null,
-                    IncludeNullValue = false
-                };
+                var noClubCriterion = new Criterion(typeof(Staff), nameof(Staff.ClubContract), null);
 
                 var criteria = new List<CriterionBase>(5);
                 if (noClubContract)
                 {
                     criteria.Add(noClubCriterion);
                 }
+
                 if (NationalityComboBox.SelectedItem is Country country && country.Id != Country.AllCountryId)
                 {
                     if (country.Id == Country.NoCountryId)
                     {
-                        criteria.Add(new CriteriaSet(false, new Criterion
-                        {
-                            FieldName = "country1",
-                            FieldValue = null,
-                            Comparator = Comparator.Equal
-                        }, new Criterion
-                        {
-                            FieldName = "country2",
-                            FieldValue = null,
-                            Comparator = Comparator.Equal
-                        }));
+                        criteria.Add(new CriteriaSet(false,
+                            new Criterion(typeof(Staff), nameof(Staff.Nationality), null),
+                            new Criterion(typeof(Staff), nameof(Staff.SecondNationality), null)));
                     }
                     else
                     {
-                        criteria.Add(new CriteriaSet(true, new Criterion
-                        {
-                            FieldName = "country1._id",
-                            FieldValue = country.Id,
-                            Comparator = Comparator.Equal,
-                            IncludeNullValue = false
-                        }, new Criterion
-                        {
-                            FieldName = "country2._id",
-                            FieldValue = country.Id,
-                            Comparator = Comparator.Equal,
-                            IncludeNullValue = false
-                        }));
+                        criteria.Add(new CriteriaSet(true,
+                            new Criterion(typeof(Staff), $"{nameof(Staff.Nationality)}.{nameof(Country.Id)}", country.Id),
+                            new Criterion(typeof(Staff), $"{nameof(Staff.SecondNationality)}.{nameof(Country.Id)}", country.Id)));
                     }
                 }
+
                 if (maxAge.HasValue)
                 {
-                    criteria.Add(new CriteriaSet(true, new Criterion
-                    {
-                        Comparator = Comparator.GreaterEqual,
-                        FieldName = "dateOfBirth",
-                        FieldValue = maxAge.Value,
-                        IncludeNullValue = false
-                    }, new Criterion
-                    {
-                        Comparator = Comparator.GreaterEqual,
-                        FieldName = "yearOfBirth",
-                        FieldValue = maxAge.Value.Year,
-                        IncludeNullValue = false
-                    }));
+                    criteria.Add(new CriteriaSet(true,
+                        new Criterion(typeof(Staff), nameof(Staff.DateOfBirth), maxAge.Value, Comparator.GreaterEqual),
+                        new Criterion(typeof(Staff), nameof(Staff.YearOfBirth), maxAge.Value.Year, Comparator.GreaterEqual)));
                 }
+
                 if (maxValue.HasValue)
                 {
-                    var standardCriterion = new Criterion
-                    {
-                        Comparator = Comparator.LowerEqual,
-                        FieldName = "value",
-                        FieldValue = maxValue.Value,
-                        IncludeNullValue = true
-                    };
+                    var standardCriterion = new Criterion(typeof(Staff), nameof(Staff.Value), maxValue.Value, Comparator.LowerEqual, true);
                     if (noClubContract)
                     {
                         criteria.Add(standardCriterion);
@@ -161,31 +124,17 @@ namespace ExplorerFM.Windows
                         criteria.Add(new CriteriaSet(true, standardCriterion, noClubCriterion));
                     }
                 }
+
                 if (maxRep.HasValue)
                 {
-                    criteria.Add(new Criterion
-                    {
-                        Comparator = Comparator.LowerEqual,
-                        FieldName = "playerFeatures.currentReputation",
-                        FieldValue = maxRep.Value,
-                        IncludeNullValue = true
-                    });
+                    criteria.Add(new Criterion(typeof(Staff), nameof(Staff.CurrentReputation), maxRep.Value, Comparator.LowerEqual, true));
                 }
+
                 if (isUe)
                 {
-                    criteria.Add(new CriteriaSet(true, new Criterion
-                    {
-                        Comparator = Comparator.Equal,
-                        FieldName = "country1.isEU",
-                        FieldValue = true,
-                        IncludeNullValue = false
-                    }, new Criterion
-                    {
-                        Comparator = Comparator.Equal,
-                        FieldName = "country2.isEU",
-                        FieldValue = true,
-                        IncludeNullValue = false
-                    }));
+                    criteria.Add(new CriteriaSet(true,
+                        new Criterion(typeof(Staff), $"{nameof(Staff.Nationality)}.{nameof(Country.IsEU)}", true),
+                        new Criterion(typeof(Staff), $"{nameof(Staff.SecondNationality)}.{nameof(Country.IsEU)}", true)));
                 }
 
                 var position = (Position)PositionsComboBox.SelectedItem;
@@ -194,34 +143,10 @@ namespace ExplorerFM.Windows
 
                 if (position != Position.GoalKeeper)
                 {
-                    criteria.Add(new Criterion
-                    {
-                        Comparator = Comparator.GreaterEqual,
-                        FieldName = $"playerSides.{(side == Side.Right ? "right" : (side == Side.Center ? "center" : "left"))}",
-                        FieldValue = 15
-                    });
+                    criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Sides)}.{nameof(Side)}:{side}", 15, Comparator.GreaterEqual));
                 }
 
-                var posName = "";
-                switch (position)
-                {
-                    case Position.Defender: posName = "defender"; break;
-                    case Position.Sweeper: posName = "sweeper"; break;
-                    case Position.GoalKeeper: posName = "goalKeeper"; break;
-                    case Position.DefensiveMidfielder: posName = "defMidfielder"; break;
-                    case Position.Midfielder: posName = "midfielder"; break;
-                    case Position.OffensiveMidfielder: posName = "offMidfielder"; break;
-                    case Position.WingBack: posName = "wingBack"; break;
-                    case Position.Striker: posName = "forward"; break;
-                    case Position.FreeRole: posName = "freeRole"; break;
-                }
-
-                criteria.Add(new Criterion
-                {
-                    Comparator = Comparator.GreaterEqual,
-                    FieldName = $"playerPositions.{posName}",
-                    FieldValue = 15
-                });
+                criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Positions)}.{nameof(Position)}:{position}", 15, Comparator.GreaterEqual));
 
                 var nullRateBehavior = NullRateBehaviorComboBox.SelectedIndex > -1 ? (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem : NullRateBehavior.Minimal;
 

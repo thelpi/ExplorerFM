@@ -193,6 +193,7 @@
     <Compile Include="Datas\Dtos\StaffDto.cs" />
     <Compile Include="Datas\Dtos\StaffTypeDto.cs" />
     <Compile Include="Extensions\SystemExtensions.cs" />
+    <Compile Include="FieldsAttributes\MongoNameAttribute.cs" />
     <Compile Include="MongoService.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Windows\BestPlayerFinderWindow.xaml.cs">
