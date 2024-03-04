@@ -228,9 +228,7 @@ namespace ExplorerFM.Windows
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
                     {
-                        var players = _dataProvider.GetPlayersByCriteria(
-                            new CriteriaSet(false, criteria.ToArray()),
-                            progress => Dispatcher.Invoke(() => LoadPlayersProgressBar.Value = progress * 100));
+                        var players = _dataProvider.GetPlayersByCriteria(new CriteriaSet(false, criteria.ToArray()));
                         return players
                             .Select(p => p.ToRateItemData(
                                 position, side, _dataProvider.MaxTheoreticalRate, potentialAbility, nullRateBehavior))

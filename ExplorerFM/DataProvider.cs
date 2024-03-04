@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ExplorerFM.Datas;
@@ -67,7 +66,7 @@ namespace ExplorerFM
             return _mongoService.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
         }
 
-        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, Action<double> reportFunc)
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria)
         {
             return _mongoService.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas);
         }

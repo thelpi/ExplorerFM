@@ -89,9 +89,7 @@ namespace ExplorerFM.Windows
             if (response == MessageBoxResult.Yes)
             {
                 LoadingProgressBar.HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCriteria(
-                        criteriaSet,
-                        progress => Dispatcher.Invoke(() => LoadingProgressBar.Value = progress * 100)),
+                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
                     players => PlayersView.ItemsSource = players,
                     PlayersView, CriteriaExpander);
             }
