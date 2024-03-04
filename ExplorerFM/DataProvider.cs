@@ -34,11 +34,12 @@ namespace ExplorerFM
         private Dictionary<int, Confederation> _confederationDatas;
         private Dictionary<int, Country> _countryDatas;
 
-        public IEnumerable<Club> Clubs => _clubDatas.Values;
-        public IEnumerable<Confederation> Confederations => _confederationDatas.Values;
-        public IEnumerable<Country> Countries => _countryDatas.Values;
+        public IReadOnlyList<Club> Clubs => _clubDatas.Values.ToList();
+        public IReadOnlyList<Confederation> Confederations => _confederationDatas.Values.ToList();
+        public IReadOnlyList<Country> Countries => _countryDatas.Values.ToList();
+        public IReadOnlyList<Attribute> Attributes => Attribute.PlayerInstances;
 
-        public int MaxTheoreticalRate => 16 * Datas.Attribute.PlayerInstances.Count;
+        public int MaxTheoreticalRate => 16 * Attribute.PlayerInstances.Count;
 
         public DataProvider(string mongoConnectionString, string mongoDatabase)
         {
