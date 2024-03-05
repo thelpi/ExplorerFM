@@ -162,7 +162,9 @@ namespace ExplorerFM.Windows
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == Club.AllClubId
-                    ? _dataProvider.GetPlayersByCountry(country.Id == Country.NoCountryId ? default(int?) : country.Id, true)
+                    ? (country.Id == Country.AllCountryId
+                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false))
+                        : _dataProvider.GetPlayersByCountry(country.Id == Country.NoCountryId ? default(int?) : country.Id, true))
                     : _dataProvider.GetPlayersByClub(club.Id == Club.NoClubId ? default(int?) : club.Id),
                 p =>
                 {
@@ -183,7 +185,11 @@ namespace ExplorerFM.Windows
             List<Club> clubsList;
             if (country.Id == Country.AllCountryId)
             {
-                clubsList = new List<Club> { new Club { Id = Club.NoClubId, Name = "No club" } };
+                clubsList = new List<Club>
+                {
+                    new Club { Id = Club.AllClubId, Name = "All clubs" },
+                    new Club { Id = Club.NoClubId, Name = "No club" },
+                };
             }
             else if (country.Id == Country.NoCountryId)
             {

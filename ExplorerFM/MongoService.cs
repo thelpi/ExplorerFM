@@ -202,21 +202,24 @@ namespace ExplorerFM
         {
             var filter = FilterDefinition<StaffDto>.Empty;
 
-            if (criteriaSet.Or)
+            if (criteriaSet.Criteria?.Count > 0)
             {
-                filter &= Builders<StaffDto>.Filter.Or(
-                    criteriaSet.Criteria
-                        .Select(x =>
-                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
-                        .ToArray());
-            }
-            else
-            {
-                filter &= Builders<StaffDto>.Filter.And(
-                    criteriaSet.Criteria
-                        .Select(x =>
-                            x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
-                        .ToArray());
+                if (criteriaSet.Or)
+                {
+                    filter &= Builders<StaffDto>.Filter.Or(
+                        criteriaSet.Criteria
+                            .Select(x =>
+                                x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                            .ToArray());
+                }
+                else
+                {
+                    filter &= Builders<StaffDto>.Filter.And(
+                        criteriaSet.Criteria
+                            .Select(x =>
+                                x is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(x as Criterion))
+                            .ToArray());
+                }
             }
 
             return filter;
