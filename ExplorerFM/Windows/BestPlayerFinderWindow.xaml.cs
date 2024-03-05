@@ -99,8 +99,8 @@ namespace ExplorerFM.Windows
                     else
                     {
                         criteria.Add(new CriteriaSet(true,
-                            new Criterion(typeof(Staff), $"{nameof(Staff.Nationality)}.{nameof(Country.Id)}", country.Id),
-                            new Criterion(typeof(Staff), $"{nameof(Staff.SecondNationality)}.{nameof(Country.Id)}", country.Id)));
+                            new Criterion(typeof(Staff), new[] { nameof(Staff.Nationality), nameof(Country.Id) }, country.Id),
+                            new Criterion(typeof(Staff), new[] { nameof(Staff.SecondNationality), nameof(Country.Id) }, country.Id)));
                     }
                 }
 
@@ -133,8 +133,8 @@ namespace ExplorerFM.Windows
                 if (isUe)
                 {
                     criteria.Add(new CriteriaSet(true,
-                        new Criterion(typeof(Staff), $"{nameof(Staff.Nationality)}.{nameof(Country.IsEU)}", true),
-                        new Criterion(typeof(Staff), $"{nameof(Staff.SecondNationality)}.{nameof(Country.IsEU)}", true)));
+                        new Criterion(typeof(Staff), new[] { nameof(Staff.Nationality), nameof(Country.IsEU) }, true),
+                        new Criterion(typeof(Staff), new[] { nameof(Staff.SecondNationality), nameof(Country.IsEU) }, true)));
                 }
 
                 var position = (Position)PositionsComboBox.SelectedItem;
@@ -143,10 +143,10 @@ namespace ExplorerFM.Windows
 
                 if (position != Position.GoalKeeper)
                 {
-                    criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Sides)}.{side}", 15, Comparator.GreaterEqual));
+                    criteria.Add(new Criterion(typeof(Player), new[] { nameof(Player.Sides), side.ToString() }, 15, Comparator.GreaterEqual));
                 }
 
-                criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Positions)}.{position}", 15, Comparator.GreaterEqual));
+                criteria.Add(new Criterion(typeof(Player), new[] { nameof(Player.Positions), position.ToString() }, 15, Comparator.GreaterEqual));
 
                 var nullRateBehavior = NullRateBehaviorComboBox.SelectedIndex > -1 ? (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem : NullRateBehavior.Minimal;
 
