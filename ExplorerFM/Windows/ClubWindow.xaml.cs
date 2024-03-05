@@ -63,6 +63,10 @@ namespace ExplorerFM.Windows
         private void PositionsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetRatedPlayersListBox();
+            if (PositionsComboBox.SelectedIndex >= 0 && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper)
+                SidesComboBox.Visibility = Visibility.Hidden;
+            else
+                SidesComboBox.Visibility = Visibility.Visible;
         }
 
         private void SidesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -72,15 +76,23 @@ namespace ExplorerFM.Windows
 
         private void SetRatedPlayersListBox()
         {
-            if (PositionsComboBox.SelectedIndex >= 0
-                && SidesComboBox.SelectedIndex >= 0)
+            if (PositionsComboBox.SelectedIndex >= 0)
             {
+                var position = (Position)PositionsComboBox.SelectedItem;
+                var side = Side.Center;
+                if (position != Position.GoalKeeper)
+                {
+                    if (SidesComboBox.SelectedIndex < 0)
+                        return;
+                    side = (Side)SidesComboBox.SelectedItem;
+                }
+
                 // top 10 best players for the position/side
                 RatedPlayersListView.ItemsSource = _players
                     .Select(p =>
                         p.ToRateItemData(
-                            (Position)PositionsComboBox.SelectedItem,
-                            (Side)SidesComboBox.SelectedItem,
+                            position,
+                            side,
                             _dataProvider.MaxTheoreticalRate,
                             UsePotentialAbility,
                             NullRateBehavior))

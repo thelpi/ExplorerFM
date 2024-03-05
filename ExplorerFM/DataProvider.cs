@@ -39,7 +39,7 @@ namespace ExplorerFM
         public IReadOnlyList<Country> Countries => _countryDatas.Values.ToList();
         public IReadOnlyList<Attribute> Attributes => Attribute.PlayerInstances;
 
-        public int MaxTheoreticalRate => 16 * Attribute.PlayerInstances.Count;
+        public int MaxTheoreticalRate => 20 * Attribute.PlayerInstances.Count;
 
         public DataProvider(string mongoConnectionString, string mongoDatabase)
         {

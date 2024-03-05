@@ -174,5 +174,17 @@ namespace ExplorerFM.Windows
             SelectedPlayer = ((sender as Button).DataContext as PlayerRateUiData).Player;
             Close();
         }
+
+        private void PositionsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PositionsComboBox.SelectedIndex >= 0 && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper)
+            {
+                SidesComboBox.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                SidesComboBox.Visibility = Visibility.Visible;
+            }
+        }
     }
 }
