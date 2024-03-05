@@ -6,10 +6,12 @@ namespace ExplorerFM.FieldsAttributes
     public class MongoNameAttribute : Attribute
     {
         public string Name { get; }
+        public Type ForcedType { get; }
 
-        public MongoNameAttribute(string name)
+        public MongoNameAttribute(string name, Type forcedType = null)
         {
             Name = name;
+            ForcedType = forcedType;
         }
     }
 }

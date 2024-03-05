@@ -37,18 +37,20 @@ namespace ExplorerFM.RuleEngine
                     var currentType = TargetType;
                     for (var i = 0; i < mapParts.Length; i++)
                     {
-                        if (i == mapParts.Length - 1 && mapParts[i].Contains(":"))
+                        MemberInfo member;
+                        if (currentType.IsEnum)
                         {
-                            var enumType = Type.GetType($"{typeof(BaseData).Namespace}.{mapParts[i].Split(':')[0]}");
-                            var enumValue = enumType.GetMember(mapParts[i].Split(':')[1])[0];
-                            mongoParts[i] = enumValue.GetCustomAttribute<MongoNameAttribute>().Name;
+                            member = currentType.GetMember(mapParts[i])[0];
                         }
                         else
                         {
-                            var property = currentType.GetProperty(mapParts[i]);
-                            mongoParts[i] = property.GetCustomAttribute<MongoNameAttribute>().Name;
-                            currentType = property.PropertyType;
+                            var prop = currentType.GetProperty(mapParts[i]);
+                            currentType = prop.PropertyType;
+                            member = prop;
                         }
+                        var attr = member.GetCustomAttribute<MongoNameAttribute>();
+                        mongoParts[i] = attr.Name;
+                        currentType = attr.ForcedType ?? currentType;
                     }
 
                     fieldName = string.Join(".", mongoParts);

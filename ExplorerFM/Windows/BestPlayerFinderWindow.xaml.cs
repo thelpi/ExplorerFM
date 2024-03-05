@@ -143,10 +143,10 @@ namespace ExplorerFM.Windows
 
                 if (position != Position.GoalKeeper)
                 {
-                    criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Sides)}.{nameof(Side)}:{side}", 15, Comparator.GreaterEqual));
+                    criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Sides)}.{side}", 15, Comparator.GreaterEqual));
                 }
 
-                criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Positions)}.{nameof(Position)}:{position}", 15, Comparator.GreaterEqual));
+                criteria.Add(new Criterion(typeof(Player), $"{nameof(Player.Positions)}.{position}", 15, Comparator.GreaterEqual));
 
                 var nullRateBehavior = NullRateBehaviorComboBox.SelectedIndex > -1 ? (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem : NullRateBehavior.Minimal;
 
