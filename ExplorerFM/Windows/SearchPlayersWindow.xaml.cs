@@ -391,7 +391,7 @@ namespace ExplorerFM.Windows
 
             Hide();
             // player.ClubContract
-            new ClubWindow(_dataProvider, false).ShowDialog();
+            new ClubWindow(_dataProvider).ShowDialog();
             ShowDialog();
         }
     }

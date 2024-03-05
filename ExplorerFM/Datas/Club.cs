@@ -8,6 +8,7 @@ namespace ExplorerFM.Datas
     public class Club : BaseData
     {
         public const int NoClubId = -1;
+        public const int AllClubId = -2;
 
         [Field]
         public string LongName { get; set; }

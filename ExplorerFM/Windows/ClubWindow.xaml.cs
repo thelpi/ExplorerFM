@@ -17,24 +17,20 @@ namespace ExplorerFM.Windows
     public partial class ClubWindow : Window
     {
         private const string PlayerPositionTemplateKey = "PlayerPositionTemplate";
-        private const string NoClub = "Without club";
-        private const string NoCountry = "Without country";
 
         private bool _isSourceChange;
         private ObservableCollection<Player> _players;
         private readonly DataProvider _dataProvider;
-        private readonly bool _isCountry;
 
         private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
         private NullRateBehavior NullRateBehavior => NullRateBehaviorComboBox.SelectedIndex == -1
             ? NullRateBehavior.Minimal
             : (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem;
 
-        public ClubWindow(DataProvider dataProvider, bool isCountry)
+        public ClubWindow(DataProvider dataProvider)
         {
             InitializeComponent();
 
-            _isCountry = isCountry;
             _dataProvider = dataProvider;
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
@@ -42,8 +38,9 @@ namespace ExplorerFM.Windows
 
             var countriesCopy = new List<Country>(dataProvider.Countries);
             countriesCopy.Insert(0, new Country { Id = Country.NoCountryId, Name = "No country" });
+            countriesCopy.Insert(0, new Country { Id = Country.AllCountryId, Name = "All countries" });
             CountryClubComboBox.ItemsSource = countriesCopy;
-            ClubComboBox.Visibility = isCountry ? Visibility.Collapsed : Visibility.Visible;
+            ClubComboBox.IsEnabled = false;
 
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
             NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
@@ -161,13 +158,16 @@ namespace ExplorerFM.Windows
                 return;
 
             var club = ClubComboBox.SelectedItem as Club;
+            var country = CountryClubComboBox.SelectedItem as Country;
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
-                () => _dataProvider.GetPlayersByClub(club.Id == Club.NoClubId ? default(int?) : club.Id),
+                () => club.Id == Club.AllClubId
+                    ? _dataProvider.GetPlayersByCountry(country.Id == Country.NoCountryId ? default(int?) : country.Id, true)
+                    : _dataProvider.GetPlayersByClub(club.Id == Club.NoClubId ? default(int?) : club.Id),
                 p =>
                 {
                     _players = new ObservableCollection<Player>(p);
-                    Title = club?.LongName ?? NoClub;
+                    Title = club.Id == Club.AllClubId ? country.Name : club.Name;
                     PlayersView.ItemsSource = _players;
                     ClearForms();
                 },
@@ -178,38 +178,29 @@ namespace ExplorerFM.Windows
         {
             var country = CountryClubComboBox.SelectedItem as Country;
 
-            if (_isCountry)
-            {
-                if (_isSourceChange)
-                    return;
+            _isSourceChange = true;
 
-                LoadPlayersProgressBar.HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCountry(country.Id == Country.NoCountryId ? default(int?) : country.Id, true),
-                    p =>
-                    {
-                        _players = new ObservableCollection<Player>(p);
-                        Title = country?.LongName ?? NoCountry;
-                        PlayersView.ItemsSource = _players;
-                        ClearForms();
-                    },
-                    MainGrid.Children.Cast<UIElement>().ToArray());
+            List<Club> clubsList;
+            if (country.Id == Country.AllCountryId)
+            {
+                clubsList = new List<Club> { new Club { Id = Club.NoClubId, Name = "No club" } };
+            }
+            else if (country.Id == Country.NoCountryId)
+            {
+                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null));
+                clubsList.Insert(0, new Club { Id = Club.AllClubId, Name = "All clubs" });
             }
             else
             {
-                _isSourceChange = true;
-                if (country.Id == Country.NoCountryId)
-                {
-                    var baseClubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null));
-                    baseClubsList.Insert(0, new Club { Id = Club.NoClubId, Name = "No club" });
-                    ClubComboBox.ItemsSource = baseClubsList;
-                }
-                else
-                {
-                    ClubComboBox.ItemsSource = _dataProvider.Clubs.Where(c => c.Country?.Id == country.Id);
-                }
-                ClubComboBox.Visibility = Visibility.Visible;
-                _isSourceChange = false;
+                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id));
+                clubsList.Insert(0, new Club { Id = Club.AllClubId, Name = $"All clubs" });
             }
+
+            ClubComboBox.ItemsSource = clubsList;
+            ClubComboBox.IsEnabled = true;
+
+            _isSourceChange = false;
+
         }
 
         private void ClearForms()

@@ -27,7 +27,7 @@ namespace ExplorerFM.Windows
         private void ClubExplorerButton_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            var window = new ClubWindow(_dataProvider, false);
+            var window = new ClubWindow(_dataProvider);
             window.ShowDialog();
             ShowDialog();
         }
@@ -40,14 +40,6 @@ namespace ExplorerFM.Windows
         private void BestPlayersFinderButton_Click(object sender, RoutedEventArgs e)
         {
             ChangeWindow<BestPlayerFinderWindow>();
-        }
-
-        private void CountryExplorerButton_Click(object sender, RoutedEventArgs e)
-        {
-            Hide();
-            var window = new ClubWindow(_dataProvider, true);
-            window.ShowDialog();
-            ShowDialog();
         }
 
         private void ChangeWindow<T>() where T : Window
