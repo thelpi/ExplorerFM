@@ -12,7 +12,7 @@ namespace ExplorerFM.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,7 +25,7 @@ namespace ExplorerFM.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=cmexplorer;Uid=root;Pwd=")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=cm_save_explorer;Uid=root;Pwd=")]
         public string MySqlConnectionString {
             get {
                 return ((string)(this["MySqlConnectionString"]));
@@ -48,6 +48,18 @@ namespace ExplorerFM.Properties {
         public string MongoDatabase {
             get {
                 return ((string)(this["MongoDatabase"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MySqlProvider")]
+        public string DataProvider {
+            get {
+                return ((string)(this["DataProvider"]));
+            }
+            set {
+                this["DataProvider"] = value;
             }
         }
     }

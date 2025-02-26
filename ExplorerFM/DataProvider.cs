@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
+using ExplorerFM.Providers;
 using ExplorerFM.RuleEngine;
 
 namespace ExplorerFM
@@ -28,7 +29,7 @@ namespace ExplorerFM
             Position.GoalKeeper
         };
 
-        private readonly MongoService _mongoService;
+        private readonly IProvider _provider;
 
         private Dictionary<int, Club> _clubDatas;
         private Dictionary<int, Confederation> _confederationDatas;
@@ -43,7 +44,16 @@ namespace ExplorerFM
 
         public DataProvider(string mongoConnectionString, string mongoDatabase)
         {
-            _mongoService = new MongoService(mongoConnectionString, mongoDatabase);
+            _provider = new MongoProvider(mongoConnectionString, mongoDatabase);
+
+            _clubDatas = new Dictionary<int, Club>();
+            _confederationDatas = new Dictionary<int, Confederation>();
+            _countryDatas = new Dictionary<int, Country>();
+        }
+
+        public DataProvider(string mySqlConnectionString)
+        {
+            _provider = new MySqlProvider(mySqlConnectionString);
 
             _clubDatas = new Dictionary<int, Club>();
             _confederationDatas = new Dictionary<int, Confederation>();
@@ -52,24 +62,24 @@ namespace ExplorerFM
 
         public void Initialize()
         {
-            _confederationDatas = _mongoService.GetConfederations().ToDictionary(x => x.Id);
-            _countryDatas = _mongoService.GetCountries(_confederationDatas).ToDictionary(x => x.Id);
-            _clubDatas = _mongoService.GetClubs(_countryDatas).ToDictionary(x => x.Id);
+            _confederationDatas = _provider.GetConfederations().ToDictionary(x => x.Id);
+            _countryDatas = _provider.GetCountries(_confederationDatas).ToDictionary(x => x.Id);
+            _clubDatas = _provider.GetClubs(_countryDatas).ToDictionary(x => x.Id);
         }
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId)
         {
-            return _mongoService.GetPlayersByClub(clubId, _clubDatas, _countryDatas);
+            return _provider.GetPlayersByClub(clubId, _clubDatas, _countryDatas);
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible)
         {
-            return _mongoService.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
+            return _provider.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
         }
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria)
         {
-            return _mongoService.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas);
+            return _provider.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas);
         }
 
         public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute

@@ -9,9 +9,9 @@ using ExplorerFM.RuleEngine;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace ExplorerFM
+namespace ExplorerFM.Providers
 {
-    internal class MongoService
+    internal class MongoProvider : IProvider
     {
         private readonly IMongoCollection<StaffDto> _staffCollection;
         private readonly IMongoCollection<ConfederationDto> _confederationsCollection;
@@ -23,7 +23,7 @@ namespace ExplorerFM
         private const string _countriesCollectionName = "countries";
         private const string _clubsCollectionName = "clubs";
 
-        public static string TestConnection(string connectionString, string database)
+        internal static string TestConnection(string connectionString, string database)
         {
             string error = null;
 
@@ -42,7 +42,7 @@ namespace ExplorerFM
             return error;
         }
 
-        public MongoService(string connectionString, string database)
+        public MongoProvider(string connectionString, string database)
         {
             var db = new MongoClient(connectionString).GetDatabase(database);
 

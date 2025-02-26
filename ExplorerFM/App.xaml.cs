@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using ExplorerFM.Properties;
+using ExplorerFM.Providers;
 using ExplorerFM.Windows;
 
 namespace ExplorerFM
@@ -13,7 +14,9 @@ namespace ExplorerFM
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var testConnectionRes = MongoService.TestConnection(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase);
+            var testConnectionRes = Settings.Default.DataProvider == nameof(MongoProvider)
+                ? MongoProvider.TestConnection(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase)
+                : MySqlProvider.TestConnection(Settings.Default.MySqlConnectionString);
 
             if (!string.IsNullOrWhiteSpace(testConnectionRes))
             {
