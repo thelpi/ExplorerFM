@@ -193,7 +193,7 @@ namespace ExplorerFM.Providers
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
         {
             // TODO: binder sur la nouvelle conf
-            if (!countryId.HasValue)
+            if (Settings.Default.UseSaveFile && !countryId.HasValue)
             {
                 return new List<Player>();
             }
@@ -213,7 +213,9 @@ namespace ExplorerFM.Providers
                     var param = cmd.CreateParameter();
                     param.DbType = System.Data.DbType.String;
                     param.ParameterName = "@nation";
-                    param.Value = countries[countryId.Value].Name;
+                    param.Value = countryId.HasValue
+                        ? (object)countries[countryId.Value].Name
+                        : DBNull.Value;
                     cmd.Parameters.Add(param);
                 },
                 cmd =>

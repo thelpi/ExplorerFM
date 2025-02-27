@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using ExplorerFM.Datas;
 using ExplorerFM.FieldsAttributes;
+using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using ExplorerFM.UiDatas;
 
@@ -81,13 +82,25 @@ namespace ExplorerFM.Extensions
             int maxTheoreticalRate, bool potentialRate,
             NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
         {
-            var ability = potentialRate
-                ? p.GetFixedPotentialAbility()
-                : p.CurrentAbility.GetValueOrDefault(100);
+            int rate;
+            if (Settings.Default.UseSaveFile)
+            {
+                var abilityDelta = potentialRate
+                    ? p.GetFixedPotentialAbility() - p.CurrentAbility.GetValueOrDefault(100)
+                    : 0;
+                rate = (int)Math.Round((p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) + abilityDelta) * p.GetPositionSideRate(position, side) / (decimal)20);
+            }
+            else
+            {
+                var ability = potentialRate
+                    ? p.GetFixedPotentialAbility()
+                    : p.CurrentAbility.GetValueOrDefault(100);
+                rate = (int)Math.Round(p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20);
+            }
 
             return new PlayerRateUiData
             {
-                Rate = (int)Math.Round(p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20),
+                Rate = rate,
                 Player = p,
                 PositionRate = p.Positions[position] ?? 1,
                 SideRate = position == Position.GoalKeeper ? 20 : (p.Sides[side] ?? 1),

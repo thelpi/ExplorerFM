@@ -63,5 +63,17 @@ namespace ExplorerFM.Properties {
                 this["DataProvider"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseSaveFile {
+            get {
+                return ((bool)(this["UseSaveFile"]));
+            }
+            set {
+                this["UseSaveFile"] = value;
+            }
+        }
     }
 }
