@@ -42,18 +42,11 @@ namespace ExplorerFM
 
         public int MaxTheoreticalRate => 20 * Attribute.PlayerInstances.Count;
 
-        public DataProvider(string mongoConnectionString, string mongoDatabase)
+        public DataProvider()
         {
-            _provider = new MongoProvider(mongoConnectionString, mongoDatabase);
-
-            _clubDatas = new Dictionary<int, Club>();
-            _confederationDatas = new Dictionary<int, Confederation>();
-            _countryDatas = new Dictionary<int, Country>();
-        }
-
-        public DataProvider(string mySqlConnectionString)
-        {
-            _provider = new MySqlProvider(mySqlConnectionString);
+            _provider = Properties.Settings.Default.DataProvider == nameof(MongoProvider)
+                ? (IProvider)new MongoProvider()
+                : new MySqlProvider();
 
             _clubDatas = new Dictionary<int, Club>();
             _confederationDatas = new Dictionary<int, Confederation>();

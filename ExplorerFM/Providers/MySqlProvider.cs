@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ExplorerFM.Datas;
+using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using MySql.Data.MySqlClient;
 
@@ -9,7 +10,8 @@ namespace ExplorerFM.Providers
 {
     internal class MySqlProvider : IProvider
     {
-        private readonly Func<MySqlConnection> _getConnection;
+        private readonly Func<MySqlConnection> _getConnection =
+            () => new MySqlConnection(Settings.Default.MySqlConnectionString);
 
         private readonly IReadOnlyDictionary<int, string> _attributesMapper = new Dictionary<int, string>
         {
@@ -67,7 +69,7 @@ namespace ExplorerFM.Providers
         private const int EnoughRate = 15;
         private const int MinRate = 1;
 
-        internal static string TestConnection(string connectionString)
+        internal static string TestConnection()
         {
             string error = null;
 
@@ -75,7 +77,7 @@ namespace ExplorerFM.Providers
             MySqlCommand command = null;
             try
             {
-                connection = new MySqlConnection(connectionString);
+                connection = new MySqlConnection(Settings.Default.MySqlConnectionString);
                 connection.Open();
                 command = connection.CreateCommand();
                 command.CommandText = "SELECT 1 FROM players LIMIT 0, 1";
@@ -92,11 +94,6 @@ namespace ExplorerFM.Providers
             }
 
             return error;
-        }
-
-        public MySqlProvider(string connectionString)
-        {
-            _getConnection = () => new MySqlConnection(connectionString);
         }
 
         public IReadOnlyList<Confederation> GetConfederations()

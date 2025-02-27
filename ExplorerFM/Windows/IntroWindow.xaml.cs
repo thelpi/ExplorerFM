@@ -1,7 +1,5 @@
 ﻿using System.Windows;
 using ExplorerFM.Extensions;
-using ExplorerFM.Properties;
-using ExplorerFM.Providers;
 
 namespace ExplorerFM.Windows
 {
@@ -13,9 +11,7 @@ namespace ExplorerFM.Windows
         {
             InitializeComponent();
 
-            _dataProvider = Settings.Default.DataProvider == nameof(MongoProvider)
-                ? new DataProvider(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase)
-                : new DataProvider(Settings.Default.MySqlConnectionString);
+            _dataProvider = new DataProvider();
             
             DatasLoadingProgressBar.HideWorkAndDisplay<object>(
                 () =>

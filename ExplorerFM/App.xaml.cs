@@ -15,8 +15,8 @@ namespace ExplorerFM
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             var testConnectionRes = Settings.Default.DataProvider == nameof(MongoProvider)
-                ? MongoProvider.TestConnection(Settings.Default.MongoConnectionString, Settings.Default.MongoDatabase)
-                : MySqlProvider.TestConnection(Settings.Default.MySqlConnectionString);
+                ? MongoProvider.TestConnection()
+                : MySqlProvider.TestConnection();
 
             if (!string.IsNullOrWhiteSpace(testConnectionRes))
             {

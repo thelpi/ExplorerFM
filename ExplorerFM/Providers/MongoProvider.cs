@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using ExplorerFM.Datas;
 using ExplorerFM.Datas.Dtos;
 using ExplorerFM.Datas.Mappers;
+using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -23,14 +24,14 @@ namespace ExplorerFM.Providers
         private const string _countriesCollectionName = "countries";
         private const string _clubsCollectionName = "clubs";
 
-        internal static string TestConnection(string connectionString, string database)
+        internal static string TestConnection()
         {
             string error = null;
 
             try
             {
-                new MongoClient(connectionString)
-                    .GetDatabase(database)
+                new MongoClient(Settings.Default.MongoConnectionString)
+                    .GetDatabase(Settings.Default.MongoDatabase)
                     .GetCollection<StaffDto>(_staffCollectionName)
                     .Find(Builders<StaffDto>.Filter.Eq(x => x.ID, 0));
             }
@@ -42,9 +43,10 @@ namespace ExplorerFM.Providers
             return error;
         }
 
-        public MongoProvider(string connectionString, string database)
+        public MongoProvider()
         {
-            var db = new MongoClient(connectionString).GetDatabase(database);
+            var db = new MongoClient(Settings.Default.MongoConnectionString)
+                .GetDatabase(Settings.Default.MongoDatabase);
 
             _staffCollection = db.GetCollection<StaffDto>(_staffCollectionName);
             _confederationsCollection = db.GetCollection<ConfederationDto>(_confederationsCollectionName);
