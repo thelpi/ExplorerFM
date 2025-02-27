@@ -25,7 +25,8 @@ namespace ExplorerFM.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=cm_save_explorer;Uid=root;Pwd=")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Server=localhost;Database=cm_save_explorer;Uid=root;Pwd=;Convert Zero Datetime=Tr" +
+            "ue")]
         public string MySqlConnectionString {
             get {
                 return ((string)(this["MySqlConnectionString"]));

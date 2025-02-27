@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="MySqlConnectionString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Server=localhost;Database=cm_save_explorer;Uid=root;Pwd=</Value>
+      <Value Profile="(Default)">Server=localhost;Database=cm_save_explorer;Uid=root;Pwd=;Convert Zero Datetime=True</Value>
     </Setting>
     <Setting Name="MongoConnectionString" Type="System.String" Scope="Application">
       <Value Profile="(Default)">mongodb+srv://thelpi33:w3bjwsIysqUclx64@lpicluster.ystipxk.mongodb.net/?retryWrites=true&amp;w=majority&amp;appName=LpiCluster</Value>
