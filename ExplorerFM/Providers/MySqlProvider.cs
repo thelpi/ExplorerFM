@@ -11,6 +11,62 @@ namespace ExplorerFM.Providers
     {
         private readonly Func<MySqlConnection> _getConnection;
 
+        private readonly IReadOnlyDictionary<int, string> _attributesMapper = new Dictionary<int, string>
+        {
+            { 01, "acceleration" },
+            { 02, "agility" },
+            { 03, "balance" },
+            { 04, "injury_proneness" },
+            { 05, "jumping" },
+            { 06, "natural_fitness" },
+            { 07, "pace" },
+            { 08, "stamina" },
+            { 09, "strength" },
+            { 10, "handling" },
+            { 11, "one_on_ones" },
+            { 12, "reflexes" },
+            { 13, "corners" },
+            { 14, "set_pieces" },
+            { 15, "throw_ins" },
+            { 16, "crossing" },
+            { 17, "dribbling" },
+            { 18, "finishing" },
+            { 19, "heading" },
+            { 20, "long_shots" },
+            { 21, "marking" },
+            { 22, "off_the_ball" },
+            { 23, "passing" },
+            { 24, "penalties" },
+            { 25, "positioning" },
+            { 26, "tackling" },
+            { 27, "technique" },
+            { 28, "crossing" },
+            { 29, "adaptability" },
+            { 30, "aggression" },
+            { 31, "ambition" },
+            { 32, "anticipation" },
+            { 33, "bravery" },
+            { 34, "consistency" },
+            { 35, "decisions" },
+            { 36, "determination" },
+            { 37, "dirtiness" },
+            { 38, "flair" },
+            { 39, "important_matches" },
+            { 40, "influence" },
+            { 41, "loyality" },
+            { 42, "pressure" },
+            { 43, "professionalism" },
+            { 44, "sportsmanship" },
+            { 45, "teamwork" },
+            { 46, "temperament" },
+            { 47, "versatility" },
+            { 48, "work_rate" },
+        };
+
+        private const int MaxRate = 20;
+        private const int EnoughRate = 15;
+        private const int MinRate = 1;
+
         internal static string TestConnection(string connectionString)
         {
             string error = null;
@@ -41,36 +97,6 @@ namespace ExplorerFM.Providers
         public MySqlProvider(string connectionString)
         {
             _getConnection = () => new MySqlConnection(connectionString);
-        }
-
-        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
-        {
-            var clubs = new List<Club>(2000);
-
-            using (var connection = _getConnection())
-            {
-                connection.Open();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = "SELECT DISTINCT club, club_reputation " +
-                        "FROM players " +
-                        "WHERE club IS NOT NULL";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            clubs.Add(new Club
-                            {
-                                Id = clubs.Count + 1,
-                                Name = reader.GetString("club"),
-                                Reputation = reader.GetInt32("club_reputation")
-                            });
-                        }
-                    }
-                }
-            }
-
-            return clubs.OrderBy(x => x.Name).ToList();
         }
 
         public IReadOnlyList<Confederation> GetConfederations()
@@ -151,6 +177,36 @@ namespace ExplorerFM.Providers
 
             return countries.OrderBy(x => x.Name).ToList();
         }
+
+        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
+        {
+            var clubs = new List<Club>(2000);
+
+            using (var connection = _getConnection())
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT DISTINCT club, club_reputation " +
+                        "FROM players " +
+                        "WHERE club IS NOT NULL";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            clubs.Add(new Club
+                            {
+                                Id = clubs.Count + 1,
+                                Name = reader.GetString("club"),
+                                Reputation = reader.GetInt32("club_reputation")
+                            });
+                        }
+                    }
+                }
+            }
+
+            return clubs.OrderBy(x => x.Name).ToList();
+        }
         
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
         {
@@ -161,12 +217,15 @@ namespace ExplorerFM.Providers
                 connection.Open();
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT * FROM players WHERE club = @club OR (@club IS NULL AND club IS NULL)";
+                    cmd.CommandText = "SELECT * FROM players " +
+                        "WHERE club = @club OR (@club IS NULL AND club IS NULL)";
+
                     var param = cmd.CreateParameter();
                     param.DbType = System.Data.DbType.String;
                     param.ParameterName = "@club";
                     param.Value = clubId.HasValue ? (object)clubs[clubId.Value].Name : DBNull.Value;
                     cmd.Parameters.Add(param);
+
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -177,7 +236,7 @@ namespace ExplorerFM.Providers
                                     ? default
                                     : reader.GetDateTime("contract_expiration"),
                                 DateOfBirth = reader.GetDateTime("date_of_birth"),
-                                Attributes = Datas.Attribute.PlayerInstances.ToDictionary(x => x, x => (int?)reader.GetInt32(x.Id + 44)),
+                                Attributes = Datas.Attribute.PlayerInstances.ToDictionary(x => x, x => (int?)reader.GetInt32(_attributesMapper[x.Id])),
                                 Caps = reader.GetInt32("caps"),
                                 ClubContract = reader.IsDBNull(reader.GetOrdinal("club"))
                                     ? default
@@ -196,23 +255,21 @@ namespace ExplorerFM.Providers
                                     switch (x)
                                     {
                                         case Position.Defender:
-                                            return reader.GetBoolean("position_d") ? 20 : 1;
+                                            return reader.GetBoolean("position_d") ? MaxRate : MinRate;
                                         case Position.DefensiveMidfielder:
-                                            return reader.GetBoolean("position_dm") ? 20 : (reader.GetBoolean("position_m") ? 15 : 1);
+                                            return reader.GetBoolean("position_dm") ? MaxRate : MinRate;
                                         case Position.GoalKeeper:
-                                            return reader.GetBoolean("position_gk") ? 20 : 1;
+                                            return reader.GetBoolean("position_gk") ? MaxRate : MinRate;
                                         case Position.Midfielder:
-                                            return reader.GetBoolean("position_m") || reader.GetBoolean("position_am") || reader.GetBoolean("position_dm") ? 20 : 1;
+                                            return reader.GetBoolean("position_m") || reader.GetBoolean("position_am") || reader.GetBoolean("position_dm") ? MaxRate : MinRate;
                                         case Position.OffensiveMidfielder:
-                                            return reader.GetBoolean("position_am") ? 20 : (reader.GetBoolean("position_m") ? 15 : 1);
+                                            return reader.GetBoolean("position_am") ? MaxRate : (reader.GetBoolean("position_f") ? EnoughRate : MinRate);
                                         case Position.Striker:
-                                            return reader.GetBoolean("position_f") || reader.GetBoolean("position_s") ? 20 : 1;
+                                            return reader.GetBoolean("position_s") || reader.GetBoolean("position_f") ? MaxRate : MinRate;
                                         case Position.Sweeper:
-                                            return reader.GetBoolean("position_sw") ? 20 : 1;
-                                        //case Position.FreeRole:
-                                        //case Position.WingBack:
+                                            return reader.GetBoolean("position_sw") ? MaxRate : MinRate;
                                         default:
-                                            return (int?)1;
+                                            return (int?)MinRate;
                                     }
                                 }),
                                 PotentialAbility = reader.GetInt32("potential_ability"),
@@ -223,10 +280,10 @@ namespace ExplorerFM.Providers
                                 Sides = Enum.GetValues(typeof(Side)).Cast<Side>().ToDictionary(x => x, x =>
                                 {
                                     return (int?)(x == Side.Right
-                                        ? (reader.GetBoolean("side_right") ? 20 : 1)
+                                        ? (reader.GetBoolean("side_right") ? MaxRate : MinRate)
                                         : (x == Side.Center
-                                            ? (reader.GetBoolean("side_center") ? 20 : 1)
-                                            : (reader.GetBoolean("side_left") ? 20 : 1)));
+                                            ? (reader.GetBoolean("side_center") ? MaxRate : MinRate)
+                                            : (reader.GetBoolean("side_left") ? MaxRate : MinRate)));
                                 }),
                                 Value = reader.GetInt32("value"),
                                 Wage = reader.GetInt32("wage"),
@@ -238,10 +295,112 @@ namespace ExplorerFM.Providers
                 }
             }
 
-            return players.OrderBy(p => p.Fullname).ToList();
+            return players;
         }
-        
-        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries) => throw new NotImplementedException();
+
+        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
+        {
+            // TODO: binder sur la nouvelle conf
+            if (!countryId.HasValue)
+            {
+                return new List<Player>();
+            }
+
+            var players = new List<Player>(1000);
+
+            using (var connection = _getConnection())
+            {
+                connection.Open();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT * FROM players " +
+                        "WHERE nation = @nation " +
+                        "OR (@selectionEligible = 0 AND nation_2 = @nation) " +
+                        "OR (caps = 0 AND nation_2 = @nation)";
+
+                    var param = cmd.CreateParameter();
+                    param.DbType = System.Data.DbType.String;
+                    param.ParameterName = "@nation";
+                    param.Value = countries[countryId.Value].Name;
+                    cmd.Parameters.Add(param);
+
+                    var param2 = cmd.CreateParameter();
+                    param2.DbType = System.Data.DbType.Int32;
+                    param2.ParameterName = "@selectionEligible";
+                    param2.Value = selectionEligible ? 1 : 0;
+                    cmd.Parameters.Add(param2);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            players.Add(new Player
+                            {
+                                DateContractEnd = reader.IsDBNull(reader.GetOrdinal("contract_expiration"))
+                                    ? default
+                                    : reader.GetDateTime("contract_expiration"),
+                                DateOfBirth = reader.GetDateTime("date_of_birth"),
+                                Attributes = Datas.Attribute.PlayerInstances.ToDictionary(x => x, x => (int?)reader.GetInt32(_attributesMapper[x.Id])),
+                                Caps = reader.GetInt32("caps"),
+                                ClubContract = reader.IsDBNull(reader.GetOrdinal("club"))
+                                    ? default
+                                    : clubs.Values.FirstOrDefault(c => c.Name == reader.GetString("club")),
+                                Commonname = reader.GetString("name"),
+                                CurrentAbility = reader.GetInt32("ability"),
+                                CurrentReputation = reader.GetInt32("current_reputation"),
+                                HomeReputation = reader.GetInt32("home_reputation"),
+                                Id = reader.GetInt32("id"),
+                                IntGoals = reader.GetInt32("international_goals"),
+                                LeftFoot = reader.GetInt32("left_foot"),
+                                Loaded = true,
+                                Nationality = countries.Values.FirstOrDefault(c => c.Name == reader.GetString("nation")),
+                                Positions = Enum.GetValues(typeof(Position)).Cast<Position>().ToDictionary(x => x, x =>
+                                {
+                                    switch (x)
+                                    {
+                                        case Position.Defender:
+                                            return reader.GetBoolean("position_d") ? MaxRate : MinRate;
+                                        case Position.DefensiveMidfielder:
+                                            return reader.GetBoolean("position_dm") ? MaxRate : MinRate;
+                                        case Position.GoalKeeper:
+                                            return reader.GetBoolean("position_gk") ? MaxRate : MinRate;
+                                        case Position.Midfielder:
+                                            return reader.GetBoolean("position_m") || reader.GetBoolean("position_am") || reader.GetBoolean("position_dm") ? MaxRate : MinRate;
+                                        case Position.OffensiveMidfielder:
+                                            return reader.GetBoolean("position_am") ? MaxRate : (reader.GetBoolean("position_f") ? EnoughRate : MinRate);
+                                        case Position.Striker:
+                                            return reader.GetBoolean("position_s") || reader.GetBoolean("position_f") ? MaxRate : MinRate;
+                                        case Position.Sweeper:
+                                            return reader.GetBoolean("position_sw") ? MaxRate : MinRate;
+                                        default:
+                                            return (int?)MinRate;
+                                    }
+                                }),
+                                PotentialAbility = reader.GetInt32("potential_ability"),
+                                RightFoot = reader.GetInt32("right_foot"),
+                                SecondNationality = reader.IsDBNull(reader.GetOrdinal("nation_2"))
+                                    ? default
+                                    : countries.Values.FirstOrDefault(c => c.Name == reader.GetString("nation_2")),
+                                Sides = Enum.GetValues(typeof(Side)).Cast<Side>().ToDictionary(x => x, x =>
+                                {
+                                    return (int?)(x == Side.Right
+                                        ? (reader.GetBoolean("side_right") ? MaxRate : MinRate)
+                                        : (x == Side.Center
+                                            ? (reader.GetBoolean("side_center") ? MaxRate : MinRate)
+                                            : (reader.GetBoolean("side_left") ? MaxRate : MinRate)));
+                                }),
+                                Value = reader.GetInt32("value"),
+                                Wage = reader.GetInt32("wage"),
+                                WorldReputation = reader.GetInt32("world_reputation"),
+                                YearOfBirth = reader.GetDateTime("date_of_birth").Year
+                            });
+                        }
+                    }
+                }
+            }
+
+            return players;
+        }
         
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries) => throw new NotImplementedException();
     }
