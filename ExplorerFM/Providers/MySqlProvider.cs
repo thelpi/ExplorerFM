@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using ExplorerFM.Datas;
 using ExplorerFM.Properties;
@@ -55,7 +56,7 @@ namespace ExplorerFM.Providers
             { 38, "flair" },
             { 39, "important_matches" },
             { 40, "influence" },
-            { 41, "loyality" },
+            { 41, "loyalty" },
             { 42, "pressure" },
             { 43, "professionalism" },
             { 44, "sportsmanship" },
@@ -64,10 +65,6 @@ namespace ExplorerFM.Providers
             { 47, "versatility" },
             { 48, "work_rate" },
         };
-
-        private const int MaxRate = 20;
-        private const int EnoughRate = 15;
-        private const int MinRate = 1;
 
         internal static string TestConnection()
         {
@@ -98,254 +95,172 @@ namespace ExplorerFM.Providers
 
         public IReadOnlyList<Confederation> GetConfederations()
         {
-            var sqlQuery = "SELECT DISTINCT confederation AS name " +
-                "FROM players " +
-                "WHERE confederation IS NOT NULL " +
-                "UNION " +
-                "SELECT DISTINCT confederation_2 AS name " +
-                "FROM players " +
-                "WHERE confederation_2 IS NOT NULL";
-
-            return GetDataList(
-                    sqlQuery,
-                    (reader, i) =>
-                        new Confederation
-                        {
-                            Id = i + 1,
-                            Name = reader.GetString("name")
-                        })
+            return GetData(
+                "SELECT * FROM confederations",
+                reader => new Confederation
+                {
+                    Code = reader.GetString("acronym"),
+                    Id = reader.GetInt32("id"),
+                    Name = reader.GetString("name")
+                })
                 .OrderBy(x => x.Name)
                 .ToList();
         }
 
         public IReadOnlyList<Country> GetCountries(IReadOnlyDictionary<int, Confederation> confederations)
         {
-            var sqlQuery = "SELECT DISTINCT nation AS name, is_eu, confederation " +
-                "FROM players " +
-                "WHERE nation IS NOT NULL " +
-                "UNION " +
-                "SELECT DISTINCT nation_2 AS name, 0 AS is_eu, confederation_2 AS confederation " +
-                "FROM players " +
-                "WHERE nation_2 IS NOT NULL";
-
-            return GetDataList(
-                    sqlQuery,
-                    (reader, i) =>
-                        new Country
-                        {
-                            Id = i,
-                            Name = reader.GetString("name"),
-                            Confederation = confederations.Values.FirstOrDefault(x => x.Name == reader.GetString("confederation")),
-                            IsEU = reader.GetBoolean("is_eu")
-                        },
-                    (country, reader) =>
-                    {
-                        if (reader.GetBoolean("is_eu"))
-                        {
-                            country.IsEU = true;
-                        }
-                    },
-                    (dataList, reader) =>
-                        dataList.FirstOrDefault(x => x.Name == reader.GetString("name")))
+            return GetData(
+                "SELECT * FROM countries",
+                reader => new Country
+                {
+                    Confederation = reader.IsDBNull("confederation_id")
+                        ? null
+                        : confederations[reader.GetInt32("confederation_id")],
+                    Id = reader.GetInt32("id"),
+                    IsEU = reader.GetBoolean("is_eu"),
+                    Name = reader.GetString("name")
+                })
                 .OrderBy(x => x.Name)
                 .ToList();
         }
 
         public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
         {
-            var sqlQuery = "SELECT DISTINCT club, club_reputation " +
-                "FROM players " +
-                "WHERE club IS NOT NULL";
-
-            return GetDataList(
-                    sqlQuery,
-                    (reader, i) =>
-                        new Club
-                        {
-                            Id = i,
-                            Name = reader.GetString("club"),
-                            Reputation = reader.GetInt32("club_reputation")
-                        })
+            return GetData(
+                "SELECT * FROM clubs",
+                reader => new Club
+                {
+                    Id = reader.GetInt32("id"),
+                    Name = reader.GetString("name"),
+                    LongName = reader.GetString("long_name"),
+                    Country = reader.IsDBNull("country_id")
+                        ? null
+                        : countries[reader.GetInt32("country_id")],
+                    Reputation = reader.GetInt32("reputation"),
+                    DivisionId = reader.IsDBNull("reputation")
+                        ? null
+                        : (int?)reader.GetInt32("reputation")
+                })
                 .OrderBy(x => x.Name)
                 .ToList();
         }
-        
+
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
         {
-            var sqlQuery = "SELECT * FROM players " +
-                "WHERE club = @club OR (@club IS NULL AND club IS NULL)";
-
-            return GetDataList(
-                sqlQuery,
-                (reader, _) => BuildPlayer(reader, clubs, countries),
-                null,
-                null,
-                cmd =>
-                {
-                    var param = cmd.CreateParameter();
-                    param.DbType = System.Data.DbType.String;
-                    param.ParameterName = "@club";
-                    param.Value = clubId.HasValue ? (object)clubs[clubId.Value].Name : DBNull.Value;
-                    cmd.Parameters.Add(param);
-                });
+            return GetData(
+                "SELECT * FROM players " +
+                "WHERE club_id = @club_id " +
+                "OR (club_id IS NULL AND @club_id IS NULL)",
+                reader => ExtractPlayer(reader, countries, clubs),
+                ("@club_id", DbType.Int32, clubId))
+                .OrderBy(x => x.Fullname)
+                .ToList();
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
         {
-            // TODO: binder sur la nouvelle conf
-            if (Settings.Default.UseSaveFile && !countryId.HasValue)
-            {
-                return new List<Player>();
-            }
-
-            var sqlQuery = "SELECT * FROM players " +
-                "WHERE nation = @nation " +
-                "OR (@selectionEligible = 0 AND nation_2 = @nation) " +
-                "OR (caps = 0 AND nation_2 = @nation)";
-
-            return GetDataList(
-                sqlQuery,
-                (reader, _) => BuildPlayer(reader, clubs, countries),
-                null,
-                null,
-                cmd =>
-                {
-                    var param = cmd.CreateParameter();
-                    param.DbType = System.Data.DbType.String;
-                    param.ParameterName = "@nation";
-                    param.Value = countryId.HasValue
-                        ? (object)countries[countryId.Value].Name
-                        : DBNull.Value;
-                    cmd.Parameters.Add(param);
-                },
-                cmd =>
-                {
-                    var param2 = cmd.CreateParameter();
-                    param2.DbType = System.Data.DbType.Int32;
-                    param2.ParameterName = "@selectionEligible";
-                    param2.Value = selectionEligible ? 1 : 0;
-                    cmd.Parameters.Add(param2);
-                });
+            return GetData(
+                "SELECT * FROM players " +
+                "WHERE country_id = @country_id " +
+                "OR (country_id IS NULL AND @country_id IS NULL) " +
+                "OR secondary_country_id = @country_id",
+                reader => ExtractPlayer(reader, countries, clubs),
+                ("@country_id", DbType.Int32, countryId))
+                .OrderBy(x => x.Fullname)
+                .ToList();
         }
-        
-        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries) => throw new NotImplementedException();
 
-        private List<T> GetDataList<T>(
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
+            => throw new NotImplementedException();
+
+        private List<T> GetData<T>(
             string sqlQuery,
-            Func<MySqlDataReader, int, T> createInstance,
-            Action<T, MySqlDataReader> updateInstance = null,
-            Func<List<T>, MySqlDataReader, T> getInstance = null,
-            params Action<MySqlCommand>[] parametersBuilder)
-            where T : class
+            Func<MySqlDataReader, T> builder,
+            params (string parameterName, DbType dbType, object value)[] parameters)
         {
-            var dataList = new List<T>(100);
-
+            var data = new List<T>();
             using (var connection = _getConnection())
             {
                 connection.Open();
-                using (var cmd = connection.CreateCommand())
+                using (var command = connection.CreateCommand())
                 {
-                    cmd.CommandText = sqlQuery;
-
-                    if (parametersBuilder?.Length > 0)
+                    command.CommandText = sqlQuery;
+                    if (parameters?.Length > 0)
                     {
-                        foreach (var prm in parametersBuilder)
+                        foreach (var (parameterName, dbType, value) in parameters)
                         {
-                            prm.Invoke(cmd);
+                            command.SetParameter(parameterName, dbType, value);
                         }
                     }
-
-                    using (var reader = cmd.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var dataMatch = getInstance?.Invoke(dataList, reader) ?? null;
-                            if (dataMatch != null)
-                            {
-                                updateInstance?.Invoke(dataMatch, reader);
-                            }
-                            else
-                            {
-                                dataList.Add(createInstance(reader, dataList.Count));
-                            }
+                            data.Add(builder(reader));
                         }
                     }
                 }
             }
 
-            return dataList;
+            return data;
         }
 
-        private Player BuildPlayer(
-            MySqlDataReader reader,
-            IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries)
+        private Player ExtractPlayer(MySqlDataReader reader,
+            IReadOnlyDictionary<int, Country> countries,
+            IReadOnlyDictionary<int, Club> clubs)
         {
             return new Player
             {
-                DateContractEnd = reader.IsDBNull(reader.GetOrdinal("contract_expiration"))
-                    ? default
-                    : reader.GetDateTime("contract_expiration"),
-                DateOfBirth = reader.GetDateTime("date_of_birth"),
-                Attributes = Datas.Attribute.PlayerInstances
-                    .ToDictionary(
-                        x => x,
-                        x => (int?)reader.GetInt32(_attributesMapper[x.Id])),
+                DateContractEnd = reader.IsDBNull("contract_expiration")
+                    ? null
+                    : (DateTime?)reader.GetDateTime("contract_expiration"),
                 Caps = reader.GetInt32("caps"),
-                ClubContract = reader.IsDBNull(reader.GetOrdinal("club"))
-                    ? default
-                    : clubs.Values.FirstOrDefault(c => c.Name == reader.GetString("club")),
-                Commonname = reader.GetString("name"),
+                ClubContract = reader.IsDBNull("club_id")
+                    ? null
+                    : clubs[reader.GetInt32("club_id")],
+                Commonname = reader.IsDBNull("common_name")
+                    ? null
+                    : reader.GetString("common_name"),
                 CurrentAbility = reader.GetInt32("ability"),
                 CurrentReputation = reader.GetInt32("current_reputation"),
+                Attributes = Datas.Attribute.PlayerInstances
+                    .ToDictionary(x => x, x => (int?)reader.GetInt32(_attributesMapper[x.Id])),
+                DateOfBirth = reader.GetDateTime("date_of_birth"),
+                Firstname = reader.IsDBNull("first_name")
+                    ? null
+                    : reader.GetString("first_name"),
                 HomeReputation = reader.GetInt32("home_reputation"),
                 Id = reader.GetInt32("id"),
                 IntGoals = reader.GetInt32("international_goals"),
+                Lastname = reader.IsDBNull("last_name")
+                    ? null
+                    : reader.GetString("last_name"),
                 LeftFoot = reader.GetInt32("left_foot"),
                 Loaded = true,
-                Nationality = countries.Values.FirstOrDefault(c => c.Name == reader.GetString("nation")),
-                Positions = Enum
-                    .GetValues(typeof(Position))
-                    .Cast<Position>()
-                    .ToDictionary(
-                        x => x,
-                        x =>
-                        {
-                            switch (x)
-                            {
-                                case Position.Defender:
-                                    return reader.GetBoolean("position_d") ? MaxRate : MinRate;
-                                case Position.DefensiveMidfielder:
-                                    return reader.GetBoolean("position_dm") ? MaxRate : MinRate;
-                                case Position.GoalKeeper:
-                                    return reader.GetBoolean("position_gk") ? MaxRate : MinRate;
-                                case Position.Midfielder:
-                                    return reader.GetBoolean("position_m") || reader.GetBoolean("position_am") || reader.GetBoolean("position_dm") ? MaxRate : MinRate;
-                                case Position.OffensiveMidfielder:
-                                    return reader.GetBoolean("position_am") ? MaxRate : (reader.GetBoolean("position_f") ? EnoughRate : MinRate);
-                                case Position.Striker:
-                                    return reader.GetBoolean("position_s") || reader.GetBoolean("position_f") ? MaxRate : MinRate;
-                                case Position.Sweeper:
-                                    return reader.GetBoolean("position_sw") ? MaxRate : MinRate;
-                                default:
-                                    return (int?)MinRate;
-                            }
-                        }),
+                Nationality = countries[reader.GetInt32("country_id")],
+                Positions = new Dictionary<Position, int?>
+                {
+                    { Position.GoalKeeper, reader.GetInt32("pos_goalkeeper") },
+                    { Position.Defender, reader.GetInt32("pos_defender") },
+                    { Position.DefensiveMidfielder, reader.GetInt32("pos_defensive_midfielder") },
+                    { Position.Sweeper, reader.GetInt32("pos_sweeper") },
+                    { Position.Midfielder, reader.GetInt32("pos_midfielder") },
+                    { Position.OffensiveMidfielder, reader.GetInt32("pos_attacking_midfielder") },
+                    { Position.Striker, reader.GetInt32("pos_forward") },
+                    { Position.FreeRole, reader.GetInt32("pos_free_role") },
+                    { Position.WingBack, reader.GetInt32("pos_wingback") }
+                },
                 PotentialAbility = reader.GetInt32("potential_ability"),
                 RightFoot = reader.GetInt32("right_foot"),
-                SecondNationality = reader.IsDBNull(reader.GetOrdinal("nation_2"))
-                    ? default
-                    : countries.Values.FirstOrDefault(c => c.Name == reader.GetString("nation_2")),
-                Sides = Enum
-                    .GetValues(typeof(Side))
-                    .Cast<Side>()
-                    .ToDictionary(
-                        x => x,
-                        x => (int?)(x == Side.Right
-                            ? (reader.GetBoolean("side_right") ? MaxRate : MinRate)
-                            : (x == Side.Center
-                                ? (reader.GetBoolean("side_center") ? MaxRate : MinRate)
-                                : (reader.GetBoolean("side_left") ? MaxRate : MinRate)))),
+                SecondNationality = reader.IsDBNull("secondary_country_id")
+                    ? null
+                    : countries[reader.GetInt32("secondary_country_id")],
+                Sides = new Dictionary<Side, int?>
+                {
+                    { Side.Center, reader.GetInt32("side_center") },
+                    { Side.Left, reader.GetInt32("side_left") },
+                    { Side.Right, reader.GetInt32("side_right") }
+                },
                 Value = reader.GetInt32("value"),
                 Wage = reader.GetInt32("wage"),
                 WorldReputation = reader.GetInt32("world_reputation"),

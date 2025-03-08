@@ -227,6 +227,7 @@
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MongoProvider.cs" />
     <Compile Include="Providers\MySqlProvider.cs" />
+    <Compile Include="Providers\SqlHelper.cs" />
     <Compile Include="RuleEngine\CriterionBase.cs" />
     <Compile Include="Windows\BestPlayerFinderWindow.xaml.cs">
       <DependentUpon>BestPlayerFinderWindow.xaml</DependentUpon>
