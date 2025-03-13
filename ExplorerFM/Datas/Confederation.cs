@@ -21,5 +21,21 @@ namespace ExplorerFM.Datas
 
         [Field(0, 100)]
         public int Strength { get; set; }
+
+        public static Confederation Empty
+            => new Confederation
+            {
+                FedCode = "N/A",
+                FedName = "No confederation",
+                Id = NoDataId
+            };
+
+        public static Confederation Global
+            => new Confederation
+            {
+                FedCode = "FIFA",
+                FedName = "Fédération internationale de football Association",
+                Id = AllDataId
+            };
     }
 }

@@ -7,9 +7,6 @@ namespace ExplorerFM.Datas
 {
     public class Club : BaseData
     {
-        public const int NoClubId = -1;
-        public const int AllClubId = -2;
-
         [Field]
         public string LongName { get; set; }
 
@@ -26,8 +23,10 @@ namespace ExplorerFM.Datas
         [SelectorField(nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
         public Country Country { get; set; }
 
-        [Field(0)]
-        public int? DivisionId { get; set; }
+        // TODO: check the GridView
+        [GridView("Club division", 8, typeof(Converters.CompetitionDisplayConverter))]
+        [SelectorField(nameof(DataProvider.Countries), nameof(Competition.Name))]
+        public Competition Division { get; set; }
 
         [Field(0)]
         public int? PreviousDivisionId { get; set; }
@@ -109,5 +108,21 @@ namespace ExplorerFM.Datas
         {
             return LikedStaffIds.GetSubList(staffs);
         }
+
+        public static Club Empty
+            => new Club
+            {
+                Id = NoDataId,
+                Name = "No club",
+                Country = Country.Empty
+            };
+
+        public static Club Global
+            => new Club
+            {
+                Id = AllDataId,
+                Name = "All clubs",
+                Country = Country.Empty
+            };
     }
 }

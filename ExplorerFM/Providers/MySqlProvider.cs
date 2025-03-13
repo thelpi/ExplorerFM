@@ -126,7 +126,26 @@ namespace ExplorerFM.Providers
                 .ToList();
         }
 
-        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
+        public IReadOnlyList<Competition> GetCompetitions(Dictionary<int, Country> countryDatas)
+        {
+            return GetData(
+                "SELECT * FROM competitions",
+                reader => new Competition
+                {
+                    Acronym = reader.GetString("acronym"),
+                    Country = reader.IsDBNull("country_id")
+                        ? null
+                        : countryDatas[reader.GetInt32("country_id")],
+                    Id = reader.GetInt32("id"),
+                    LongName = reader.GetString("long_name"),
+                    Name = reader.GetString("name")
+                })
+                .OrderBy(x => x.Name)
+                .ToList();
+        }
+
+        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries,
+            IReadOnlyDictionary<int, Competition> competitions)
         {
             return GetData(
                 "SELECT * FROM clubs",
@@ -139,9 +158,9 @@ namespace ExplorerFM.Providers
                         ? null
                         : countries[reader.GetInt32("country_id")],
                     Reputation = reader.GetInt32("reputation"),
-                    DivisionId = reader.IsDBNull("reputation")
+                    Division = reader.IsDBNull("division_id")
                         ? null
-                        : (int?)reader.GetInt32("reputation")
+                        : competitions[reader.GetInt32("division_id")]
                 })
                 .OrderBy(x => x.Name)
                 .ToList();

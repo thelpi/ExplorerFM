@@ -31,8 +31,8 @@ namespace ExplorerFM.Windows
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
 
             var collectionCopy = new List<Country>(dataProvider.Countries);
-            collectionCopy.Insert(0, new Country { Id = Country.NoCountryId, Name = "No country" });
-            collectionCopy.Insert(0, new Country { Id = Country.AllCountryId, Name = "All country" });
+            collectionCopy.Insert(0, Country.Empty);
+            collectionCopy.Insert(0, Country.Global);
             NationalityComboBox.ItemsSource = collectionCopy;
 
             if (nullRateBehavior.HasValue)
@@ -88,9 +88,9 @@ namespace ExplorerFM.Windows
                     criteria.Add(noClubCriterion);
                 }
 
-                if (NationalityComboBox.SelectedItem is Country country && country.Id != Country.AllCountryId)
+                if (NationalityComboBox.SelectedItem is Country country && country.Id != BaseData.AllDataId)
                 {
-                    if (country.Id == Country.NoCountryId)
+                    if (country.Id == BaseData.NoDataId)
                     {
                         criteria.Add(new CriteriaSet(false,
                             new Criterion(typeof(Staff), nameof(Staff.Nationality), null),

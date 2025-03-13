@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
@@ -37,9 +38,13 @@ namespace ExplorerFM.Windows
             TacticsComboBox.ItemsSource = Tactic.Tactics;
 
             var countriesCopy = new List<Country>(dataProvider.Countries);
-            countriesCopy.Insert(0, new Country { Id = Country.NoCountryId, Name = "No country" });
-            countriesCopy.Insert(0, new Country { Id = Country.AllCountryId, Name = "All countries" });
-            CountryClubComboBox.ItemsSource = countriesCopy;
+            countriesCopy.Insert(0, Country.Empty);
+            countriesCopy.Insert(0, Country.Global);
+            
+            var countriesView = new ListCollectionView(countriesCopy);
+            countriesView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Country.Confederation)}.{nameof(Confederation.FedCode)}"));
+
+            CountryClubComboBox.ItemsSource = countriesView;
             ClubComboBox.IsEnabled = false;
 
             NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
@@ -161,15 +166,15 @@ namespace ExplorerFM.Windows
             var country = CountryClubComboBox.SelectedItem as Country;
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
-                () => club.Id == Club.AllClubId
-                    ? (country.Id == Country.AllCountryId
+                () => club.Id == BaseData.AllDataId
+                    ? (country.Id == BaseData.AllDataId
                         ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false))
-                        : _dataProvider.GetPlayersByCountry(country.Id == Country.NoCountryId ? default(int?) : country.Id, true))
-                    : _dataProvider.GetPlayersByClub(club.Id == Club.NoClubId ? default(int?) : club.Id),
+                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true))
+                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id),
                 p =>
                 {
                     _players = new ObservableCollection<Player>(p);
-                    Title = club.Id == Club.AllClubId ? country.Name : club.Name;
+                    Title = club.Id == BaseData.AllDataId ? country.Name : club.Name;
                     PlayersView.ItemsSource = _players;
                     ClearForms();
                 },
@@ -183,30 +188,35 @@ namespace ExplorerFM.Windows
             _isSourceChange = true;
 
             List<Club> clubsList;
-            if (country.Id == Country.AllCountryId)
+            string groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
+            if (country.Id == BaseData.AllDataId)
             {
                 clubsList = new List<Club>
                 {
-                    new Club { Id = Club.AllClubId, Name = "All clubs" },
-                    new Club { Id = Club.NoClubId, Name = "No club" },
+                    Club.Global,
+                    Club.Empty
                 };
+                groupProperty = null;
             }
-            else if (country.Id == Country.NoCountryId)
+            else if (country.Id == BaseData.NoDataId)
             {
                 clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null));
-                clubsList.Insert(0, new Club { Id = Club.AllClubId, Name = "All clubs" });
+                clubsList.Insert(0, Club.Global);
             }
             else
             {
                 clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id));
-                clubsList.Insert(0, new Club { Id = Club.AllClubId, Name = $"All clubs" });
+                clubsList.Insert(0, Club.Empty);
             }
 
-            ClubComboBox.ItemsSource = clubsList;
+            var countriesView = new ListCollectionView(clubsList);
+            if (groupProperty != null)
+                countriesView.GroupDescriptions.Add(new PropertyGroupDescription(groupProperty));
+
+            ClubComboBox.ItemsSource = countriesView;
             ClubComboBox.IsEnabled = true;
 
             _isSourceChange = false;
-
         }
 
         private void ClearForms()

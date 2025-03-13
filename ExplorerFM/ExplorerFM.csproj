@@ -206,6 +206,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\CompetitionDisplayConverter.cs" />
+    <Compile Include="Datas\Competition.cs" />
     <Compile Include="Datas\Dtos\ClubDto.cs" />
     <Compile Include="Datas\Dtos\ClubStatutDto.cs" />
     <Compile Include="Datas\Dtos\CoachAttributesDto.cs" />

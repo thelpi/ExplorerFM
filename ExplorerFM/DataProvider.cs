@@ -34,10 +34,12 @@ namespace ExplorerFM
         private Dictionary<int, Club> _clubDatas;
         private Dictionary<int, Confederation> _confederationDatas;
         private Dictionary<int, Country> _countryDatas;
+        private Dictionary<int, Competition> _competitionDatas;
 
         public IReadOnlyList<Club> Clubs => _clubDatas.Values.ToList();
         public IReadOnlyList<Confederation> Confederations => _confederationDatas.Values.ToList();
         public IReadOnlyList<Country> Countries => _countryDatas.Values.ToList();
+        public IReadOnlyList<Competition> Competitions => _competitionDatas.Values.ToList();
         public IReadOnlyList<Attribute> Attributes => Attribute.PlayerInstances;
 
         public int MaxTheoreticalRate => 20 * Attribute.PlayerInstances.Count;
@@ -51,13 +53,15 @@ namespace ExplorerFM
             _clubDatas = new Dictionary<int, Club>();
             _confederationDatas = new Dictionary<int, Confederation>();
             _countryDatas = new Dictionary<int, Country>();
+            _competitionDatas = new Dictionary<int, Competition>();
         }
 
         public void Initialize()
         {
             _confederationDatas = _provider.GetConfederations().ToDictionary(x => x.Id);
             _countryDatas = _provider.GetCountries(_confederationDatas).ToDictionary(x => x.Id);
-            _clubDatas = _provider.GetClubs(_countryDatas).ToDictionary(x => x.Id);
+            _competitionDatas = _provider.GetCompetitions(_countryDatas).ToDictionary(x => x.Id);
+            _clubDatas = _provider.GetClubs(_countryDatas, _competitionDatas).ToDictionary(x => x.Id);
         }
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId)

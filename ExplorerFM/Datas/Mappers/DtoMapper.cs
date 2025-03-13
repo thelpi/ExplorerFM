@@ -70,7 +70,7 @@ namespace ExplorerFM.Datas.Mappers
             return new Club
             {
                 DislikedStaffIds = dto.DislikedStaff.EnsureList(),
-                DivisionId = dto.DivisionID,
+                //Division = dto.Division.ToData(x => x.Id, competitions),
                 MatchDay = dto.MatchDay,
                 PreviousDivisionId = dto.DivisionPreviousID,
                 ReserveDivisionId = dto.DivisionReserveID,

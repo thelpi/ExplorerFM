@@ -6,11 +6,14 @@ namespace ExplorerFM.Providers
 {
     internal interface IProvider
     {
-        IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries);
+        IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries,
+            IReadOnlyDictionary<int, Competition> competitions);
 
         IReadOnlyList<Country> GetCountries(IReadOnlyDictionary<int, Confederation> confederations);
 
         IReadOnlyList<Confederation> GetConfederations();
+
+        IReadOnlyList<Competition> GetCompetitions(Dictionary<int, Country> countryDatas);
 
         IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
             IReadOnlyDictionary<int, Club> clubs,

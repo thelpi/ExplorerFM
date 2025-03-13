@@ -54,7 +54,8 @@ namespace ExplorerFM.Providers
             _clubsCollection = db.GetCollection<ClubDto>(_clubsCollectionName);
         }
 
-        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries)
+        public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries,
+            IReadOnlyDictionary<int, Competition> competitions)
         {
             return _clubsCollection
                 .Find(Builders<ClubDto>.Filter.Empty)
@@ -80,6 +81,9 @@ namespace ExplorerFM.Providers
                 .Select(dto => dto.ToConfederation())
                 .ToList();
         }
+
+        public IReadOnlyList<Competition> GetCompetitions(Dictionary<int, Country> countryDatas)
+            => new List<Competition>();
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
             IReadOnlyDictionary<int, Club> clubs,

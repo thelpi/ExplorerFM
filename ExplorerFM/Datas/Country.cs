@@ -4,9 +4,6 @@ namespace ExplorerFM.Datas
 {
     public class Country : BaseData
     {
-        public const int NoCountryId = -1;
-        public const int AllCountryId = -2;
-
         [Field]
         public string LongName { get; set; }
 
@@ -29,5 +26,21 @@ namespace ExplorerFM.Datas
 
         [Field(0, 20)]
         public int LeagueStandard { get; set; }
+
+        public static Country Empty
+            => new Country
+            {
+                Id = NoDataId,
+                Name = "No country",
+                Confederation = Confederation.Empty
+            };
+
+        public static Country Global
+            => new Country
+            {
+                Id = AllDataId,
+                Name = "All countries",
+                Confederation = Confederation.Empty
+            };
     }
 }
