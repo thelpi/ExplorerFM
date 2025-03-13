@@ -99,12 +99,11 @@ namespace ExplorerFM.Providers
                 "SELECT * FROM confederations",
                 reader => new Confederation
                 {
-                    Code = reader.GetString("acronym"),
                     Id = reader.GetInt32("id"),
-                    Name = reader.GetString("name")
-                })
-                .OrderBy(x => x.Name)
-                .ToList();
+                    Name = reader.GetString("continent_name"),
+                    FedCode = reader.GetString("acronym"),
+                    FedName = reader.GetString("name")
+                });
         }
 
         public IReadOnlyList<Country> GetCountries(IReadOnlyDictionary<int, Confederation> confederations)
@@ -118,7 +117,10 @@ namespace ExplorerFM.Providers
                         : confederations[reader.GetInt32("confederation_id")],
                     Id = reader.GetInt32("id"),
                     IsEU = reader.GetBoolean("is_eu"),
-                    Name = reader.GetString("name")
+                    Name = reader.GetString("name"),
+                    Code = reader.GetString("acronym"),
+                    LeagueStandard = reader.GetInt32("league_standard"),
+                    Reputation = reader.GetInt32("reputation")
                 })
                 .OrderBy(x => x.Name)
                 .ToList();

@@ -23,5 +23,11 @@ namespace ExplorerFM.Datas
         [Field]
         [MongoName("isEU")]
         public bool IsEU { get; set; }
+
+        [Field(0, 10000)]
+        public int Reputation { get; set; }
+
+        [Field(0, 20)]
+        public int LeagueStandard { get; set; }
     }
 }

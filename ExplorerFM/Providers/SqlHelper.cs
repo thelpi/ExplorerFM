@@ -6,6 +6,11 @@ namespace ExplorerFM.Providers
 {
     internal static class SqlHelper
     {
+        public static int? GetInt32(this MySqlDataReader reader, string columnName)
+        {
+            return reader.IsDBNull(columnName) ? null : (int?)reader.GetInt32(columnName);
+        }
+
         public static bool IsDBNull(this MySqlDataReader reader, string columnName)
         {
             return reader.IsDBNull(reader.GetOrdinal(columnName));
