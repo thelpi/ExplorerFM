@@ -121,9 +121,7 @@ namespace ExplorerFM.Providers
                     Code = reader.GetString("acronym"),
                     LeagueStandard = reader.GetInt32("league_standard"),
                     Reputation = reader.GetInt32("reputation")
-                })
-                .OrderBy(x => x.Name)
-                .ToList();
+                });
         }
 
         public IReadOnlyList<Competition> GetCompetitions(Dictionary<int, Country> countryDatas)
@@ -139,9 +137,7 @@ namespace ExplorerFM.Providers
                     Id = reader.GetInt32("id"),
                     LongName = reader.GetString("long_name"),
                     Name = reader.GetString("name")
-                })
-                .OrderBy(x => x.Name)
-                .ToList();
+                });
         }
 
         public IReadOnlyList<Club> GetClubs(IReadOnlyDictionary<int, Country> countries,
@@ -161,9 +157,7 @@ namespace ExplorerFM.Providers
                     Division = reader.IsDBNull("division_id")
                         ? null
                         : competitions[reader.GetInt32("division_id")]
-                })
-                .OrderBy(x => x.Name)
-                .ToList();
+                });
         }
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
@@ -173,9 +167,7 @@ namespace ExplorerFM.Providers
                 "WHERE club_id = @club_id " +
                 "OR (club_id IS NULL AND @club_id IS NULL)",
                 reader => ExtractPlayer(reader, countries, clubs),
-                ("@club_id", DbType.Int32, clubId))
-                .OrderBy(x => x.Fullname)
-                .ToList();
+                ("@club_id", DbType.Int32, clubId));
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
@@ -186,9 +178,7 @@ namespace ExplorerFM.Providers
                 "OR (country_id IS NULL AND @country_id IS NULL) " +
                 "OR secondary_country_id = @country_id",
                 reader => ExtractPlayer(reader, countries, clubs),
-                ("@country_id", DbType.Int32, countryId))
-                .OrderBy(x => x.Fullname)
-                .ToList();
+                ("@country_id", DbType.Int32, countryId));
         }
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)

@@ -34,7 +34,8 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
 
-            var countriesCopy = new List<Country>(dataProvider.Countries);
+            // TODO: sort confederation by strength when available
+            var countriesCopy = new List<Country>(dataProvider.Countries.OrderBy(x => x.Confederation?.Name).ThenBy(x => x.Name));
             countriesCopy.Insert(0, Country.Empty);
             countriesCopy.Insert(0, Country.Global);
             
@@ -195,12 +196,13 @@ namespace ExplorerFM.Windows
             }
             else if (country.Id == BaseData.NoDataId)
             {
-                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null));
+                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null).OrderBy(x => x.Name));
                 clubsList.Insert(0, Club.Global);
             }
             else
             {
-                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id));
+                // TODO: sort division by reputation when available
+                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id).OrderByDescending(x => x.Division?.Acronym).ThenBy(x => x.Name));
                 clubsList.Insert(0, Club.Empty);
                 groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
             }

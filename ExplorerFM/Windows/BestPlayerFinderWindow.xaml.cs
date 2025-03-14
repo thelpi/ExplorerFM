@@ -29,7 +29,7 @@ namespace ExplorerFM.Windows
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
 
-            var collectionCopy = new List<Country>(dataProvider.Countries);
+            var collectionCopy = new List<Country>(dataProvider.Countries.OrderBy(x => x.Name));
             collectionCopy.Insert(0, Country.Empty);
             collectionCopy.Insert(0, Country.Global);
             NationalityComboBox.ItemsSource = collectionCopy;

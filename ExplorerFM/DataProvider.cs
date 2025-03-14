@@ -66,12 +66,14 @@ namespace ExplorerFM
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId)
         {
-            return _provider.GetPlayersByClub(clubId, _clubDatas, _countryDatas);
+            // TODO: view should decide the order
+            return _provider.GetPlayersByClub(clubId, _clubDatas, _countryDatas).OrderBy(p => p.Fullname).ToList();
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible)
         {
-            return _provider.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas);
+            // TODO: view should decide the order
+            return _provider.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas).OrderBy(p => p.Fullname).ToList();
         }
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria)
