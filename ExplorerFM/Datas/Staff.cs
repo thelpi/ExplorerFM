@@ -22,21 +22,17 @@ namespace ExplorerFM.Datas
         public string Commonname { get; set; }
 
         [Field]
-        [MongoName("dateOfBirth")]
         public DateTime? DateOfBirth { get; set; }
 
         [Field(1900, 2000)]
-        [MongoName("yearOfBirth")]
         public int? YearOfBirth { get; set; }
 
         [GridView("Country", 3, typeof(Converters.CountryDisplayConverter))]
         [SelectorField(nameof(DataProvider.Countries), nameof(Country.Name))]
-        [MongoName("country1")]
         public Country Nationality { get; set; }
 
         [GridView("2nd Country", 4, typeof(Converters.CountryDisplayConverter))]
         [SelectorField(nameof(DataProvider.Countries), nameof(Country.Name))]
-        [MongoName("country2")]
         public Country SecondNationality { get; set; }
 
         [GridView("Caps", 5)]
@@ -49,7 +45,6 @@ namespace ExplorerFM.Datas
 
         [GridView("Club", 7, typeof(Converters.ClubDisplayConverter))]
         [SelectorField(nameof(DataProvider.Clubs), nameof(Club.Name))]
-        [MongoName("club")]
         public Club ClubContract { get; set; }
 
         [Field]
@@ -61,7 +56,6 @@ namespace ExplorerFM.Datas
 
         [GridView("Value", 10)]
         [Field(1)]
-        [MongoName("value")]
         public int? Value { get; set; }
         
         [Field(1)]
@@ -93,7 +87,6 @@ namespace ExplorerFM.Datas
 
         [GridView("Current rep.", 14)]
         [Field(1, 200)]
-        [MongoName("playerFeatures.currentReputation")]
         public int? CurrentReputation { get; set; }
 
         [GridView("World rep.", 15)]

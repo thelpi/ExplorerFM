@@ -11,13 +11,11 @@ namespace ExplorerFM.Datas
         public const int PositioningTolerance = 15;
         
         [NestedSelectorField(1, 20, typeof(Side))]
-        [MongoName("playerSides", typeof(Side))]
         public Dictionary<Side, int?> Sides { get; set; }
 
         [GridView("Best pos.", 2.5, typeof(Converters.PositioningDisplayConverter), true, true)]
         [GridView("Altern. pos.", 2.6, typeof(Converters.PositioningDisplayConverter), true, false)]
         [NestedSelectorField(1, 20, typeof(Position))]
-        [MongoName("playerPositions", typeof(Position))]
         public Dictionary<Position, int?> Positions { get; set; }
 
         [NestedSelectorField(1, 20, nameof(DataProvider.Attributes), nameof(Attribute.Name))]

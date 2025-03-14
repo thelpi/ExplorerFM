@@ -19,7 +19,6 @@ namespace ExplorerFM.Datas
 
         [GridView("E.U.", 3.5)]
         [Field]
-        [MongoName("isEU")]
         public bool IsEU { get; set; }
 
         [Field(0, 10000)]

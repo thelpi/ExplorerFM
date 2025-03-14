@@ -225,7 +225,6 @@
     <Compile Include="Datas\Dtos\StaffDto.cs" />
     <Compile Include="Datas\Dtos\StaffTypeDto.cs" />
     <Compile Include="Extensions\SystemExtensions.cs" />
-    <Compile Include="FieldsAttributes\MongoNameAttribute.cs" />
     <Compile Include="Providers\IProvider.cs" />
     <Compile Include="Providers\MongoProvider.cs" />
     <Compile Include="Providers\MySqlProvider.cs" />

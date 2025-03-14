@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using ExplorerFM.Datas;
 using ExplorerFM.Datas.Dtos;
@@ -173,33 +174,33 @@ namespace ExplorerFM.Providers
             switch (criterion.Comparator)
             {
                 case Comparator.Equal:
-                    filter &= Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue);
+                    filter &= Builders<StaffDto>.Filter.Eq(ComputeMongoFieldName(criterion), criterion.FieldValue);
                     break;
                 case Comparator.NotEqual:
-                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Eq(criterion.FieldName, criterion.FieldValue));
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Eq(ComputeMongoFieldName(criterion), criterion.FieldValue));
                     break;
                 case Comparator.GreaterEqual:
-                    filter &= Builders<StaffDto>.Filter.Gte(criterion.FieldName, criterion.FieldValue);
+                    filter &= Builders<StaffDto>.Filter.Gte(ComputeMongoFieldName(criterion), criterion.FieldValue);
                     break;
                 case Comparator.Greater:
-                    filter &= Builders<StaffDto>.Filter.Gt(criterion.FieldName, criterion.FieldValue);
+                    filter &= Builders<StaffDto>.Filter.Gt(ComputeMongoFieldName(criterion), criterion.FieldValue);
                     break;
                 case Comparator.LowerEqual:
-                    filter &= Builders<StaffDto>.Filter.Lte(criterion.FieldName, criterion.FieldValue);
+                    filter &= Builders<StaffDto>.Filter.Lte(ComputeMongoFieldName(criterion), criterion.FieldValue);
                     break;
                 case Comparator.Lower:
-                    filter &= Builders<StaffDto>.Filter.Lt(criterion.FieldName, criterion.FieldValue);
+                    filter &= Builders<StaffDto>.Filter.Lt(ComputeMongoFieldName(criterion), criterion.FieldValue);
                     break;
                 case Comparator.Like:
-                    filter &= Builders<StaffDto>.Filter.Regex(criterion.FieldName, new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase)));
+                    filter &= Builders<StaffDto>.Filter.Regex(ComputeMongoFieldName(criterion), new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase)));
                     break;
                 case Comparator.NotLike:
-                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Regex(criterion.FieldName, new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase))));
+                    filter &= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Regex(ComputeMongoFieldName(criterion), new BsonRegularExpression(new Regex(criterion.FieldValue.ToString(), RegexOptions.IgnoreCase))));
                     break;
             }
 
             if (criterion.IncludeNullValue)
-                filter |= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Exists(criterion.FieldName));
+                filter |= Builders<StaffDto>.Filter.Not(Builders<StaffDto>.Filter.Exists(ComputeMongoFieldName(criterion)));
 
             return filter;
         }
@@ -230,5 +231,59 @@ namespace ExplorerFM.Providers
 
             return filter;
         }
+
+        private string ComputeMongoFieldName(Criterion criterion)
+        {
+            var fieldNameParts = new string[criterion.PropertyMap.Length];
+
+            var currentType = criterion.TargetType;
+            for (var i = 0; i < criterion.PropertyMap.Length; i++)
+            {
+                MemberInfo member;
+                if (currentType.IsEnum)
+                {
+                    member = currentType.GetMember(criterion.PropertyMap[i])[0];
+                }
+                else
+                {
+                    var prop = currentType.GetProperty(criterion.PropertyMap[i]);
+                    currentType = prop.PropertyType;
+                    member = prop;
+                }
+                var (mongoName, mongoForcedType) = _propertiesMongoMap[member.Name];
+                fieldNameParts[i] = mongoName;
+                currentType = mongoForcedType ?? currentType;
+            }
+
+            return string.Join(".", fieldNameParts);
+        }
+
+        private static Dictionary<string, (string, Type)> _propertiesMongoMap =
+            new Dictionary<string, (string, Type)>
+            {
+                { nameof(BaseData.Id), ("_id", null) },
+                { nameof(Country.IsEU), ("isEU", null) },
+                { nameof(Player.Sides), ("playerSides", typeof(Side)) },
+                { nameof(Player.Positions), ("playerPositions", typeof(Position)) },
+                { nameof(Position.FreeRole), ("freeRole", null) },
+                { nameof(Position.WingBack), ("wingBack", null) },
+                { nameof(Position.OffensiveMidfielder), ("offMidfielder", null) },
+                { nameof(Position.Midfielder), ("midfielder", null) },
+                { nameof(Position.DefensiveMidfielder), ("defMidfielder", null) },
+                { nameof(Position.DefensiveMidfielder), ("defender", null) },
+                { nameof(Position.Sweeper), ("sweeper", null) },
+                { nameof(Position.GoalKeeper), ("goalKeeper", null) },
+                { nameof(Position.Striker), ("forward", null) },
+                { nameof(Side.Right), ("right", null) },
+                { nameof(Side.Left), ("left", null) },
+                { nameof(Side.Center), ("center", null) },
+                { nameof(Staff.Value), ("value", null) },
+                { nameof(Staff.ClubContract), ("club", null) },
+                { nameof(Staff.SecondNationality), ("country2", null) },
+                { nameof(Staff.Nationality), ("country1", null) },
+                { nameof(Staff.YearOfBirth), ("yearOfBirth", null) },
+                { nameof(Staff.DateOfBirth), ("dateOfBirth", null) },
+                { nameof(Staff.CurrentReputation), ("playerFeatures.currentReputation", null) }
+            };
     }
 }
