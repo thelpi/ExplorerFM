@@ -114,7 +114,8 @@ namespace ExplorerFM.Datas
             {
                 Id = NoDataId,
                 Name = "No club",
-                Country = Country.Empty
+                Country = Country.Empty,
+                Division = Competition.Empty
             };
 
         public static Club Global
@@ -122,7 +123,8 @@ namespace ExplorerFM.Datas
             {
                 Id = AllDataId,
                 Name = "All clubs",
-                Country = Country.Empty
+                Country = Country.Empty,
+                Division = Competition.Empty
             };
     }
 }

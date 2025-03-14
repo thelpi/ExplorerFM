@@ -181,7 +181,7 @@ namespace ExplorerFM.Windows
             _isSourceChange = true;
 
             List<Club> clubsList;
-            string groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
+            string groupProperty = null;
             if (country.Id == BaseData.AllDataId)
             {
                 clubsList = new List<Club>
@@ -189,7 +189,6 @@ namespace ExplorerFM.Windows
                     Club.Global,
                     Club.Empty
                 };
-                groupProperty = null;
             }
             else if (country.Id == BaseData.NoDataId)
             {
@@ -200,6 +199,7 @@ namespace ExplorerFM.Windows
             {
                 clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id));
                 clubsList.Insert(0, Club.Empty);
+                groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
             }
 
             var countriesView = new ListCollectionView(clubsList);
