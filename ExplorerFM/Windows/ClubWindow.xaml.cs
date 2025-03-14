@@ -42,7 +42,8 @@ namespace ExplorerFM.Windows
             countriesView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Country.Confederation)}.{nameof(Confederation.FedCode)}"));
 
             CountryClubComboBox.ItemsSource = countriesView;
-            ClubComboBox.IsEnabled = false;
+            CountryClubComboBox.SelectedIndex = -1;
+            ClubComboBox.Visibility = Visibility.Hidden;
         }
 
         private void PlayersView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -152,7 +153,7 @@ namespace ExplorerFM.Windows
 
         private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isSourceChange)
+            if (_isSourceChange || ClubComboBox.SelectedIndex == -1)
                 return;
 
             var club = ClubComboBox.SelectedItem as Club;
@@ -177,6 +178,8 @@ namespace ExplorerFM.Windows
         private void CountryClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var country = CountryClubComboBox.SelectedItem as Country;
+            if (country == null)
+                return;
 
             _isSourceChange = true;
 
@@ -207,7 +210,8 @@ namespace ExplorerFM.Windows
                 countriesView.GroupDescriptions.Add(new PropertyGroupDescription(groupProperty));
 
             ClubComboBox.ItemsSource = countriesView;
-            ClubComboBox.IsEnabled = true;
+            ClubComboBox.Visibility = Visibility.Visible;
+            ClubComboBox.SelectedIndex = -1;
 
             _isSourceChange = false;
         }
