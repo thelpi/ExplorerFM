@@ -67,7 +67,7 @@ namespace ExplorerFM.Datas
             return Math.Min(sNote, pNote);
         }
 
-        public int GetAttributesTotal(AttributeType? type = null, NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+        public int GetAttributesTotal(AttributeType? type = null)
         {
             var attributesToConsider = Attributes
                 .Where(_ => !type.HasValue || type == _.Key.Type)
@@ -76,8 +76,11 @@ namespace ExplorerFM.Datas
                 .Where(a => a.Value.HasValue)
                 .Select(a => a.Value.Value)
                 .ToArray();
+            var nullRateBehavior = knownRates.Length < attributesToConsider.Count / 2
+                ? 10
+                : (int)Math.Round(knownRates.Average());
             return attributesToConsider
-                .Sum(_ => _.Value ?? nullRateBehavior.ToRate(attributesToConsider.Count, knownRates));
+                .Sum(_ => _.Value ?? nullRateBehavior);
         }
 
         public object GetSortablePropertyValue(

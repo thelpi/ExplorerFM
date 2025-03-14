@@ -24,9 +24,6 @@ namespace ExplorerFM.Windows
         private readonly DataProvider _dataProvider;
 
         private bool UsePotentialAbility => PotentialAbilityCheckBox.IsChecked == true;
-        private NullRateBehavior NullRateBehavior => NullRateBehaviorComboBox.SelectedIndex == -1
-            ? NullRateBehavior.Minimal
-            : (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem;
 
         public ClubWindow(DataProvider dataProvider)
         {
@@ -46,9 +43,6 @@ namespace ExplorerFM.Windows
 
             CountryClubComboBox.ItemsSource = countriesView;
             ClubComboBox.IsEnabled = false;
-
-            NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
-            NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
         }
 
         private void PlayersView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -96,8 +90,7 @@ namespace ExplorerFM.Windows
                             position,
                             side,
                             _dataProvider.MaxTheoreticalRate,
-                            UsePotentialAbility,
-                            NullRateBehavior))
+                            UsePotentialAbility))
                     .OrderByDescending(p => p.Rate)
                     .Take(10);
             }
@@ -116,7 +109,7 @@ namespace ExplorerFM.Windows
             TacticPlayersGrid.Children.Clear();
 
             var lineUp = (TacticsComboBox.SelectedItem as Tactic)
-                .GetBestLineUp(_players.ToList(), _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior);
+                .GetBestLineUp(_players.ToList(), _dataProvider.MaxTheoreticalRate, UsePotentialAbility);
 
             foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
             {
@@ -256,7 +249,7 @@ namespace ExplorerFM.Windows
                     foreach (var side in bestSides)
                     {
                         fullList.Add(
-                            p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility, NullRateBehavior));
+                            p.ToRateItemData(position, side, _dataProvider.MaxTheoreticalRate, UsePotentialAbility));
                     }
                 }
             }
@@ -282,7 +275,6 @@ namespace ExplorerFM.Windows
             var win = new BestPlayerFinderWindow(_dataProvider,
                 p.Position,
                 p.Side,
-                (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem,
                 PotentialAbilityCheckBox.IsChecked);
             win.ShowDialog();
 

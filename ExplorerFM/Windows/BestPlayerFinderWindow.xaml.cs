@@ -18,30 +18,21 @@ namespace ExplorerFM.Windows
         public Player SelectedPlayer { get; private set; }
 
         public BestPlayerFinderWindow(DataProvider dataProvider)
-            : this(dataProvider, null, null, null, null)
+            : this(dataProvider, null, null, null)
         { }
 
         public BestPlayerFinderWindow(DataProvider dataProvider,
-            Position? position, Side? side, NullRateBehavior? nullRateBehavior, bool? usePotential)
+            Position? position, Side? side, bool? usePotential)
         {
             InitializeComponent();
             _dataProvider = dataProvider;
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
-            NullRateBehaviorComboBox.ItemsSource = Enum.GetValues(typeof(NullRateBehavior));
 
             var collectionCopy = new List<Country>(dataProvider.Countries);
             collectionCopy.Insert(0, Country.Empty);
             collectionCopy.Insert(0, Country.Global);
             NationalityComboBox.ItemsSource = collectionCopy;
-
-            if (nullRateBehavior.HasValue)
-            {
-                NullRateBehaviorComboBox.SelectedItem = nullRateBehavior.Value;
-                NullRateBehaviorComboBox.IsEnabled = false;
-            }
-            else
-                NullRateBehaviorComboBox.SelectedItem = NullRateBehavior.Minimal;
 
             if (position.HasValue)
             {
@@ -148,15 +139,13 @@ namespace ExplorerFM.Windows
 
                 criteria.Add(new Criterion(typeof(Player), new[] { nameof(Player.Positions), position.ToString() }, 15, Comparator.GreaterEqual));
 
-                var nullRateBehavior = NullRateBehaviorComboBox.SelectedIndex > -1 ? (NullRateBehavior)NullRateBehaviorComboBox.SelectedItem : NullRateBehavior.Minimal;
-
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
                     {
                         var players = _dataProvider.GetPlayersByCriteria(new CriteriaSet(false, criteria.ToArray()));
                         return players
                             .Select(p => p.ToRateItemData(
-                                position, side, _dataProvider.MaxTheoreticalRate, potentialAbility, nullRateBehavior))
+                                position, side, _dataProvider.MaxTheoreticalRate, potentialAbility))
                             .OrderByDescending(p => p.Rate)
                             .Take(MaxPlayersTake);
                     },

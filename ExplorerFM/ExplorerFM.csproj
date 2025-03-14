@@ -242,7 +242,6 @@
     <Compile Include="Converters\CountryDisplayConverter.cs" />
     <Compile Include="Converters\DateDisplayConverter.cs" />
     <Compile Include="Converters\PositioningDisplayConverter.cs" />
-    <Compile Include="Datas\NullRateBehavior.cs" />
     <Compile Include="FieldsAttributes\AggregateFieldAttribute.cs" />
     <Compile Include="FieldsAttributes\FieldAttribute.cs" />
     <Compile Include="FieldsAttributes\GridViewAttribute.cs" />

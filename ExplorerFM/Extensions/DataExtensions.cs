@@ -79,8 +79,7 @@ namespace ExplorerFM.Extensions
 
         public static PlayerRateUiData ToRateItemData(this Player p,
             Position position, Side side,
-            int maxTheoreticalRate, bool potentialRate,
-            NullRateBehavior nullRateBehavior = NullRateBehavior.Minimal)
+            int maxTheoreticalRate, bool potentialRate)
         {
             int rate;
             if (Settings.Default.UseSaveFile)
@@ -88,14 +87,14 @@ namespace ExplorerFM.Extensions
                 var abilityDelta = potentialRate
                     ? p.GetFixedPotentialAbility() - p.CurrentAbility.GetValueOrDefault(100)
                     : 0;
-                rate = (int)Math.Round((p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) + abilityDelta) * p.GetPositionSideRate(position, side) / (decimal)20);
+                rate = (int)Math.Round((p.GetAttributesTotal() + abilityDelta) * p.GetPositionSideRate(position, side) / (decimal)20);
             }
             else
             {
                 var ability = potentialRate
                     ? p.GetFixedPotentialAbility()
                     : p.CurrentAbility.GetValueOrDefault(100);
-                rate = (int)Math.Round(p.GetAttributesTotal(nullRateBehavior: nullRateBehavior) * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20);
+                rate = (int)Math.Round(p.GetAttributesTotal() * (ability / (decimal)200) * p.GetPositionSideRate(position, side) / 20);
             }
 
             return new PlayerRateUiData
@@ -110,29 +109,8 @@ namespace ExplorerFM.Extensions
             };
         }
 
-        public static int ToRate(this NullRateBehavior nullRateBehavior, int ratesCount, params int[] otherRates)
-        {
-            switch (nullRateBehavior)
-            {
-                case NullRateBehavior.Minimal:
-                    return 1;
-                case NullRateBehavior.GlobalAverage:
-                    return 10;
-                case NullRateBehavior.Random:
-                    return App.Randomizer.Next(1, 21);
-                case NullRateBehavior.LocalAverage:
-                    if (otherRates.Length < ratesCount / 2) // at least half rates known
-                        return 10;
-                    else
-                        return (int)Math.Round(otherRates.Average());
-                default:
-                    throw new NotSupportedException();
-            }
-        }
-
         public static List<Tuple<Position, Side, PlayerRateUiData>> GetBestLineUp(this Tactic tactic,
-            List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility,
-            NullRateBehavior nullRateBehavior)
+            List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
         {
             var playerByPos = new List<Tuple<Position, Side, PlayerRateUiData>>();
 
@@ -146,7 +124,7 @@ namespace ExplorerFM.Extensions
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility, nullRateBehavior))
+                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility))
                         .OrderByDescending(p => p.Rate)
                         .ToList();
                     var bestP = pDatas.First();
