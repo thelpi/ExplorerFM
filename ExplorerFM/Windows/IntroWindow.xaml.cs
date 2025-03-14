@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using ExplorerFM.Extensions;
+using ExplorerFM.Providers;
 
 namespace ExplorerFM.Windows
 {

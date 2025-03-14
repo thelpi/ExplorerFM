@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
+using ExplorerFM.Providers;
 using ExplorerFM.RuleEngine;
 using ExplorerFM.UiDatas;
 

@@ -10,6 +10,7 @@ using System.Windows.Data;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
 using ExplorerFM.FieldsAttributes;
+using ExplorerFM.Providers;
 using ExplorerFM.RuleEngine;
 using Xceed.Wpf.Toolkit;
 

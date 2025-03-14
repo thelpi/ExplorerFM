@@ -3,10 +3,9 @@ using System.Linq;
 using System.Reflection;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
-using ExplorerFM.Providers;
 using ExplorerFM.RuleEngine;
 
-namespace ExplorerFM
+namespace ExplorerFM.Providers
 {
     public class DataProvider
     {

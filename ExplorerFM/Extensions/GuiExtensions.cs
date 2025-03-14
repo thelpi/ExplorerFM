@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using ExplorerFM.FieldsAttributes;
+using ExplorerFM.Providers;
 using Xceed.Wpf.Toolkit;
 
 namespace ExplorerFM.Extensions

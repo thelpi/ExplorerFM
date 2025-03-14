@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using ExplorerFM.Datas;
 using ExplorerFM.Extensions;
+using ExplorerFM.Providers;
 using ExplorerFM.UiDatas;
 
 namespace ExplorerFM.Windows

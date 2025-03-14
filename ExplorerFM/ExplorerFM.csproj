@@ -278,7 +278,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataProvider.cs" />
+    <Compile Include="Providers\DataProvider.cs" />
     <Compile Include="Datas\Attribute.cs" />
     <Compile Include="Datas\AttributeType.cs" />
     <Compile Include="Datas\BaseData.cs" />
