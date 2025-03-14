@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using ExplorerFM.FieldsAttributes;
 
 namespace ExplorerFM.RuleEngine
 {
@@ -8,6 +6,20 @@ namespace ExplorerFM.RuleEngine
     {
         public Criterion(Type targetType, string[] propertyMap, object fieldValue, Comparator comparator = Comparator.Equal, bool includeNullValue = false)
         {
+            if ((fieldValue == null || fieldValue is bool)
+                && comparator != Comparator.Equal
+                && comparator != Comparator.NotEqual)
+            {
+                throw new ArgumentException("Comparator is invalid for this kind of value.", nameof(comparator));
+            }
+
+            if (!(fieldValue is string)
+                && (comparator == Comparator.Like
+                || comparator == Comparator.NotLike))
+            {
+                throw new ArgumentException("Value should be a string with this comparator.", nameof(fieldValue));
+            }
+
             TargetType = targetType;
             Comparator = comparator;
             FieldValue = fieldValue;

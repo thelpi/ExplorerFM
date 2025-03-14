@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using ExplorerFM.Datas;
+using ExplorerFM.Extensions;
 using ExplorerFM.Properties;
 using ExplorerFM.RuleEngine;
 using MySql.Data.MySqlClient;
@@ -182,7 +184,126 @@ namespace ExplorerFM.Providers
         }
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
-            => throw new NotImplementedException();
+        {
+            return GetData(
+                $"SELECT * FROM players WHERE {TransformCriteriaSet(criteria)}",
+                reader => ExtractPlayer(reader, countries, clubs));
+        }
+
+        private string TransformCriteriaSet(CriteriaSet criteriaSet)
+        {
+            var sqlBuilder = new StringBuilder();
+
+            if (criteriaSet.Criteria?.Count > 0)
+            {
+                var first = true;
+                foreach (var c in criteriaSet.Criteria)
+                {
+                    if (!first)
+                        sqlBuilder.Append(criteriaSet.Or ? " OR " : " AND ");
+                    first = false;
+                    sqlBuilder.Append($"({(c is CriteriaSet set ? TransformCriteriaSet(set) : TransformCriterion(c as Criterion))})");
+                }
+            }
+
+            var sql = sqlBuilder.ToString();
+
+            return string.IsNullOrEmpty(sql) ? "(1=1)" : sql;
+        }
+
+        private string TransformCriterion(Criterion criterion)
+        {
+            var sqlBuilder = new StringBuilder();
+
+            var value = criterion.FieldValue ?? DBNull.Value;
+            if (criterion.FieldValue is DateTime)
+            {
+                value = $"'{Convert.ToDateTime(criterion.FieldValue).ToString("yyyy/MM/dd")}'";
+            }
+            else if (value is bool valueBool)
+            {
+                value = $"{(valueBool ? 1 : 0)}";
+            }
+            else if (value != DBNull.Value && !value.IsNumeric())
+            {
+                value = criterion.Comparator == Comparator.Like || criterion.Comparator == Comparator.NotLike
+                    ? $"%'{MySqlHelper.EscapeString(value.ToString())}%'"
+                    : $"'{MySqlHelper.EscapeString(value.ToString())}'";
+            }
+
+            if (criterion.IncludeNullValue)
+            {
+                sqlBuilder.Append("(");
+            }
+
+            var field = _propertiesSqlMap[string.Join(".", criterion.PropertyMap)];
+
+            switch (criterion.Comparator)
+            {
+                case Comparator.Equal:
+                    sqlBuilder.Append(value == DBNull.Value
+                        ? $"{field} IS NULL"
+                        : $"{field} = {value}");
+                    break;
+                case Comparator.NotEqual:
+                    sqlBuilder.Append(value == DBNull.Value
+                        ? $"{field} IS NOT NULL"
+                        : $"{field} != {value}");
+                    break;
+                case Comparator.LowerEqual:
+                    sqlBuilder.Append($"{field} <= {value}");
+                    break;
+                case Comparator.Lower:
+                    sqlBuilder.Append($"{field} < {value}");
+                    break;
+                case Comparator.GreaterEqual:
+                    sqlBuilder.Append($"{field} >= {value}");
+                    break;
+                case Comparator.Greater:
+                    sqlBuilder.Append($"{field} > {value}");
+                    break;
+                case Comparator.Like:
+                    sqlBuilder.Append($"{field} LIKE {value}");
+                    break;
+                case Comparator.NotLike:
+                    sqlBuilder.Append($"{field} NOT LIKE {value}");
+                    break;
+            }
+
+            if (criterion.IncludeNullValue)
+            {
+                sqlBuilder.Append($" OR {field} IS NULL)");
+            }
+
+            return sqlBuilder.ToString();
+        }
+
+        private static Dictionary<string, string> _propertiesSqlMap =
+            new Dictionary<string, string>
+            {
+                { nameof(BaseData.Id), "id" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.GoalKeeper)}", "pos_goalkeeper" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.Sweeper)}", "pos_sweeper" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.Defender)}", "pos_defender" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.DefensiveMidfielder)}", "pos_defensive_midfielder" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.Midfielder)}", "pos_midfielder" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.OffensiveMidfielder)}", "pos_attacking_midfielder" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.Striker)}", "pos_forward" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.WingBack)}", "pos_wingback" },
+                { $"{nameof(Player.Positions)}.{nameof(Position.FreeRole)}", "pos_free_role" },
+                { $"{nameof(Player.Sides)}.{nameof(Side.Right)}", "side_right" },
+                { $"{nameof(Player.Sides)}.{nameof(Side.Left)}", "side_left" },
+                { $"{nameof(Player.Sides)}.{nameof(Side.Center)}", "side_center" },
+                { nameof(Staff.Value), "value" },
+                { $"{nameof(Staff.Nationality)}.{nameof(Country.IsEU)}", "(SELECT is_eu FROM countries AS c WHERE c.id = country_id)" },
+                { $"{nameof(Staff.SecondNationality)}.{nameof(Country.IsEU)}", "IFNULL((SELECT is_eu FROM countries AS c WHERE c.id = secondary_country_id), 0)" },
+                { nameof(Staff.ClubContract), "club_id" },
+                { nameof(Staff.SecondNationality), "secondary_country_id" },
+                { nameof(Staff.Nationality), "country_id" },
+                { nameof(Staff.YearOfBirth), "YEAR(date_of_birth)" },
+                { nameof(Staff.DateOfBirth), "date_of_birth" },
+                { nameof(Staff.CurrentReputation), "current_reputation" }
+            };
 
         private List<T> GetData<T>(
             string sqlQuery,
