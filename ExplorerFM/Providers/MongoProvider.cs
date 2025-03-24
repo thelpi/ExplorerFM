@@ -88,7 +88,8 @@ namespace ExplorerFM.Providers
 
         public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries)
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             var filter = TransformCriteriaSet(criteria);
 
@@ -97,7 +98,8 @@ namespace ExplorerFM.Providers
 
         public IReadOnlyList<Player> GetPlayersByClub(int? clubId,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries)
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             var filter = FilterDefinition<StaffDto>.Empty;
 
@@ -116,7 +118,8 @@ namespace ExplorerFM.Providers
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId,
             bool selectionEligible,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries)
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             var filter = FilterDefinition<StaffDto>.Empty;
 
@@ -258,7 +261,7 @@ namespace ExplorerFM.Providers
             return string.Join(".", fieldNameParts);
         }
 
-        private static Dictionary<string, (string, Type)> _propertiesMongoMap =
+        private static readonly Dictionary<string, (string, Type)> _propertiesMongoMap =
             new Dictionary<string, (string, Type)>
             {
                 { nameof(BaseData.Id), ("_id", null) },

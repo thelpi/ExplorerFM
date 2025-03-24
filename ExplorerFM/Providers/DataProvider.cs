@@ -63,21 +63,21 @@ namespace ExplorerFM.Providers
             _clubDatas = _provider.GetClubs(_countryDatas, _competitionDatas).ToDictionary(x => x.Id);
         }
 
-        public IReadOnlyList<Player> GetPlayersByClub(int? clubId)
+        public IReadOnlyList<Player> GetPlayersByClub(int? clubId, bool potentialEnabled)
         {
             // TODO: view should decide the order
-            return _provider.GetPlayersByClub(clubId, _clubDatas, _countryDatas).OrderBy(p => p.Fullname).ToList();
+            return _provider.GetPlayersByClub(clubId, _clubDatas, _countryDatas, potentialEnabled).OrderBy(p => p.Fullname).ToList();
         }
 
-        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible)
+        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, bool potentialEnabled)
         {
             // TODO: view should decide the order
-            return _provider.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas).OrderBy(p => p.Fullname).ToList();
+            return _provider.GetPlayersByCountry(countryId, selectionEligible, _clubDatas, _countryDatas, potentialEnabled).OrderBy(p => p.Fullname).ToList();
         }
 
-        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria)
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, bool potentialEnabled)
         {
-            return _provider.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas);
+            return _provider.GetPlayersByCriteria(criteria, _clubDatas, _countryDatas, potentialEnabled);
         }
 
         public static List<PropertyInfo> GetAllAttribute<T>() where T : System.Attribute

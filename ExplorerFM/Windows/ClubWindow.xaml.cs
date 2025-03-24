@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,8 +36,7 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
 
-            // TODO: sort confederation by strength when available
-            var countriesCopy = new List<Country>(dataProvider.Countries.OrderBy(x => x.Confederation?.Name).ThenBy(x => x.Name));
+            var countriesCopy = new List<Country>(dataProvider.Countries.OrderByDescending(x => x.Confederation?.Strength).ThenBy(x => x.Confederation?.Name).ThenBy(x => x.Name));
             countriesCopy.Insert(0, Country.Empty);
             countriesCopy.Insert(0, Country.Global);
             
@@ -160,13 +160,14 @@ namespace ExplorerFM.Windows
 
             var club = ClubComboBox.SelectedItem as Club;
             var country = CountryClubComboBox.SelectedItem as Country;
+            var potentialEnabled = UsePotentialAbility;
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == BaseData.AllDataId
                     ? (country.Id == BaseData.AllDataId
-                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false))
-                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true))
-                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id),
+                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false), potentialEnabled)
+                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true, potentialEnabled))
+                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
                 p =>
                 {
                     _players = new ObservableCollection<Player>(p);
@@ -202,8 +203,7 @@ namespace ExplorerFM.Windows
             }
             else
             {
-                // TODO: sort division by reputation when available
-                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id).OrderByDescending(x => x.Division?.Acronym).ThenBy(x => x.Name));
+                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id).OrderByDescending(x => x.Division?.Reputation).ThenBy(x => x.Name));
                 clubsList.Insert(0, Club.Empty);
                 groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
             }
@@ -232,7 +232,24 @@ namespace ExplorerFM.Windows
 
         private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            ClearForms();
+            var club = ClubComboBox.SelectedItem as Club;
+            var country = CountryClubComboBox.SelectedItem as Country;
+            var potentialEnabled = UsePotentialAbility;
+
+            LoadPlayersProgressBar.HideWorkAndDisplay(
+                () => club.Id == BaseData.AllDataId
+                    ? (country.Id == BaseData.AllDataId
+                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false), potentialEnabled)
+                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true, potentialEnabled))
+                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
+                p =>
+                {
+                    _players = new ObservableCollection<Player>(p);
+                    Title = club.Id == BaseData.AllDataId ? country.Name : club.Name;
+                    PlayersView.ItemsSource = _players;
+                    ClearForms();
+                },
+                MainGrid.Children.Cast<UIElement>().ToArray());
         }
 
         private void NullRateBehaviorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

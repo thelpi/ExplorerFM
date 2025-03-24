@@ -143,7 +143,7 @@ namespace ExplorerFM.Windows
                 LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
                     {
-                        var players = _dataProvider.GetPlayersByCriteria(new CriteriaSet(false, criteria.ToArray()));
+                        var players = _dataProvider.GetPlayersByCriteria(new CriteriaSet(false, criteria.ToArray()), potentialAbility);
                         return players
                             .Select(p => p.ToRateItemData(
                                 position, side, _dataProvider.MaxTheoreticalRate, potentialAbility))

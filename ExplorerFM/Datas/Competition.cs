@@ -19,6 +19,9 @@ namespace ExplorerFM.Datas
         [SelectorField(nameof(DataProvider.Countries), nameof(Datas.Country.Name))]
         public Country Country { get; set; }
 
+        [Field(0, 10000)]
+        public int Reputation { get; set; }
+
         public static Competition Empty
             => new Competition
             {

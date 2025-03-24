@@ -84,10 +84,7 @@ namespace ExplorerFM.Extensions
             int rate;
             if (Settings.Default.UseSaveFile)
             {
-                var abilityDelta = potentialRate
-                    ? p.GetFixedPotentialAbility() - p.CurrentAbility.GetValueOrDefault(100)
-                    : 0;
-                rate = (int)Math.Round((p.GetAttributesTotal() + abilityDelta) * p.GetPositionSideRate(position, side) / (decimal)20);
+                rate = (int)Math.Round(p.GetAttributesTotal() * p.GetPositionSideRate(position, side) / (decimal)20);
             }
             else
             {

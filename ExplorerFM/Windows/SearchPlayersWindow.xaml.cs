@@ -91,7 +91,7 @@ namespace ExplorerFM.Windows
             if (response == MessageBoxResult.Yes)
             {
                 LoadingProgressBar.HideWorkAndDisplay(
-                    () => _dataProvider.GetPlayersByCriteria(criteriaSet),
+                    () => _dataProvider.GetPlayersByCriteria(criteriaSet, potentialEnabled: false),
                     players => PlayersView.ItemsSource = players,
                     PlayersView, CriteriaExpander);
             }

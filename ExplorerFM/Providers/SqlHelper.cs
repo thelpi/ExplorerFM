@@ -24,5 +24,17 @@ namespace ExplorerFM.Providers
             p.Value = value ?? DBNull.Value;
             command.Parameters.Add(p);
         }
+
+        public static bool Exists(this MySqlDataReader reader, string columnName)
+        {
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                if (reader.GetName(i).Equals(columnName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

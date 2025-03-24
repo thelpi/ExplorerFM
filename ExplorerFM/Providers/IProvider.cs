@@ -17,15 +17,18 @@ namespace ExplorerFM.Providers
 
         IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries);
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled);
 
         IReadOnlyList<Player> GetPlayersByClub(int? clubId,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries);
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled);
 
         IReadOnlyList<Player> GetPlayersByCountry(int? countryId,
             bool selectionEligible,
             IReadOnlyDictionary<int, Club> clubs,
-            IReadOnlyDictionary<int, Country> countries);
+            IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled);
     }
 }

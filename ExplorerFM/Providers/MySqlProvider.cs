@@ -104,14 +104,15 @@ namespace ExplorerFM.Providers
                     Id = reader.GetInt32("id"),
                     Name = reader.GetString("continent_name"),
                     FedCode = reader.GetString("acronym"),
-                    FedName = reader.GetString("name")
+                    FedName = reader.GetString("name"),
+                    Strength = reader.GetInt32("strength")
                 });
         }
 
         public IReadOnlyList<Country> GetCountries(IReadOnlyDictionary<int, Confederation> confederations)
         {
             return GetData(
-                "SELECT * FROM countries",
+                "SELECT * FROM nations",
                 reader => new Country
                 {
                     Confederation = reader.IsDBNull("confederation_id")
@@ -129,16 +130,17 @@ namespace ExplorerFM.Providers
         public IReadOnlyList<Competition> GetCompetitions(Dictionary<int, Country> countryDatas)
         {
             return GetData(
-                "SELECT * FROM competitions",
+                "SELECT * FROM club_competitions",
                 reader => new Competition
                 {
                     Acronym = reader.GetString("acronym"),
-                    Country = reader.IsDBNull("country_id")
+                    Country = reader.IsDBNull("nation_id")
                         ? null
-                        : countryDatas[reader.GetInt32("country_id")],
+                        : countryDatas[reader.GetInt32("nation_id")],
                     Id = reader.GetInt32("id"),
                     LongName = reader.GetString("long_name"),
-                    Name = reader.GetString("name")
+                    Name = reader.GetString("name"),
+                    Reputation = reader.GetInt32("reputation")
                 });
         }
 
@@ -152,42 +154,51 @@ namespace ExplorerFM.Providers
                     Id = reader.GetInt32("id"),
                     Name = reader.GetString("name"),
                     LongName = reader.GetString("long_name"),
-                    Country = reader.IsDBNull("country_id")
+                    Country = reader.IsDBNull("nation_id")
                         ? null
-                        : countries[reader.GetInt32("country_id")],
+                        : countries[reader.GetInt32("nation_id")],
                     Reputation = reader.GetInt32("reputation"),
                     Division = reader.IsDBNull("division_id")
                         ? null
-                        : competitions[reader.GetInt32("division_id")]
+                        : competitions[reader.GetInt32("division_id")],
+                    Bank = reader.GetInt32("bank"),
+                    Facilities = reader.GetInt32("facilities")
+                    // todo : preferences
                 });
         }
 
-        public IReadOnlyList<Player> GetPlayersByClub(int? clubId, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
+        public IReadOnlyList<Player> GetPlayersByClub(int? clubId,
+            IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             return GetData(
                 "SELECT * FROM players " +
                 "WHERE club_id = @club_id " +
                 "OR (club_id IS NULL AND @club_id IS NULL)",
-                reader => ExtractPlayer(reader, countries, clubs),
+                reader => ExtractPlayer(reader, countries, clubs, potentialEnabled),
                 ("@club_id", DbType.Int32, clubId));
         }
 
-        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId, bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
+        public IReadOnlyList<Player> GetPlayersByCountry(int? countryId,
+            bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             return GetData(
                 "SELECT * FROM players " +
-                "WHERE country_id = @country_id " +
-                "OR (country_id IS NULL AND @country_id IS NULL) " +
-                "OR secondary_country_id = @country_id",
-                reader => ExtractPlayer(reader, countries, clubs),
-                ("@country_id", DbType.Int32, countryId));
+                "WHERE nation_id = @nation_id " +
+                "OR (nation_id IS NULL AND @nation_id IS NULL) " +
+                "OR secondary_nation_id = @nation_id",
+                reader => ExtractPlayer(reader, countries, clubs, potentialEnabled),
+                ("@nation_id", DbType.Int32, countryId));
         }
 
-        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries)
+        public IReadOnlyList<Player> GetPlayersByCriteria(CriteriaSet criteria,
+            IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries,
+            bool potentialEnabled)
         {
             return GetData(
                 $"SELECT * FROM players WHERE {TransformCriteriaSet(criteria)}",
-                reader => ExtractPlayer(reader, countries, clubs));
+                reader => ExtractPlayer(reader, countries, clubs, potentialEnabled));
         }
 
         private string TransformCriteriaSet(CriteriaSet criteriaSet)
@@ -218,7 +229,7 @@ namespace ExplorerFM.Providers
             var value = criterion.FieldValue ?? DBNull.Value;
             if (criterion.FieldValue is DateTime)
             {
-                value = $"'{Convert.ToDateTime(criterion.FieldValue).ToString("yyyy/MM/dd")}'";
+                value = $"'{Convert.ToDateTime(criterion.FieldValue):yyyy/MM/dd}'";
             }
             else if (value is bool valueBool)
             {
@@ -278,7 +289,7 @@ namespace ExplorerFM.Providers
             return sqlBuilder.ToString();
         }
 
-        private static Dictionary<string, string> _propertiesSqlMap =
+        private static readonly Dictionary<string, string> _propertiesSqlMap =
             new Dictionary<string, string>
             {
                 { nameof(BaseData.Id), "id" },
@@ -295,11 +306,11 @@ namespace ExplorerFM.Providers
                 { $"{nameof(Player.Sides)}.{nameof(Side.Left)}", "side_left" },
                 { $"{nameof(Player.Sides)}.{nameof(Side.Center)}", "side_center" },
                 { nameof(Staff.Value), "value" },
-                { $"{nameof(Staff.Nationality)}.{nameof(Country.IsEU)}", "(SELECT is_eu FROM countries AS c WHERE c.id = country_id)" },
-                { $"{nameof(Staff.SecondNationality)}.{nameof(Country.IsEU)}", "IFNULL((SELECT is_eu FROM countries AS c WHERE c.id = secondary_country_id), 0)" },
+                { $"{nameof(Staff.Nationality)}.{nameof(Country.IsEU)}", "(SELECT is_eu FROM nations AS c WHERE c.id = nation_id)" },
+                { $"{nameof(Staff.SecondNationality)}.{nameof(Country.IsEU)}", "IFNULL((SELECT is_eu FROM nations AS c WHERE c.id = secondary_nation_id), 0)" },
                 { nameof(Staff.ClubContract), "club_id" },
-                { nameof(Staff.SecondNationality), "secondary_country_id" },
-                { nameof(Staff.Nationality), "country_id" },
+                { nameof(Staff.SecondNationality), "secondary_nation_id" },
+                { nameof(Staff.Nationality), "nation_id" },
                 { nameof(Staff.YearOfBirth), "YEAR(date_of_birth)" },
                 { nameof(Staff.DateOfBirth), "date_of_birth" },
                 { nameof(Staff.CurrentReputation), "current_reputation" }
@@ -339,7 +350,8 @@ namespace ExplorerFM.Providers
 
         private Player ExtractPlayer(MySqlDataReader reader,
             IReadOnlyDictionary<int, Country> countries,
-            IReadOnlyDictionary<int, Club> clubs)
+            IReadOnlyDictionary<int, Club> clubs,
+            bool potentialEnabled)
         {
             return new Player
             {
@@ -356,7 +368,16 @@ namespace ExplorerFM.Providers
                 CurrentAbility = reader.GetInt32("ability"),
                 CurrentReputation = reader.GetInt32("current_reputation"),
                 Attributes = Datas.Attribute.PlayerInstances
-                    .ToDictionary(x => x, x => (int?)reader.GetInt32(_attributesMapper[x.Id])),
+                    .ToDictionary(x => x, x =>
+                    {
+                        var columnName = _attributesMapper[x.Id];
+                        if (potentialEnabled && reader.Exists($"{columnName}_potential"))
+                        {
+                            columnName = $"{columnName}_potential";
+                        }
+
+                        return (int?)reader.GetInt32(columnName);
+                    }),
                 DateOfBirth = reader.GetDateTime("date_of_birth"),
                 Firstname = reader.IsDBNull("first_name")
                     ? null
@@ -369,7 +390,7 @@ namespace ExplorerFM.Providers
                     : reader.GetString("last_name"),
                 LeftFoot = reader.GetInt32("left_foot"),
                 Loaded = true,
-                Nationality = countries[reader.GetInt32("country_id")],
+                Nationality = countries[reader.GetInt32("nation_id")],
                 Positions = new Dictionary<Position, int?>
                 {
                     { Position.GoalKeeper, reader.GetInt32("pos_goalkeeper") },
@@ -384,9 +405,9 @@ namespace ExplorerFM.Providers
                 },
                 PotentialAbility = reader.GetInt32("potential_ability"),
                 RightFoot = reader.GetInt32("right_foot"),
-                SecondNationality = reader.IsDBNull("secondary_country_id")
+                SecondNationality = reader.IsDBNull("secondary_nation_id")
                     ? null
-                    : countries[reader.GetInt32("secondary_country_id")],
+                    : countries[reader.GetInt32("secondary_nation_id")],
                 Sides = new Dictionary<Side, int?>
                 {
                     { Side.Center, reader.GetInt32("side_center") },
