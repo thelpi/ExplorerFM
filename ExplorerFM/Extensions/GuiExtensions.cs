@@ -84,7 +84,7 @@ namespace ExplorerFM.Extensions
             return element.GetByTemplateKey<CommonNumericUpDown<T>>(key).WithMinMaxFromAttribute(attribute);
         }
 
-        public static void HideWorkAndDisplay<T>(this ProgressBar pgb,
+        public static Task HideWorkAndDisplay<T>(this ProgressBar pgb,
             Func<T> backgroundFunc,
             Action<T> foregroundFunc,
             params UIElement[] uiElementsToHide)
@@ -92,7 +92,7 @@ namespace ExplorerFM.Extensions
             foreach (var uiElem in uiElementsToHide)
                 uiElem.Visibility = Visibility.Collapsed;
             pgb.Visibility = Visibility.Visible;
-            Task.Run(() =>
+            return Task.Run(() =>
             {
                 var result = backgroundFunc();
                 pgb.Dispatcher.Invoke(() =>

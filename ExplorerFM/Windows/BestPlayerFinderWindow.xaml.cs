@@ -13,10 +13,12 @@ namespace ExplorerFM.Windows
 {
     public partial class BestPlayerFinderWindow : Window
     {
-        private const int MaxPlayersTake = 1000;
-
         private readonly DataProvider _dataProvider;
         public Player SelectedPlayer { get; private set; }
+
+        private bool _initialized;
+
+        private List<PlayerRateUiData> _players = null;
 
         public BestPlayerFinderWindow(DataProvider dataProvider)
             : this(dataProvider, null, null, null)
@@ -55,92 +57,29 @@ namespace ExplorerFM.Windows
 
             foreach (var columnKvp in GuiExtensions.GetAttributeColumns(true, null))
                 PlayersGridView.Columns.Add(columnKvp.Key);
-        }
 
-        private void SearchPlayersButton_Click(object sender, RoutedEventArgs e)
-        {
             SearchPlayersAndSetSource();
         }
 
         private void SearchPlayersAndSetSource()
         {
+            _initialized = false;
             if (PositionsComboBox.SelectedIndex >= 0 && (SidesComboBox.SelectedIndex >= 0 || (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper))
             {
-                var maxValue = ValueIntUpDown.Value;
-                var maxRep = ReputationIntUpDown.Value;
-                var maxAge = AgeDatePicker.SelectedDate;
-                var isUe = EuropeanUnionCheckBox.IsChecked == true;
-                var noClubContract = NoClubContractCheckBox.IsChecked == true;
-
-                var noClubCriterion = new Criterion(typeof(Staff), nameof(Staff.ClubContract), null);
-
-                var criteria = new List<CriterionBase>(5);
-                if (noClubContract)
-                {
-                    criteria.Add(noClubCriterion);
-                }
-
-                if (NationalityComboBox.SelectedItem is Country country && country.Id != BaseData.AllDataId)
-                {
-                    if (country.Id == BaseData.NoDataId)
-                    {
-                        criteria.Add(new CriteriaSet(false,
-                            new Criterion(typeof(Staff), nameof(Staff.Nationality), null),
-                            new Criterion(typeof(Staff), nameof(Staff.SecondNationality), null)));
-                    }
-                    else
-                    {
-                        criteria.Add(new CriteriaSet(true,
-                            new Criterion(typeof(Staff), new[] { nameof(Staff.Nationality), nameof(Country.Id) }, country.Id),
-                            new Criterion(typeof(Staff), new[] { nameof(Staff.SecondNationality), nameof(Country.Id) }, country.Id)));
-                    }
-                }
-
-                if (maxAge.HasValue)
-                {
-                    criteria.Add(new CriteriaSet(true,
-                        new Criterion(typeof(Staff), nameof(Staff.DateOfBirth), maxAge.Value, Comparator.GreaterEqual),
-                        new Criterion(typeof(Staff), nameof(Staff.YearOfBirth), maxAge.Value.Year, Comparator.GreaterEqual)));
-                }
-
-                if (maxValue.HasValue)
-                {
-                    var standardCriterion = new Criterion(typeof(Staff), nameof(Staff.Value), maxValue.Value, Comparator.LowerEqual, true);
-                    if (noClubContract)
-                    {
-                        criteria.Add(standardCriterion);
-                    }
-                    else
-                    {
-                        // some player have value while being free agent
-                        criteria.Add(new CriteriaSet(true, standardCriterion, noClubCriterion));
-                    }
-                }
-
-                if (maxRep.HasValue)
-                {
-                    criteria.Add(new Criterion(typeof(Staff), nameof(Staff.CurrentReputation), maxRep.Value, Comparator.LowerEqual, true));
-                }
-
-                if (isUe)
-                {
-                    criteria.Add(new CriteriaSet(true,
-                        new Criterion(typeof(Staff), new[] { nameof(Staff.Nationality), nameof(Country.IsEU) }, true),
-                        new Criterion(typeof(Staff), new[] { nameof(Staff.SecondNationality), nameof(Country.IsEU) }, true)));
-                }
-
                 var position = (Position)PositionsComboBox.SelectedItem;
                 var side = SidesComboBox.SelectedIndex > -1 ? (Side)SidesComboBox.SelectedItem : Side.Center;
                 var potentialAbility = PotentialAbilityCheckBox.IsChecked == true;
 
+                var criteria = new List<CriterionBase>
+                {
+                    new Criterion(typeof(Player), new[] { nameof(Player.Positions), position.ToString() }, 15, Comparator.GreaterEqual)
+                };
                 if (position != Position.GoalKeeper)
                 {
                     criteria.Add(new Criterion(typeof(Player), new[] { nameof(Player.Sides), side.ToString() }, 15, Comparator.GreaterEqual));
                 }
 
-                criteria.Add(new Criterion(typeof(Player), new[] { nameof(Player.Positions), position.ToString() }, 15, Comparator.GreaterEqual));
-
-                LoadPlayersProgressBar.HideWorkAndDisplay(
+                var task = LoadPlayersProgressBar.HideWorkAndDisplay(
                     () =>
                     {
                         var players = _dataProvider.GetPlayersByCriteria(new CriteriaSet(false, criteria.ToArray()), potentialAbility);
@@ -148,9 +87,14 @@ namespace ExplorerFM.Windows
                             .Select(p => p.ToRateItemData(
                                 position, side, _dataProvider.MaxTheoreticalRate, potentialAbility))
                             .OrderByDescending(p => p.Rate)
-                            .Take(MaxPlayersTake);
+                            .ToList();
                     },
-                    players => PlayersListView.ItemsSource = players,
+                    players =>
+                    {
+                        _players = players;
+                        _initialized = true;
+                        ApplyLocalFilters();
+                    },
                     PlayersListView.Yield(CriteriaGrid.Children.Cast<UIElement>().ToArray()).ToArray());
             }
             else
@@ -167,14 +111,76 @@ namespace ExplorerFM.Windows
 
         private void PositionsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PositionsComboBox.SelectedIndex >= 0 && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper)
-            {
-                SidesComboBox.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                SidesComboBox.Visibility = Visibility.Visible;
-            }
+            SidesComboBox.Visibility = PositionsComboBox.SelectedIndex >= 0
+                && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper
+                ? Visibility.Hidden
+                : Visibility.Visible;
+        }
+
+        private void ApplyLocalFilters()
+        {
+            if (!_initialized) return;
+
+            var countryId = NationalityComboBox.SelectedItem is Country country ? country.Id : BaseData.AllDataId;
+            var noClubContract = NoClubContractCheckBox.IsChecked == true;
+            var isUe = EuropeanUnionCheckBox.IsChecked == true;
+            var maxAge = (int)Math.Floor(AgeSlider.HigherValue);
+            var minAge = (int)Math.Floor(AgeSlider.LowerValue);
+            var ageIsSet = AgeSlider.HigherValue != AgeSlider.Maximum || AgeSlider.LowerValue != AgeSlider.Minimum;
+            PlayersListView.ItemsSource = _players
+                .Where(x => (countryId == BaseData.AllDataId || x.Player.Nationality.Id == countryId || x.Player.SecondNationality?.Id == countryId)
+                    && (!noClubContract || x.Player.ClubContract == null)
+                    && (!isUe || x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true)
+                    && (!ValueIntUpDown.Value.HasValue || x.Player.Value <= ValueIntUpDown.Value.Value)
+                    && (!ReputationIntUpDown.Value.HasValue || x.Player.CurrentReputation <= ReputationIntUpDown.Value.Value)
+                    && (!ageIsSet || x.Player.GetAge() <= maxAge)
+                    && (!ageIsSet || x.Player.GetAge() >= minAge))
+                .ToList();
+        }
+
+        private void NationalityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void NoClubContractCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void NoClubContractCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void EuropeanUnionCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void EuropeanUnionCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void ValueIntUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void ReputationIntUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void AgeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void AgeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
         }
     }
 }

@@ -13,7 +13,7 @@
         <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" Height="25" Width="250" Visibility="Collapsed" Name="LoadPlayersProgressBar" />
         <Grid Grid.Column="0" Margin="0, 0, 10, 0" Name="CriteriaGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="75" />
+                <ColumnDefinition Width="100" />
                 <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -42,19 +42,19 @@
             <Label Grid.Row="4" Grid.ColumnSpan="2" Content="Search criteria" HorizontalAlignment="Center" />
 
             <Label Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Nationality:" />
-            <ComboBox Grid.Row="5" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="NationalityComboBox" DisplayMemberPath="Name" />
+            <ComboBox Grid.Row="5" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="NationalityComboBox" DisplayMemberPath="Name" SelectionChanged="NationalityComboBox_SelectionChanged" />
             <Label Grid.Row="6" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="No club:" />
-            <CheckBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Name="NoClubContractCheckBox" />
+            <CheckBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Name="NoClubContractCheckBox" Checked="NoClubContractCheckBox_Checked" Unchecked="NoClubContractCheckBox_Unchecked" />
             <Label Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Max value:" />
-            <xctk:IntegerUpDown Grid.Row="7" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ValueIntUpDown" Minimum="1" Maximum="100000000" />
+            <xctk:IntegerUpDown Grid.Row="7" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ValueIntUpDown" Minimum="1" Maximum="100000000" ValueChanged="ValueIntUpDown_ValueChanged" />
             <Label Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Max rep.:" />
-            <xctk:IntegerUpDown Grid.Row="8" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ReputationIntUpDown" Minimum="1" Maximum="200" />
-            <Label Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Max age.:" />
-            <DatePicker Grid.Row="9" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="AgeDatePicker" />
+            <xctk:IntegerUpDown Grid.Row="8" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ReputationIntUpDown" Minimum="1" Maximum="200" ValueChanged="ReputationIntUpDown_ValueChanged" />
+            <Label Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Min/max age.:" />
+            <xctk:RangeSlider Grid.Row="9" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="AgeSlider" Minimum="10" Maximum="50" LowerValue="20" HigherValue="40" HigherValueChanged="AgeSlider_HigherValueChanged" LowerValueChanged="AgeSlider_LowerValueChanged" RangeBackground="Beige" />
             <Label Grid.Row="10" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="E.U.:" />
-            <CheckBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" Name="EuropeanUnionCheckBox" />
+            <CheckBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" Name="EuropeanUnionCheckBox" Checked="EuropeanUnionCheckBox_Checked" Unchecked="EuropeanUnionCheckBox_Unchecked" />
             
-            <Button Grid.Row="11" Grid.Column="1" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left" Width="75" Content="Search" Name="SearchPlayersButton" Click="SearchPlayersButton_Click" />
+            <!--<Button Grid.Row="11" Grid.Column="1" Height="25" VerticalAlignment="Center" HorizontalAlignment="Left" Width="75" Content="Search" Name="SearchPlayersButton" Click="SearchPlayersButton_Click" />-->
         </Grid>
         <ListView Grid.Column="1" Grid.RowSpan="6" Name="PlayersListView" AlternationCount="2" ItemContainerStyle="{StaticResource ItemContainerStyle}">
             <ListView.View>

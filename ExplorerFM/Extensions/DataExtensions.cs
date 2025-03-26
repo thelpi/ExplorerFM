@@ -12,6 +12,15 @@ namespace ExplorerFM.Extensions
 {
     public static class DataExtensions
     {
+        private static readonly DateTime _startDate = new DateTime(2001, 7, 1);
+
+        public static int? GetAge(this Player player)
+        {
+            return player.ActualDateOfBirth.HasValue
+                ? _startDate.Year - player.ActualDateOfBirth.Value.Year
+                : default(int?);
+        }
+
         public static string ToCode(this Side side)
         {
             return side.ToString().Substring(0, 1);
