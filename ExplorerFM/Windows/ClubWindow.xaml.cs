@@ -114,7 +114,7 @@ namespace ExplorerFM.Windows
             var lineUp = (TacticsComboBox.SelectedItem as Tactic)
                 .GetBestLineUp(_players.ToList(), _dataProvider.MaxTheoreticalRate, UsePotentialAbility);
 
-            foreach (var posGroup in lineUp.GroupBy(_ => new Tuple<Position, Side>(_.Item1, _.Item2)))
+            foreach (var posGroup in lineUp.GroupBy(_ => (_.Item1, _.Item2)))
             {
                 var groupPlayerCount = posGroup.Count();
                 var currPosIndex = 0;

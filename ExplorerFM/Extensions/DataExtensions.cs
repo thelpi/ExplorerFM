@@ -115,18 +115,18 @@ namespace ExplorerFM.Extensions
             };
         }
 
-        public static List<Tuple<Position, Side, PlayerRateUiData>> GetBestLineUp(this Tactic tactic,
+        public static List<(Position, Side, PlayerRateUiData)> GetBestLineUp(this Tactic tactic,
             List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
         {
-            var playerByPos = new List<Tuple<Position, Side, PlayerRateUiData>>();
+            var playerByPos = new List<(Position, Side, PlayerRateUiData)>();
 
             // copy
             var players = new List<Player>(sourcePlayers);
-            var positions = new List<Tuple<Position, Side>>(tactic.Positions);
+            var positions = new List<(Position, Side)>(tactic.Positions);
 
             while (positions.Count > 0 && players.Count > 0)
             {
-                var positionsBest = new List<Tuple<Position, Side, PlayerRateUiData, decimal>>();
+                var positionsBest = new List<(Position, Side, PlayerRateUiData, decimal)>();
                 foreach (var position in positions.Distinct())
                 {
                     var pDatas = players
@@ -135,21 +135,14 @@ namespace ExplorerFM.Extensions
                         .ToList();
                     var bestP = pDatas.First();
                     var ratePercent = bestP.Rate / (decimal)pDatas.Sum(p => p.Rate);
-                    positionsBest.Add(
-                        new Tuple<Position, Side, PlayerRateUiData, decimal>(
-                            position.Item1, position.Item2, bestP, ratePercent));
+                    positionsBest.Add((position.Item1, position.Item2, bestP, ratePercent));
                 }
 
                 var bestPositionBest = positionsBest.First(x => x.Item4 == positionsBest.Max(y => y.Item4));
 
                 players.Remove(bestPositionBest.Item3.Player);
-                positions.RemoveAt(
-                    positions.IndexOf(
-                        new Tuple<Position, Side>(
-                            bestPositionBest.Item1, bestPositionBest.Item2)));
-                playerByPos.Add(
-                    new Tuple<Position, Side, PlayerRateUiData>(
-                        bestPositionBest.Item1, bestPositionBest.Item2, bestPositionBest.Item3));
+                positions.RemoveAt(positions.IndexOf((bestPositionBest.Item1, bestPositionBest.Item2)));
+                playerByPos.Add((bestPositionBest.Item1, bestPositionBest.Item2, bestPositionBest.Item3));
             }
 
             return playerByPos;
