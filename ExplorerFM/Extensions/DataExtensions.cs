@@ -93,7 +93,7 @@ namespace ExplorerFM.Extensions
             int rate;
             if (Settings.Default.UseSaveFile)
             {
-                rate = (int)Math.Round(p.GetAttributesTotal() * p.GetPositionSideRate(position, side) / (decimal)20);
+                rate = p.GetPositionFinalRate((position, side));
             }
             else
             {
@@ -118,24 +118,46 @@ namespace ExplorerFM.Extensions
         public static List<(Position, Side, PlayerRateUiData)> GetBestLineUp(this Tactic tactic,
             List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
         {
-            var playerByPos = new List<(Position, Side, PlayerRateUiData)>();
+            var start = DateTime.Now;
+
+            var playerByPos = new List<(Position, Side, PlayerRateUiData)>(11);
+
+            if (sourcePlayers.Count < 11)
+            {
+                return playerByPos;
+            }
 
             // copy
             var players = new List<Player>(sourcePlayers);
             var positions = new List<(Position, Side)>(tactic.Positions);
 
-            while (positions.Count > 0 && players.Count > 0)
+            PlayerRateUiData pGk = null;
+            foreach (var p in players)
             {
-                var positionsBest = new List<(Position, Side, PlayerRateUiData, decimal)>();
+                var ppr = p.ToRateItemData(Position.GoalKeeper, Side.Center, maxTheoreticalRate, usePotentialAbility);
+                if (pGk == null || ppr.Rate > pGk.Rate)
+                    pGk = ppr;
+            }
+            players.Remove(pGk.Player);
+            positions.RemoveAt(positions.IndexOf((Position.GoalKeeper, Side.Center)));
+            playerByPos.Add((Position.GoalKeeper, Side.Center, pGk));
+
+            while (positions.Count > 0)
+            {
+                var positionsBest = new List<(Position, Side, PlayerRateUiData, decimal)>(10);
                 foreach (var position in positions.Distinct())
                 {
-                    var pDatas = players
-                        .Select(p => p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility))
-                        .OrderByDescending(p => p.Rate)
-                        .ToList();
-                    var bestP = pDatas.First();
-                    var ratePercent = bestP.Rate / (decimal)pDatas.Sum(p => p.Rate);
-                    positionsBest.Add((position.Item1, position.Item2, bestP, ratePercent));
+                    var sumRate = 0;
+                    PlayerRateUiData bestp = null;
+                    foreach (var p in players)
+                    {
+                        var rp = p.ToRateItemData(position.Item1, position.Item2, maxTheoreticalRate, usePotentialAbility);
+                        sumRate += rp.Rate;
+                        if (bestp == null || bestp.Rate < rp.Rate)
+                            bestp = rp;
+                    }
+                    var ratePercent = bestp.Rate / (decimal)sumRate;
+                    positionsBest.Add((position.Item1, position.Item2, bestp, ratePercent));
                 }
 
                 var bestPositionBest = positionsBest.First(x => x.Item4 == positionsBest.Max(y => y.Item4));
@@ -144,6 +166,9 @@ namespace ExplorerFM.Extensions
                 positions.RemoveAt(positions.IndexOf((bestPositionBest.Item1, bestPositionBest.Item2)));
                 playerByPos.Add((bestPositionBest.Item1, bestPositionBest.Item2, bestPositionBest.Item3));
             }
+
+            var end = DateTime.Now;
+            System.Diagnostics.Debug.WriteLine($"[TIME] {(end - start).TotalMilliseconds}");
 
             return playerByPos;
         }

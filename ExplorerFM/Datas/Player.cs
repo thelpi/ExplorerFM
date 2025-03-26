@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.Providers;
 
@@ -65,20 +66,68 @@ namespace ExplorerFM.Datas
             return Math.Min(sNote, pNote);
         }
 
+        private Dictionary<(Position, Side), int> _positionFinalRateCache = new Dictionary<(Position, Side), int>(30);
+        private object _lockerPositionFinalRateCache = new object();
+
+        public int GetPositionFinalRate((Position, Side) ps)
+        {
+            if (_positionFinalRateCache.TryGetValue(ps, out var result))
+            {
+                return result;
+            }
+
+            lock (_lockerPositionFinalRateCache)
+            {
+                if (_positionFinalRateCache.TryGetValue(ps, out result))
+                {
+                    return result;
+                }
+
+                result = (int)Math.Round(GetAttributesTotal() * GetPositionSideRate(ps.Item1, ps.Item2) / (decimal)20);
+
+                _positionFinalRateCache.Add(ps, result);
+            }
+
+            return result;
+        }
+
+        private Dictionary<int, int> _attributesCache = new Dictionary<int, int>(48);
+        private object _lockerAttributesCache = new object();
+
         public int GetAttributesTotal(AttributeType? type = null)
         {
-            var attributesToConsider = Attributes
-                .Where(_ => !type.HasValue || type == _.Key.Type)
-                .ToList();
-            var knownRates = attributesToConsider
-                .Where(a => a.Value.HasValue)
-                .Select(a => a.Value.Value)
-                .ToArray();
-            var nullRateBehavior = knownRates.Length < attributesToConsider.Count / 2
-                ? 10
-                : (int)Math.Round(knownRates.Average());
-            return attributesToConsider
-                .Sum(_ => _.Value ?? nullRateBehavior);
+            var tInt = type.HasValue ? (int)type.Value : -1;
+
+            if (_attributesCache.TryGetValue(tInt, out var result))
+            {
+                return result;
+            }
+
+            lock (_lockerAttributesCache)
+            {
+                if (_attributesCache.TryGetValue(tInt, out result))
+                {
+                    return result;
+                }
+
+                var attributesToConsider = Attributes
+                    .Where(_ => !type.HasValue || type == _.Key.Type)
+                    .ToList();
+                var knownRates = attributesToConsider
+                    .Where(a => a.Value.HasValue)
+                    .Select(a => a.Value.Value)
+                    .ToArray();
+                var nullRateBehavior = knownRates.Length < attributesToConsider.Count / 2
+                    ? 10
+                    : (int)Math.Round(knownRates.Average());
+
+                result = attributesToConsider
+                    .Sum(_ => _.Value ?? nullRateBehavior);
+
+                _attributesCache.Add(tInt, result);
+            }
+
+            return result;
         }
 
         public object GetSortablePropertyValue(
