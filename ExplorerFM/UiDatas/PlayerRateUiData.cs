@@ -29,5 +29,7 @@ namespace ExplorerFM.UiDatas
 
             return Color.FromArgb(byte.MaxValue, byte.MaxValue, (byte)green, (byte)blue);
         }
+
+        public override string ToString() => Player.Fullname;
     }
 }
