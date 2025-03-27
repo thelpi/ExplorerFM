@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
+using ExplorerFM.Extensions;
 using ExplorerFM.Properties;
 using ExplorerFM.Providers;
 using ExplorerFM.Windows;
@@ -23,6 +25,8 @@ namespace ExplorerFM
                 MessageBox.Show($"The following error prevents the application to start:\n{testConnectionRes}", "ExplorerFM - Error");
                 Environment.Exit(0);
             }
+
+            Task.Run(() => DataExtensions.FillCombination());
 
             new IntroWindow().ShowDialog();
         }
