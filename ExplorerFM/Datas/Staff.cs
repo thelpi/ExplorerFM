@@ -10,7 +10,7 @@ namespace ExplorerFM.Datas
         private const int AverageAbility = 100;
         private const int GoodPotentialAbility = 140;
         private const int VeryGoodPotentialAbility = 180;
-        private static readonly DateTime IgnorePotential = new DateTime(1973, 7, 1);
+        internal static readonly DateTime IgnorePotential = new DateTime(1971, 7, 1);
 
         [Field]
         public string Firstname { get; set; }

@@ -371,7 +371,9 @@ namespace ExplorerFM.Providers
                     .ToDictionary(x => x, x =>
                     {
                         var columnName = _attributesMapper[x.Id];
-                        if (potentialEnabled && reader.Exists($"{columnName}_potential"))
+                        if (potentialEnabled
+                            && reader.Exists($"{columnName}_potential")
+                            && reader.GetDateTime("date_of_birth") >= Staff.IgnorePotential)
                         {
                             columnName = $"{columnName}_potential";
                         }
