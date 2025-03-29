@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Amazon.Runtime.Internal.Util;
 using ExplorerFM.Datas;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.Properties;
@@ -115,74 +116,15 @@ namespace ExplorerFM.Extensions
             };
         }
 
-        private const int MonteCarloComboCount = 1000;
-        private const int FactorTenCount = 3628800;
-        private static List<List<int>> _factorTen = new List<List<int>>(FactorTenCount);
-        private static bool _factorTenInit = false;
-
-        public static void FillCombination()
-        {
-            if (_factorTenInit) return;
-
-            for (var a = 0; a < 10; a++)
-            {
-                for (var b = 0; b < 10; b++)
-                {
-                    if (b == a) continue;
-                    for (var c = 0; c < 10; c++)
-                    {
-                        if (c == a || c == b) continue;
-                        for (var d = 0; d < 10; d++)
-                        {
-                            if (d == a || d == b || d == c) continue;
-                            for (var e = 0; e < 10; e++)
-                            {
-                                if (e == a || e == b || e == c || e == d) continue;
-                                for (var f = 0; f < 10; f++)
-                                {
-                                    if (f == a || f == b || f == c || f == d || f == e) continue;
-                                    for (var g = 0; g < 10; g++)
-                                    {
-                                        if (g == a || g == b || g == c || g == d || g == e || g == f) continue;
-                                        for (var h = 0; h < 10; h++)
-                                        {
-                                            if (h == a || h == b || h == c || h == d || h == e || h == f || h == g) continue;
-                                            for (var i = 0; i < 10; i++)
-                                            {
-                                                if (i == a || i == b || i == c || i == d || i == e || i == f || i == g || i == h) continue;
-                                                for (var j = 0; j < 10; j++)
-                                                {
-                                                    if (j == a || j == b || j == c || j == d || j == e || j == f || j == g || j == h || j == i) continue;
-                                                    _factorTen.Add(new List<int> { a, b, c, d, e, f, g, h, i, j });
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            _factorTen = _factorTen.OrderBy(x => App.Randomizer.Next()).ToList();
-
-            _factorTenInit = true;
-        }
-
         public static List<(Position, Side, PlayerRateUiData)> GetBestLineUp(this Tactic tactic,
             List<Player> sourcePlayers, int maxTheoreticalRate, bool usePotentialAbility)
         {
+#if DEBUG
             var start = DateTime.Now;
-
+#endif
             if (sourcePlayers.Count < 11)
             {
                 return new List<(Position, Side, PlayerRateUiData)>();
-            }
-
-            while (!_factorTenInit)
-            {
-                System.Threading.Thread.Sleep(200);
             }
 
             var players = new List<Player>(sourcePlayers);
@@ -201,64 +143,87 @@ namespace ExplorerFM.Extensions
             List<(Position, Side, PlayerRateUiData)> globalTeamPlayers = null;
             var globalTeamRate = pGk.Rate;
 
-            var startAt = App.Randomizer.Next(0, FactorTenCount - MonteCarloComboCount);
-            var selectedCombos = _factorTen.Skip(startAt).Take(MonteCarloComboCount).ToList();
+            var posGroup = positions.GroupBy(x => x).Select(x => (x.Key.Item1, x.Key.Item2, x.Count())).ToList();
+            RecursiveCrawlBestTeam(players, posGroup, 0, new List<int>(), ref globalTeamRate, ref globalTeamPlayers, maxTheoreticalRate, usePotentialAbility);
 
-            foreach (var indexes in selectedCombos)
-            {
-                var localTeamPlayers = new (Position, Side, PlayerRateUiData)[10];
-                var localPlayers = new Player[10];
-                var localTeamRate = -1;
-
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 0, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 1, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 2, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 3, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 4, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 5, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 6, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 7, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 8, ref localTeamRate);
-                ComputeBestLocalPlayerForPosition(players, localPlayers, localTeamPlayers, positions, maxTheoreticalRate, usePotentialAbility, indexes, 9, ref localTeamRate);
-
-                if (localTeamRate > globalTeamRate)
-                {
-                    globalTeamRate = localTeamRate;
-                    globalTeamPlayers = localTeamPlayers.ToList();
-                }
-            }
-
+#if DEBUG
             var end = DateTime.Now;
             System.Diagnostics.Debug.WriteLine($"[TIME] {(end - start).TotalMilliseconds}");
+#endif
 
             globalTeamPlayers.Add((Position.GoalKeeper, Side.Center, pGk));
 
             return globalTeamPlayers;
         }
 
-        private static void ComputeBestLocalPlayerForPosition(List<Player> sourcePlayer,
-            Player[] usedPlayer,
-            (Position, Side, PlayerRateUiData)[] lineUp,
-            List<(Position, Side)> positions,
+        private static Comparer<PlayerRateUiData> _playerComparer = Comparer<PlayerRateUiData>.Create((x, y) => x.Rate.CompareTo(y.Rate));
+
+        private static void RecursiveCrawlBestTeam(List<Player> players,
+            List<(Position, Side, int)> posGroup,
+            int currentDepth,
+            List<int> aboveIndexes,
+            ref int currentBestScore,
+            ref List<(Position, Side, PlayerRateUiData)> currentBestTeam,
             int maxTheoreticalRate,
-            bool usePotentialAbility,
-            List<int> indexes,
-            int index,
-            ref int totalRate)
+            bool potentialRate)
         {
-            PlayerRateUiData pBest = null;
-            foreach (var p in sourcePlayer)
+            for (var i = 0; i < posGroup.Count; i++)
             {
-                if (usedPlayer.Contains(p)) continue;
+                if (aboveIndexes.Contains(i)) continue;
 
-                var pData = p.ToRateItemData(positions[indexes[index]].Item1, positions[indexes[index]].Item2, maxTheoreticalRate, usePotentialAbility);
-                if (pBest == null || pData.Rate > pBest.Rate)
-                    pBest = pData;
+                var allIndexes = new List<int>(aboveIndexes) { i };
+                if (currentDepth == posGroup.Count - 1)
+                {
+                    var localScore = 0;
+                    var localBestTeam = new List<(Position, Side, PlayerRateUiData)>(10);
+                    var usedPlayers = new List<Player>(10);
+                    foreach (var k in allIndexes)
+                    {
+                        var psgPos = posGroup[k].Item1;
+                        var psgSid = posGroup[k].Item2;
+                        var psgCount = posGroup[k].Item3;
+                        var selectedPlayers = new List<PlayerRateUiData>(psgCount);
+                        var localSumRate = 0;
+                        foreach (var p in players)
+                        {
+                            if (usedPlayers.Contains(p)) continue;
+
+                            var pData = p.ToRateItemData(psgPos, psgSid, maxTheoreticalRate, potentialRate);
+                            if (selectedPlayers.Count < psgCount)
+                            {
+                                selectedPlayers.Add(pData);
+                                selectedPlayers.Sort(_playerComparer);
+                                usedPlayers.Add(p);
+                                localSumRate += pData.Rate;
+                            }
+                            else if (selectedPlayers[0].Rate < pData.Rate)
+                            {
+                                var removedP = selectedPlayers[0];
+                                selectedPlayers.RemoveAt(0);
+                                selectedPlayers.Add(pData);
+                                selectedPlayers.Sort(_playerComparer);
+                                usedPlayers.Remove(removedP.Player);
+                                usedPlayers.Add(p);
+                                localSumRate -= removedP.Rate;
+                                localSumRate += pData.Rate;
+                            }
+                        }
+
+                        localBestTeam.AddRange(selectedPlayers.Select(x => (psgPos, psgSid, x)));
+                        localScore += localSumRate;
+                    }
+
+                    if (localScore > currentBestScore)
+                    {
+                        currentBestScore = localScore;
+                        currentBestTeam = localBestTeam;
+                    }
+                }
+                else
+                {
+                    RecursiveCrawlBestTeam(players, posGroup, currentDepth + 1, allIndexes, ref currentBestScore, ref currentBestTeam, maxTheoreticalRate, potentialRate);
+                }
             }
-
-            totalRate += pBest.Rate;
-            usedPlayer[index] = pBest.Player;
-            lineUp[index] = (positions[indexes[index]].Item1, positions[indexes[index]].Item2, pBest);
         }
 
         public static string GetPlayerPropertyPath(this PropertyInfo columnField)

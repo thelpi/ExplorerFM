@@ -26,8 +26,6 @@ namespace ExplorerFM
                 Environment.Exit(0);
             }
 
-            Task.Run(() => DataExtensions.FillCombination());
-
             new IntroWindow().ShowDialog();
         }
     }
