@@ -53,10 +53,10 @@
             <CheckBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Name="NoClubContractCheckBox" Checked="NoClubContractCheckBox_CheckChanged" Unchecked="NoClubContractCheckBox_CheckChanged" />
             <Label Grid.Row="8" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Max value:" />
             <xctk:IntegerUpDown Grid.Row="8" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ValueIntUpDown" Minimum="1" Maximum="100000000" ValueChanged="ValueIntUpDown_ValueChanged" />
-            <Label Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Max rep.:" />
-            <xctk:IntegerUpDown Grid.Row="9" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ReputationIntUpDown" Minimum="1" Maximum="200" ValueChanged="ReputationIntUpDown_ValueChanged" />
+            <Label Grid.Row="9" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Min/max rep.:" ToolTip="World reputation" />
+            <xctk:RangeSlider Grid.Row="9" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ReputationIntUpDown" Minimum="0" Maximum="10000" LowerValue="0" HigherValue="10000" HigherValueChanged="ReputationIntUpDown_ValueChanged" LowerValueChanged="ReputationIntUpDown_ValueChanged" RangeBackground="Azure" AutoToolTipPlacement="TopLeft" />
             <Label Grid.Row="10" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Min/max age.:" />
-            <xctk:RangeSlider Grid.Row="10" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="AgeSlider" Minimum="10" Maximum="50" LowerValue="10" HigherValue="50" HigherValueChanged="AgeSlider_HigherValueChanged" LowerValueChanged="AgeSlider_LowerValueChanged" RangeBackground="Beige" AutoToolTipPlacement="TopLeft" />
+            <xctk:RangeSlider Grid.Row="10" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="AgeSlider" Minimum="10" Maximum="50" LowerValue="10" HigherValue="50" HigherValueChanged="AgeSlider_ValueChanged" LowerValueChanged="AgeSlider_ValueChanged" RangeBackground="Azure" AutoToolTipPlacement="TopLeft" />
         </Grid>
         <ListView Grid.Column="1" Grid.RowSpan="6" Name="PlayersListView" AlternationCount="2" ItemContainerStyle="{StaticResource ItemContainerStyle}">
             <ListView.View>

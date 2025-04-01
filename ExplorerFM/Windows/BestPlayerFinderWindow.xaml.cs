@@ -154,7 +154,8 @@ namespace ExplorerFM.Windows
                     && (!noClubContract || x.Player.ClubContract == null)
                     && (!isUe || x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true)
                     && (!ValueIntUpDown.Value.HasValue || x.Player.Value <= ValueIntUpDown.Value.Value)
-                    && (!ReputationIntUpDown.Value.HasValue || x.Player.CurrentReputation <= ReputationIntUpDown.Value.Value)
+                    && x.Player.WorldReputation <= ReputationIntUpDown.HigherValue
+                    && x.Player.WorldReputation >= ReputationIntUpDown.LowerValue
                     && (!ageIsSet || x.Player.GetAge() <= maxAge)
                     && (!ageIsSet || x.Player.GetAge() >= minAge))
                 .ToList();
@@ -180,17 +181,12 @@ namespace ExplorerFM.Windows
             ApplyLocalFilters();
         }
 
-        private void ReputationIntUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void ReputationIntUpDown_ValueChanged(object sender, RoutedEventArgs e)
         {
             ApplyLocalFilters();
         }
 
-        private void AgeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
-        {
-            ApplyLocalFilters();
-        }
-
-        private void AgeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
+        private void AgeSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             ApplyLocalFilters();
         }
