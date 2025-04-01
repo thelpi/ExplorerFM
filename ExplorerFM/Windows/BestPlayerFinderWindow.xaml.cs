@@ -40,6 +40,7 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
 
             NationalityComboBox.SetCountriesSource(dataProvider.Countries);
+            ClubCountryComboBox.SetCountriesSource(dataProvider.Countries);
 
             if (position.HasValue)
             {
@@ -144,14 +145,14 @@ namespace ExplorerFM.Windows
             if (!_initialized) return;
 
             var countryId = NationalityComboBox.SelectedItem is Country country ? country.Id : BaseData.AllDataId;
-            var noClubContract = NoClubContractCheckBox.IsChecked == true;
+            var clubCountryId = ClubCountryComboBox.SelectedItem is Country clubCountry ? clubCountry.Id : BaseData.AllDataId;
             var isUe = EuropeanUnionCheckBox.IsChecked == true;
             var maxAge = (int)Math.Floor(AgeSlider.HigherValue);
             var minAge = (int)Math.Floor(AgeSlider.LowerValue);
             var ageIsSet = AgeSlider.HigherValue != AgeSlider.Maximum || AgeSlider.LowerValue != AgeSlider.Minimum;
             PlayersListView.ItemsSource = _players
                 .Where(x => (countryId == BaseData.AllDataId || x.Player.Nationality.Id == countryId || x.Player.SecondNationality?.Id == countryId)
-                    && (!noClubContract || x.Player.ClubContract == null)
+                    && (clubCountryId == BaseData.AllDataId || (clubCountryId == BaseData.NoDataId && x.Player.ClubContract?.Country == null) || x.Player.ClubContract?.Country?.Id == clubCountryId)
                     && (!isUe || x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true)
                     && (!ValueIntUpDown.Value.HasValue || x.Player.Value <= ValueIntUpDown.Value.Value)
                     && x.Player.WorldReputation <= ReputationIntUpDown.HigherValue
@@ -162,11 +163,6 @@ namespace ExplorerFM.Windows
         }
 
         private void NationalityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ApplyLocalFilters();
-        }
-
-        private void NoClubContractCheckBox_CheckChanged(object sender, RoutedEventArgs e)
         {
             ApplyLocalFilters();
         }
@@ -187,6 +183,11 @@ namespace ExplorerFM.Windows
         }
 
         private void AgeSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void ClubCountryComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyLocalFilters();
         }
