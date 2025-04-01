@@ -165,9 +165,13 @@ namespace ExplorerFM.Windows
                     : players.Where(x => x.Player.ClubContract?.Country?.Id == clubCountryId);
             }
 
-            if (ValueIntUpDown.Value.HasValue)
+            var maxValueItem = ValueIntUpDown.SelectedItem as ComboBoxItem;
+            if (maxValueItem?.Tag != null)
             {
-                players = players.Where(x => x.Player.Value <= ValueIntUpDown.Value.Value);
+                var valueAndSymbol = maxValueItem.Tag.ToString().Split('-');
+                players = valueAndSymbol[1] == "<"
+                    ? players.Where(x => x.Player.Value <= Convert.ToInt32(valueAndSymbol[0]))
+                    : players.Where(x => x.Player.Value >= Convert.ToInt32(valueAndSymbol[0]));
             }
 
             players = players.Where(x => x.Player.WorldReputation <= ReputationIntUpDown.HigherValue);
@@ -189,11 +193,6 @@ namespace ExplorerFM.Windows
             ApplyLocalFilters();
         }
 
-        private void ValueIntUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            ApplyLocalFilters();
-        }
-
         private void ReputationIntUpDown_ValueChanged(object sender, RoutedEventArgs e)
         {
             ApplyLocalFilters();
@@ -205,6 +204,11 @@ namespace ExplorerFM.Windows
         }
 
         private void ClubCountryComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
+        private void ValueIntUpDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyLocalFilters();
         }
