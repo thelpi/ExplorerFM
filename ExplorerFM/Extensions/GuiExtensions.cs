@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using ExplorerFM.Datas;
 using ExplorerFM.FieldsAttributes;
 using ExplorerFM.Providers;
 using Xceed.Wpf.Toolkit;
@@ -149,6 +150,21 @@ namespace ExplorerFM.Extensions
                 }
             };
             return column;
+        }
+
+        internal static void SetCountriesSource(this ComboBox comboBox, IEnumerable<Country> countries)
+        {
+            var orderedCountries = countries
+                .OrderByDescending(x => x.Confederation?.Strength)
+                .ThenBy(x => x.Confederation?.Name)
+                .ThenBy(x => x.Name)
+                .ToList();
+            orderedCountries.Insert(0, Country.Empty);
+            orderedCountries.Insert(0, Country.Global);
+
+            var countriesView = new ListCollectionView(orderedCountries);
+            countriesView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Country.Confederation)}.{nameof(Confederation.FedCode)}"));
+            comboBox.ItemsSource = countriesView;
         }
     }
 }

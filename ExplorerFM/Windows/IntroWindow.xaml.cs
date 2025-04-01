@@ -34,20 +34,16 @@ namespace ExplorerFM.Windows
 
         private void PlayersSearchButton_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindow<SearchPlayersWindow>();
+            Hide();
+            var window = new SearchPlayersWindow(_dataProvider);
+            window.ShowDialog();
+            ShowDialog();
         }
 
         private void BestPlayersFinderButton_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindow<BestPlayerFinderWindow>();
-        }
-
-        private void ChangeWindow<T>() where T : Window
-        {
             Hide();
-            var window = typeof(T)
-                .GetConstructor(new[] { typeof(DataProvider) })
-                .Invoke(new[] { _dataProvider }) as T;
+            var window = new BestPlayerFinderWindow(_dataProvider);
             window.ShowDialog();
             ShowDialog();
         }

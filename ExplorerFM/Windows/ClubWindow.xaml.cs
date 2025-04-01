@@ -36,14 +36,7 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
 
-            var countriesCopy = new List<Country>(dataProvider.Countries.OrderByDescending(x => x.Confederation?.Strength).ThenBy(x => x.Confederation?.Name).ThenBy(x => x.Name));
-            countriesCopy.Insert(0, Country.Empty);
-            countriesCopy.Insert(0, Country.Global);
-            
-            var countriesView = new ListCollectionView(countriesCopy);
-            countriesView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Country.Confederation)}.{nameof(Confederation.FedCode)}"));
-
-            CountryClubComboBox.ItemsSource = countriesView;
+            CountryClubComboBox.SetCountriesSource(dataProvider.Countries);
             CountryClubComboBox.SelectedIndex = -1;
             ClubComboBox.Visibility = Visibility.Hidden;
         }
@@ -299,7 +292,7 @@ namespace ExplorerFM.Windows
             var win = new BestPlayerFinderWindow(_dataProvider,
                 p.Position,
                 p.Side,
-                PotentialAbilityCheckBox.IsChecked);
+                PotentialAbilityCheckBox.IsChecked == true);
             win.ShowDialog();
 
             var player = win.SelectedPlayer;
