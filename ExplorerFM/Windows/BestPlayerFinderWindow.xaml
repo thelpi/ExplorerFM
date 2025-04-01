@@ -31,7 +31,7 @@
                 <RowDefinition Height="35" />
                 <RowDefinition Height="35" />
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Grid.ColumnSpan="2" VerticalContentAlignment="Center" Content="Filters on database" HorizontalAlignment="Center" />
+            <Label Grid.Row="0" Grid.ColumnSpan="2" VerticalContentAlignment="Center" Content="Filters on database" HorizontalAlignment="Center" FontWeight="Bold" />
             
             <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Position:" />
             <ComboBox Grid.Row="1" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="PositionsComboBox" />
@@ -40,7 +40,7 @@
             <Label Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Potential:" />
             <CheckBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Name="PotentialAbilityCheckBox" />
 
-            <Label Grid.Row="4" Grid.ColumnSpan="2" Background="White" VerticalContentAlignment="Center" Content="Filters on selection" HorizontalAlignment="Center" />
+            <Label Grid.Row="4" Grid.ColumnSpan="2" Background="White" VerticalContentAlignment="Center" Content="Filters on selection" HorizontalAlignment="Center" FontWeight="Bold" />
 
             <Label Grid.Row="5" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Nationality:" />
             <ComboBox Grid.Row="5" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="NationalityComboBox" DisplayMemberPath="Name" SelectionChanged="NationalityComboBox_SelectionChanged">

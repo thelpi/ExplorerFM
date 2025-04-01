@@ -144,22 +144,39 @@ namespace ExplorerFM.Windows
         {
             if (!_initialized) return;
 
+            var players = _players.AsEnumerable();
+
             var countryId = NationalityComboBox.SelectedItem is Country country ? country.Id : BaseData.AllDataId;
+            if (countryId != BaseData.AllDataId)
+            {
+                players = players.Where(x => x.Player.Nationality.Id == countryId || x.Player.SecondNationality?.Id == countryId);
+            }
+
+            if (EuropeanUnionCheckBox.IsChecked == true)
+            {
+                players = players.Where(x => x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true);
+            }
+
             var clubCountryId = ClubCountryComboBox.SelectedItem is Country clubCountry ? clubCountry.Id : BaseData.AllDataId;
-            var isUe = EuropeanUnionCheckBox.IsChecked == true;
-            var maxAge = (int)Math.Floor(AgeSlider.HigherValue);
-            var minAge = (int)Math.Floor(AgeSlider.LowerValue);
-            var ageIsSet = AgeSlider.HigherValue != AgeSlider.Maximum || AgeSlider.LowerValue != AgeSlider.Minimum;
-            PlayersListView.ItemsSource = _players
-                .Where(x => (countryId == BaseData.AllDataId || x.Player.Nationality.Id == countryId || x.Player.SecondNationality?.Id == countryId)
-                    && (clubCountryId == BaseData.AllDataId || (clubCountryId == BaseData.NoDataId && x.Player.ClubContract?.Country == null) || x.Player.ClubContract?.Country?.Id == clubCountryId)
-                    && (!isUe || x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true)
-                    && (!ValueIntUpDown.Value.HasValue || x.Player.Value <= ValueIntUpDown.Value.Value)
-                    && x.Player.WorldReputation <= ReputationIntUpDown.HigherValue
-                    && x.Player.WorldReputation >= ReputationIntUpDown.LowerValue
-                    && (!ageIsSet || x.Player.GetAge() <= maxAge)
-                    && (!ageIsSet || x.Player.GetAge() >= minAge))
-                .ToList();
+            if (clubCountryId != BaseData.AllDataId)
+            {
+                players = clubCountryId == BaseData.NoDataId
+                    ? players.Where(x => x.Player.ClubContract?.Country == null)
+                    : players.Where(x => x.Player.ClubContract?.Country?.Id == clubCountryId);
+            }
+
+            if (ValueIntUpDown.Value.HasValue)
+            {
+                players = players.Where(x => x.Player.Value <= ValueIntUpDown.Value.Value);
+            }
+
+            players = players.Where(x => x.Player.WorldReputation <= ReputationIntUpDown.HigherValue);
+            players = players.Where(x => x.Player.WorldReputation >= ReputationIntUpDown.LowerValue);
+
+            players = players.Where(x => x.Player.GetAge() <= (int)Math.Floor(AgeSlider.HigherValue));
+            players = players.Where(x => x.Player.GetAge() >= (int)Math.Floor(AgeSlider.LowerValue));
+
+            PlayersListView.ItemsSource = players;
         }
 
         private void NationalityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
