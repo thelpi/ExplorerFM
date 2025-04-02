@@ -64,6 +64,24 @@ namespace ExplorerFM.Windows
             PotentialAbilityCheckBox.Checked += PotentialAbilityCheckBox_CheckChanged;
             PotentialAbilityCheckBox.Unchecked += PotentialAbilityCheckBox_CheckChanged;
 
+            ValueIntUpDown.ItemsSource = new List<ValueThreshold>
+            {
+                new ValueThreshold("None (any)"),
+                new ValueThreshold(10000000),
+                new ValueThreshold(5000000),
+                new ValueThreshold(1000000),
+                new ValueThreshold(500000),
+                new ValueThreshold(100000),
+                new ValueThreshold(50000),
+                new ValueThreshold(10000),
+                new ValueThreshold(10000, true),
+                new ValueThreshold(100000, true),
+                new ValueThreshold(1000000, true),
+                new ValueThreshold(10000000, true),
+            };
+            ValueIntUpDown.SelectedIndex = 0;
+            ValueIntUpDown.SelectionChanged += ValueIntUpDown_SelectionChanged;
+
             if (!forcedValues)
             {
                 PlayersGridView.Columns.RemoveAt(0);
@@ -165,13 +183,12 @@ namespace ExplorerFM.Windows
                     : players.Where(x => x.Player.ClubContract?.Country?.Id == clubCountryId);
             }
 
-            var maxValueItem = ValueIntUpDown.SelectedItem as ComboBoxItem;
-            if (maxValueItem?.Tag != null)
+            var maxValueItem = (ValueThreshold)ValueIntUpDown.SelectedItem;
+            if (!maxValueItem.IsAny)
             {
-                var valueAndSymbol = maxValueItem.Tag.ToString().Split('-');
-                players = valueAndSymbol[1] == "<"
-                    ? players.Where(x => x.Player.Value <= Convert.ToInt32(valueAndSymbol[0]))
-                    : players.Where(x => x.Player.Value >= Convert.ToInt32(valueAndSymbol[0]));
+                players = maxValueItem.IsGreater
+                    ? players.Where(x => x.Player.Value >= maxValueItem.Value)
+                    : players.Where(x => x.Player.Value < maxValueItem.Value);
             }
 
             players = players.Where(x => x.Player.WorldReputation <= ReputationIntUpDown.HigherValue);
@@ -211,6 +228,33 @@ namespace ExplorerFM.Windows
         private void ValueIntUpDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyLocalFilters();
+        }
+
+        private readonly struct ValueThreshold
+        {
+            public bool IsGreater { get; }
+
+            public int Value { get; }
+
+            public string Content { get; }
+
+            public bool IsAny { get; }
+
+            public ValueThreshold(int value, bool isGreater = false)
+            {
+                IsAny = false;
+                IsGreater = isGreater;
+                Value = value;
+                Content = $"{(IsGreater ? ">=" : "<")} {(Value >= 1000000 ? $"{Value / 1000000} M£" : (Value >= 1000 ? $"{Value / 1000} K£" : $"{Value} £"))}";
+            }
+
+            public ValueThreshold(string content)
+            {
+                IsAny = true;
+                IsGreater = false;
+                Value = 0;
+                Content = content;
+            }
         }
     }
 }
