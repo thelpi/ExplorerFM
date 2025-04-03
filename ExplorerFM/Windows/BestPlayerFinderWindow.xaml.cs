@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -158,12 +159,24 @@ namespace ExplorerFM.Windows
                 && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper
                 ? Visibility.Hidden
                 : Visibility.Visible;
+            
+            foreach (var pos in _alternativePositions)
+            {
+                pos.Selected = false;
+                pos.SetSelectable(PositionsComboBox.SelectedIndex < 0 || (Position)PositionsComboBox.SelectedItem != pos.Value);
+            }
 
             SearchPlayers();
         }
 
         private void SidesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            foreach (var side in _alternativeSides)
+            {
+                side.Selected = false;
+                side.SetSelectable(SidesComboBox.SelectedIndex < 0 || (Side)SidesComboBox.SelectedItem != side.Value);
+            }
+
             SearchPlayers();
         }
 
@@ -244,19 +257,58 @@ namespace ExplorerFM.Windows
             ApplyLocalFilters();
         }
 
-        private struct SelectablePositioning<T>
+        private class SelectablePositioning<T> : INotifyPropertyChanged
         {
+            private bool _selected;
+            private bool _selectable;
+
             public T Value { get; }
 
-            public bool Selected { get; set; }
+            public bool Selected
+            {
+                get
+                {
+                    return _selected;
+                }
+                set
+                {
+                    _selected = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selected)));
+                }
+            }
 
-            public bool Selectable { get; set; }
+            public bool Selectable
+            {
+                get
+                {
+                    return _selectable;
+                }
+                private set
+                {
+                    _selectable = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Selectable)));
+                }
+            }
 
             public SelectablePositioning(T value, bool selected, bool selectable)
             {
                 Value = value;
                 Selected = selected;
                 Selectable = selectable;
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public void SetSelectable(bool selectable)
+            {
+                if (Selectable != selectable)
+                {
+                    Selectable = selectable;
+                    if (!selectable && !Selected)
+                    {
+                        Selected = true;
+                    }
+                }
             }
         }
 
