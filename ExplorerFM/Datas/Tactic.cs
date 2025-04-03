@@ -86,6 +86,13 @@ namespace ExplorerFM.Datas
                     centerMid,
                     centerMid))
                 .ToArray()),
+                new Tactic("4-4-2", fourDefender
+                .Concat(centerFw.Yield(leftMid,
+                    rightMid,
+                    centerFw,
+                    centerMid,
+                    centerMid))
+                .ToArray()),
                 new Tactic("3-5-2 SW", sweeper
                 .Yield(centerDef,
                     centerDef,
