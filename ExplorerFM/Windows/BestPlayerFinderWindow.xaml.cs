@@ -268,6 +268,11 @@ namespace ExplorerFM.Windows
             ApplyLocalFilters();
         }
 
+        private void PositioningBox_Checked(object sender, RoutedEventArgs e)
+        {
+            ApplyLocalFilters();
+        }
+
         private class SelectablePositioning<T> : INotifyPropertyChanged
         {
             private bool _selected;
