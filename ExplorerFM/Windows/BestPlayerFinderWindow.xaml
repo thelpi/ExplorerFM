@@ -4,7 +4,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="Best players finder"
         WindowStartupLocation="CenterScreen"
-        Height="675" Width="1200">
+        Height="700" Width="1200">
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -30,6 +30,7 @@
                 <RowDefinition Height="15" />
                 <RowDefinition Height="35" />
                 <RowDefinition Height="35" />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Label Grid.Row="0" Grid.ColumnSpan="2" VerticalContentAlignment="Center" Content="Filters on database" HorizontalAlignment="Center" FontWeight="Bold" />
             
@@ -64,6 +65,23 @@
             <xctk:RangeSlider Grid.Row="11" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="ReputationIntUpDown" Minimum="0" Maximum="10000" LowerValue="0" HigherValue="10000" HigherValueChanged="ReputationIntUpDown_ValueChanged" LowerValueChanged="ReputationIntUpDown_ValueChanged" RangeBackground="Azure" AutoToolTipPlacement="TopLeft" />
             <Label Grid.Row="12" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Min/max age.:" />
             <xctk:RangeSlider Grid.Row="12" Grid.Column="1" Height="25" VerticalContentAlignment="Center" Name="AgeSlider" Minimum="10" Maximum="50" LowerValue="10" HigherValue="50" HigherValueChanged="AgeSlider_ValueChanged" LowerValueChanged="AgeSlider_ValueChanged" RangeBackground="Azure" AutoToolTipPlacement="TopLeft" />
+            <DockPanel Grid.Row="13" Grid.ColumnSpan="2">
+                <Label HorizontalAlignment="Center" Content="Alternative positions:" DockPanel.Dock="Top" />
+                <ListBox DockPanel.Dock="Right" Name="AltSidesList">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Path=Value}" IsChecked="{Binding Path=Selected, Mode=TwoWay}" IsEnabled="{Binding Path=Selectable}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <ListBox DockPanel.Dock="Left" Name="AltPositionsList">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Path=Value}" IsChecked="{Binding Path=Selected, Mode=TwoWay}" IsEnabled="{Binding Path=Selectable}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
         </Grid>
         <ListView Grid.Column="1" Grid.RowSpan="6" Name="PlayersListView" AlternationCount="2" ItemContainerStyle="{StaticResource ItemContainerStyle}">
             <ListView.View>

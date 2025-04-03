@@ -15,6 +15,8 @@ namespace ExplorerFM.Windows
     {
         private bool _initialized;
         private List<PlayerRateUiData> _players = null;
+        private readonly List<SelectablePositioning<Side>> _alternativeSides;
+        private readonly List<SelectablePositioning<Position>> _alternativePositions;
         private readonly DataProvider _dataProvider;
 
         public Player SelectedPlayer { get; private set; }
@@ -35,6 +37,18 @@ namespace ExplorerFM.Windows
             InitializeComponent();
 
             _dataProvider = dataProvider;
+
+            _alternativePositions = Enum.GetValues(typeof(Position))
+                .Cast<Position>()
+                .Select(x => new SelectablePositioning<Position>(x, x == position, x != position))
+                .ToList();
+            _alternativeSides = Enum.GetValues(typeof(Side))
+                .Cast<Side>()
+                .Select(x => new SelectablePositioning<Side>(x, x == side, x != side))
+                .ToList();
+
+            AltPositionsList.ItemsSource = _alternativePositions;
+            AltSidesList.ItemsSource = _alternativeSides;
 
             PositionsComboBox.ItemsSource = Enum.GetValues(typeof(Position));
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
@@ -228,6 +242,22 @@ namespace ExplorerFM.Windows
         private void ValueIntUpDown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyLocalFilters();
+        }
+
+        private struct SelectablePositioning<T>
+        {
+            public T Value { get; }
+
+            public bool Selected { get; set; }
+
+            public bool Selectable { get; set; }
+
+            public SelectablePositioning(T value, bool selected, bool selectable)
+            {
+                Value = value;
+                Selected = selected;
+                Selectable = selectable;
+            }
         }
 
         private readonly struct ValueThreshold
