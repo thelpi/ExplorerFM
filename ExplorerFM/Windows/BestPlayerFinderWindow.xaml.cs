@@ -9,6 +9,7 @@ using ExplorerFM.Extensions;
 using ExplorerFM.Providers;
 using ExplorerFM.RuleEngine;
 using ExplorerFM.UiDatas;
+using MongoDB.Driver.Linq;
 
 namespace ExplorerFM.Windows
 {
@@ -223,6 +224,16 @@ namespace ExplorerFM.Windows
 
             players = players.Where(x => x.Player.GetAge() <= (int)Math.Floor(AgeSlider.HigherValue));
             players = players.Where(x => x.Player.GetAge() >= (int)Math.Floor(AgeSlider.LowerValue));
+
+            foreach (var pos in _alternativePositions.Where(x => x.Selected && x.Selectable))
+            {
+                players = players.Where(x => x.Player.Positions[pos.Value] >= Player.PositioningTolerance);
+            }
+
+            foreach (var side in _alternativeSides.Where(x => x.Selected && x.Selectable))
+            {
+                players = players.Where(x => x.Player.Sides[side.Value] >= Player.PositioningTolerance);
+            }
 
             PlayersListView.ItemsSource = players;
         }
