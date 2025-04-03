@@ -35,8 +35,8 @@ namespace ExplorerFM.Datas
             var centerOffMid = (Position.OffensiveMidfielder, Side.Center);
             var leftOffMid = (Position.OffensiveMidfielder, Side.Left);
             var rightOffMid = (Position.OffensiveMidfielder, Side.Right);
-            var leftMid = (Position.Midfielder, Side.Left);
-            var rightMid = (Position.Midfielder, Side.Right);
+            //var leftMid = (Position.Midfielder, Side.Left);
+            //var rightMid = (Position.Midfielder, Side.Right);
             var leftDefMid = (Position.DefensiveMidfielder, Side.Left);
             var rightDefMid = (Position.DefensiveMidfielder, Side.Right);
             var sweeper = (Position.Sweeper, Side.Center);
