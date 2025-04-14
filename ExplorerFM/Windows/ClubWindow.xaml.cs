@@ -161,7 +161,7 @@ namespace ExplorerFM.Windows
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == BaseData.AllDataId
                     ? _dataProvider.GetPlayersByCountry(country.Id, true, potentialEnabled)
-                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
+                    : _dataProvider.GetPlayersByClub(club.Id, potentialEnabled),
                 p =>
                 {
                     _players = new ObservableCollection<Player>(p);
@@ -184,7 +184,7 @@ namespace ExplorerFM.Windows
                 .OrderByDescending(x => x.Division?.Reputation)
                 .ThenBy(x => x.Name)
                 .ToList();
-            clubsList.Insert(0, Club.Empty);
+            clubsList.Insert(0, Club.Global);
 
             var clubsView = new ListCollectionView(clubsList);
             clubsView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Club.Division)}.{nameof(Competition.Name)}"));
@@ -220,7 +220,7 @@ namespace ExplorerFM.Windows
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == BaseData.AllDataId
                     ? _dataProvider.GetPlayersByCountry(country.Id, true, potentialEnabled)
-                    : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
+                    : _dataProvider.GetPlayersByClub(club.Id, potentialEnabled),
                 p =>
                 {
                     _players = new ObservableCollection<Player>(p);
