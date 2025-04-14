@@ -195,12 +195,14 @@ namespace ExplorerFM.Windows
             var countryId = NationalityComboBox.SelectedItem is Country country ? country.Id : BaseData.AllDataId;
             if (countryId != BaseData.AllDataId)
             {
-                players = players.Where(x => x.Player.Nationality.Id == countryId || x.Player.SecondNationality?.Id == countryId);
+                players = countryId == BaseData.NoDataId
+                    ? players.Where(x => x.Player.Nationality == null)
+                    : players.Where(x => x.Player.Nationality?.Id == countryId || x.Player.SecondNationality?.Id == countryId);
             }
 
             if (EuropeanUnionCheckBox.IsChecked == true)
             {
-                players = players.Where(x => x.Player.Nationality.IsEU || x.Player.SecondNationality?.IsEU == true);
+                players = players.Where(x => x.Player.Nationality?.IsEU == true || x.Player.SecondNationality?.IsEU == true);
             }
 
             var clubCountryId = ClubCountryComboBox.SelectedItem is Country clubCountry ? clubCountry.Id : BaseData.AllDataId;

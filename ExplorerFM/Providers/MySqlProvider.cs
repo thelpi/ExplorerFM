@@ -392,7 +392,7 @@ namespace ExplorerFM.Providers
                     : reader.GetString("last_name"),
                 LeftFoot = reader.GetInt32("left_foot"),
                 Loaded = true,
-                Nationality = countries[reader.GetInt32("nation_id")],
+                Nationality = reader.IsDBNull("nation_id") ? null : countries[reader.GetInt32("nation_id")],
                 Positions = new Dictionary<Position, int?>
                 {
                     { Position.GoalKeeper, reader.GetInt32("pos_goalkeeper") },
