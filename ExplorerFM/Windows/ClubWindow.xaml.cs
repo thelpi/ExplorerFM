@@ -108,7 +108,7 @@ public partial class ClubWindow : Window
         {
             var groupPlayerCount = posGroup.Count();
             var currPosIndex = 0;
-            foreach (var posPlayer in posGroup)
+            foreach (var posPlayer in posGroup.OrderByDescending(x => x.Item3.Player.LeftFoot))
             {
                 var rowIndex = Array.IndexOf(DataProvider.OrderedPositions,
                     posPlayer.Item1);
