@@ -180,14 +180,16 @@ namespace ExplorerFM.Providers
         }
 
         public IReadOnlyList<Player> GetPlayersByCountry(int? countryId,
-            bool selectionEligible, IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries,
+            bool selectionEligible,
+            IReadOnlyDictionary<int, Club> clubs, IReadOnlyDictionary<int, Country> countries,
             bool potentialEnabled)
         {
-            return GetData(
-                "SELECT * FROM players " +
+            var sql = "SELECT * FROM players " +
                 "WHERE nation_id = @nation_id " +
                 "OR (nation_id IS NULL AND @nation_id IS NULL) " +
-                "OR secondary_nation_id = @nation_id",
+                $"OR (secondary_nation_id = @nation_id{(selectionEligible ? " AND caps = 0" : "")})";
+
+            return GetData(sql,
                 reader => ExtractPlayer(reader, countries, clubs, potentialEnabled),
                 ("@nation_id", DbType.Int32, countryId));
         }

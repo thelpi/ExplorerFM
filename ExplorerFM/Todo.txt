@@ -2,3 +2,4 @@
 (voir les intervertir)
 définir une limite glboale de max reputation et value
 voir les joueurs hors-ue
+trier par pied fort dans la tactique
