@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -36,7 +35,7 @@ namespace ExplorerFM.Windows
             SidesComboBox.ItemsSource = Enum.GetValues(typeof(Side));
             TacticsComboBox.ItemsSource = Tactic.Tactics;
 
-            CountryClubComboBox.SetCountriesSource(dataProvider.Countries);
+            CountryClubComboBox.SetCountriesSource(dataProvider.Countries, includeGenerics: false);
             CountryClubComboBox.SelectedIndex = -1;
             ClubComboBox.Visibility = Visibility.Hidden;
         }
@@ -44,8 +43,9 @@ namespace ExplorerFM.Windows
         private void PlayersView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var pItem = PlayersView.SelectedItem;
-            if (pItem != null)
+            if (pItem is not null)
             {
+                MessageBox.Show("Soon!");
                 //Hide();
                 //new PlayerWindow(pItem as Player).ShowDialog();
                 //ShowDialog();
@@ -55,10 +55,10 @@ namespace ExplorerFM.Windows
         private void PositionsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetRatedPlayersListBox();
-            if (PositionsComboBox.SelectedIndex >= 0 && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper)
-                SidesComboBox.Visibility = Visibility.Hidden;
-            else
-                SidesComboBox.Visibility = Visibility.Visible;
+            SidesComboBox.Visibility = PositionsComboBox.SelectedIndex >= 0
+                && (Position)PositionsComboBox.SelectedItem == Position.GoalKeeper
+                ? Visibility.Hidden
+                : Visibility.Visible;
         }
 
         private void SidesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -68,33 +68,31 @@ namespace ExplorerFM.Windows
 
         private void SetRatedPlayersListBox()
         {
-            if (PositionsComboBox.SelectedIndex >= 0)
-            {
-                var position = (Position)PositionsComboBox.SelectedItem;
-                var side = Side.Center;
-                if (position != Position.GoalKeeper)
-                {
-                    if (SidesComboBox.SelectedIndex < 0)
-                        return;
-                    side = (Side)SidesComboBox.SelectedItem;
-                }
+            if (PositionsComboBox.SelectedIndex < 0) return;
 
-                // top 10 best players for the position/side
-                RatedPlayersListView.ItemsSource = _players
-                    .Select(p =>
-                        p.ToRateItemData(
-                            position,
-                            side,
-                            _dataProvider.MaxTheoreticalRate,
-                            UsePotentialAbility))
-                    .OrderByDescending(p => p.Rate)
-                    .Take(10);
+            var position = (Position)PositionsComboBox.SelectedItem;
+            var side = Side.Center;
+            if (position != Position.GoalKeeper)
+            {
+                if (SidesComboBox.SelectedIndex < 0) return;
+                side = (Side)SidesComboBox.SelectedItem;
             }
+
+            // top 10 best players for the position/side
+            RatedPlayersListView.ItemsSource = _players
+                .Select(p =>
+                    p.ToRateItemData(
+                        position,
+                        side,
+                        _dataProvider.MaxTheoreticalRate,
+                        UsePotentialAbility))
+                .OrderByDescending(p => p.Rate)
+                .Take(10);
         }
 
         private void TacticsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TacticsComboBox.SelectedItem != null)
+            if (TacticsComboBox.SelectedItem is not null)
             {
                 SetTacticLineUp();
             }
@@ -102,9 +100,12 @@ namespace ExplorerFM.Windows
 
         private void SetTacticLineUp()
         {
+            var tactic = TacticsComboBox.SelectedItem as Tactic;
+            if (tactic is null) return;
+
             TacticPlayersGrid.Children.Clear();
 
-            var lineUp = (TacticsComboBox.SelectedItem as Tactic)
+            var lineUp = tactic
                 .GetBestLineUp(_players.ToList(), _dataProvider.MaxTheoreticalRate, UsePotentialAbility);
 
             foreach (var posGroup in lineUp.GroupBy(_ => (_.Item1, _.Item2)))
@@ -126,8 +127,7 @@ namespace ExplorerFM.Windows
                             colIndex = currPosIndex == 0 ? 1 : 3;
                     }
 
-                    AddLineUpUiComponent(PlayerPositionTemplateKey,
-                        rowIndex, colIndex, posPlayer.Item3);
+                    AddLineUpUiComponent(PlayerPositionTemplateKey, rowIndex, colIndex, posPlayer.Item3);
 
                     currPosIndex++;
                 }
@@ -148,18 +148,19 @@ namespace ExplorerFM.Windows
 
         private void ClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isSourceChange || ClubComboBox.SelectedIndex == -1)
-                return;
+            if (_isSourceChange) return;
 
             var club = ClubComboBox.SelectedItem as Club;
+            if (club is null) return;
+
             var country = CountryClubComboBox.SelectedItem as Country;
+            if (country is null) return;
+
             var potentialEnabled = UsePotentialAbility;
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == BaseData.AllDataId
-                    ? (country.Id == BaseData.AllDataId
-                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false), potentialEnabled)
-                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true, potentialEnabled))
+                    ? _dataProvider.GetPlayersByCountry(country.Id, true, potentialEnabled)
                     : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
                 p =>
                 {
@@ -174,38 +175,21 @@ namespace ExplorerFM.Windows
         private void CountryClubComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var country = CountryClubComboBox.SelectedItem as Country;
-            if (country == null)
-                return;
+            if (country is null) return;
 
             _isSourceChange = true;
 
-            List<Club> clubsList;
-            string groupProperty = null;
-            if (country.Id == BaseData.AllDataId)
-            {
-                clubsList = new List<Club>
-                {
-                    Club.Global,
-                    Club.Empty
-                };
-            }
-            else if (country.Id == BaseData.NoDataId)
-            {
-                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country == null).OrderBy(x => x.Name));
-                clubsList.Insert(0, Club.Global);
-            }
-            else
-            {
-                clubsList = new List<Club>(_dataProvider.Clubs.Where(c => c.Country?.Id == country.Id).OrderByDescending(x => x.Division?.Reputation).ThenBy(x => x.Name));
-                clubsList.Insert(0, Club.Empty);
-                groupProperty = $"{nameof(Club.Division)}.{nameof(Competition.Name)}";
-            }
+            var clubsList = _dataProvider.Clubs
+                .Where(c => c.Country?.Id == country.Id)
+                .OrderByDescending(x => x.Division?.Reputation)
+                .ThenBy(x => x.Name)
+                .ToList();
+            clubsList.Insert(0, Club.Empty);
 
-            var countriesView = new ListCollectionView(clubsList);
-            if (groupProperty != null)
-                countriesView.GroupDescriptions.Add(new PropertyGroupDescription(groupProperty));
+            var clubsView = new ListCollectionView(clubsList);
+            clubsView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Club.Division)}.{nameof(Competition.Name)}"));
 
-            ClubComboBox.ItemsSource = countriesView;
+            ClubComboBox.ItemsSource = clubsView;
             ClubComboBox.Visibility = Visibility.Visible;
             ClubComboBox.SelectedIndex = -1;
 
@@ -226,14 +210,16 @@ namespace ExplorerFM.Windows
         private void PotentialAbilityCheckBox_Click(object sender, RoutedEventArgs e)
         {
             var club = ClubComboBox.SelectedItem as Club;
+            if (club is null) return;
+
             var country = CountryClubComboBox.SelectedItem as Country;
+            if (country is null) return;
+
             var potentialEnabled = UsePotentialAbility;
 
             LoadPlayersProgressBar.HideWorkAndDisplay(
                 () => club.Id == BaseData.AllDataId
-                    ? (country.Id == BaseData.AllDataId
-                        ? _dataProvider.GetPlayersByCriteria(new RuleEngine.CriteriaSet(false), potentialEnabled)
-                        : _dataProvider.GetPlayersByCountry(country.Id == BaseData.NoDataId ? default(int?) : country.Id, true, potentialEnabled))
+                    ? _dataProvider.GetPlayersByCountry(country.Id, true, potentialEnabled)
                     : _dataProvider.GetPlayersByClub(club.Id == BaseData.NoDataId ? default(int?) : club.Id, potentialEnabled),
                 p =>
                 {
@@ -252,8 +238,7 @@ namespace ExplorerFM.Windows
 
         private IEnumerable<PlayerRateUiData> GetTopTenRatedPlayers()
         {
-            if (_players == null)
-                return null;
+            if (_players is null) return null;
 
             var fullList = new List<PlayerRateUiData>(_players.Count * 10);
 
@@ -277,8 +262,7 @@ namespace ExplorerFM.Windows
             {
                 if (finalList.Count == 10)
                     break;
-                if (!finalList.ContainsKey(p.Player.Id))
-                    finalList.Add(p.Player.Id, p);
+                finalList.TryAdd(p.Player.Id, p);
             }
 
             return finalList.Values;
@@ -287,6 +271,7 @@ namespace ExplorerFM.Windows
         private void PlayerLineUpButton_Click(object sender, MouseButtonEventArgs e)
         {
             var p = (sender as FrameworkElement).DataContext as PlayerRateUiData;
+            if (p is null) return;
 
             Hide();
             var win = new BestPlayerFinderWindow(_dataProvider,
@@ -296,7 +281,7 @@ namespace ExplorerFM.Windows
             win.ShowDialog();
 
             var player = win.SelectedPlayer;
-            if (player != null && !_players.Any(x => x.Id == player.Id))
+            if (player is not null && !_players.Any(x => x.Id == player.Id))
             {
                 var res = MessageBox.Show($"Replace {p.Player.Fullname} from squad ?" +
                         $"\n\nYes: new player will replace the selected player." +

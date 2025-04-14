@@ -152,15 +152,18 @@ namespace ExplorerFM.Extensions
             return column;
         }
 
-        internal static void SetCountriesSource(this ComboBox comboBox, IEnumerable<Country> countries)
+        internal static void SetCountriesSource(this ComboBox comboBox, IEnumerable<Country> countries, bool includeGenerics = true)
         {
             var orderedCountries = countries
                 .OrderByDescending(x => x.Confederation?.Strength)
                 .ThenBy(x => x.Confederation?.Name)
                 .ThenBy(x => x.Name)
                 .ToList();
-            orderedCountries.Insert(0, Country.Empty);
-            orderedCountries.Insert(0, Country.Global);
+            if (includeGenerics)
+            {
+                orderedCountries.Insert(0, Country.Empty);
+                orderedCountries.Insert(0, Country.Global);
+            }
 
             var countriesView = new ListCollectionView(orderedCountries);
             countriesView.GroupDescriptions.Add(new PropertyGroupDescription($"{nameof(Country.Confederation)}.{nameof(Confederation.FedCode)}"));
