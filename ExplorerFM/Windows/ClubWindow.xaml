@@ -14,7 +14,7 @@
         <ControlTemplate x:Key="PlayerPositionTemplate">
             <StackPanel Orientation="Vertical">
                 <Ellipse Width="40" Height="40" Fill="{Binding Path=Brush}" Mouse.MouseUp="PlayerLineUpButton_Click" />
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Path=Player.Fullname}" />
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Path=Player.Fullname}" Foreground="{Binding Path=NotEuStyle}" />
             </StackPanel>
         </ControlTemplate>
     </Window.Resources>

@@ -15,6 +15,8 @@ namespace ExplorerFM.UiDatas
 
         public Brush Brush => new SolidColorBrush(GetColorFromRate());
 
+        public Brush NotEuStyle => Player.Nationality?.IsEU == true || Player.SecondNationality?.IsEU == true ? Brushes.Black : Brushes.Violet;
+
         private Color GetColorFromRate()
         {
             var switchStop = MaxTheoreticalRate / (decimal)3;

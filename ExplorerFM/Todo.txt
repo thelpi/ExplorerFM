@@ -1,4 +1,3 @@
 ﻿figer certains joueurs dans la tactique
 (voir les intervertir)
 définir une limite glboale de max reputation et value
-voir les joueurs hors-ue
